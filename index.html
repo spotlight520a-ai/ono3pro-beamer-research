@@ -11,6 +11,10 @@
       content="德国站 200–400 欧投影仪竞品 Listing、图片与卖点工作台"
     />
     <title>Beamer Scout · 德国站投影仪内容工作台</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232457d6'/%3E%3Cpath d='M7 11.2 16 6l9 5.2v9.6L16 26l-9-5.2z' fill='none' stroke='white' stroke-width='2'/%3E%3Ccircle cx='16' cy='16' r='3' fill='white'/%3E%3C/svg%3E"
+    />
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
@@ -152,6 +156,43 @@
             <small>已识别，可逐图校正</small>
           </div>
         </article>
+      </section>
+
+      <section class="audit-brief" id="auditBrief" aria-labelledby="auditBriefTitle">
+        <div class="audit-brief-copy">
+          <p class="section-kicker">ONO3PRO · 改版判断</p>
+          <h2 id="auditBriefTitle">素材量已经达标，下一步补强证据链</h2>
+          <p>
+            Listing 图数量与竞品持平，商品 A+ 还略多。当前更值得改的是图片顺序、
+            画质与自动校正的前后对比，以及保修和服务信任。
+          </p>
+          <button class="button button-secondary" id="openAuditButton" type="button">
+            查看完整竞品对比
+            <span aria-hidden="true">→</span>
+          </button>
+        </div>
+        <div class="audit-brief-stats" aria-label="改版分析关键数据">
+          <div>
+            <span>Listing 图片</span>
+            <strong>8 / 8</strong>
+            <small>ONO3Pro / 竞品中位数</small>
+          </div>
+          <div>
+            <span>商品 A+ 图片</span>
+            <strong>17 / 15</strong>
+            <small>ONO3Pro / 竞品中位数</small>
+          </div>
+          <div>
+            <span>五点德语词数</span>
+            <strong>520 / 326</strong>
+            <small>当前 / 竞品中位数</small>
+          </div>
+          <div>
+            <span>认证与服务覆盖</span>
+            <strong>0 / 60%</strong>
+            <small>ONO3Pro / 竞品出现率</small>
+          </div>
+        </div>
       </section>
 
       <section class="catalog-card" id="catalog" aria-labelledby="catalogTitle">
@@ -402,6 +443,7 @@
     </footer>
 
     <script src="./data/app-data.js"></script>
+    <script src="./data/audit-analysis.js"></script>
     <script src="./app.js"></script>
   </body>
 </html>

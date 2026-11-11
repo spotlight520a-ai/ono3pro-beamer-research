@@ -2,6 +2,7 @@
   "use strict";
 
   const DATA = window.BSR_DATA;
+  const AUDIT = window.BSR_AUDIT;
   const STORAGE_KEY = "beamer-scout-state-v1";
   const DRAFT_KEY = "beamer-scout-draft-v1";
   const SCHEMA_VERSION = 1;
@@ -1755,6 +1756,239 @@
     });
   }
 
+  function auditImageThumb(image, role) {
+    const url = imageSource(image);
+    if (!url) {
+      return '<span class="audit-image-missing">无图片</span>';
+    }
+    return `
+      <a class="audit-image-thumb" href="${escapeAttr(url)}" target="_blank" rel="noopener noreferrer" title="打开${escapeAttr(role)}原图">
+        <img src="${escapeAttr(url)}" alt="${escapeAttr(role)}" loading="lazy" />
+      </a>
+    `;
+  }
+
+  function auditListingTable(product, working) {
+    const images = imagesFor(product, working, "listing");
+    return `
+      <div class="audit-table-wrap">
+        <table class="audit-table audit-image-table">
+          <thead>
+            <tr>
+              <th>图片</th>
+              <th>当前表达</th>
+              <th>主要问题</th>
+              <th>建议动作</th>
+              <th>判断</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${AUDIT.listing
+              .map((item) => {
+                const image = images.find((candidate) => candidate.index === item.index);
+                return `
+                  <tr>
+                    <td>
+                      ${image ? auditImageThumb(image, `Listing 图 ${item.index}`) : ""}
+                      <strong>Listing ${item.index}</strong>
+                    </td>
+                    <td>${escapeHTML(item.current)}</td>
+                    <td>${escapeHTML(item.issue)}</td>
+                    <td>${escapeHTML(item.action)}</td>
+                    <td><span class="audit-status ${item.priority === "高" || item.priority === "先核实" ? "is-warning" : ""}">${escapeHTML(item.priority)}</span></td>
+                  </tr>
+                `;
+              })
+              .join("")}
+          </tbody>
+        </table>
+      </div>
+    `;
+  }
+
+  function auditAplusTable(product, working) {
+    const images = imagesFor(product, working, "aplus");
+    return `
+      <div class="audit-table-wrap">
+        <table class="audit-table audit-image-table">
+          <thead>
+            <tr>
+              <th>图片</th>
+              <th>当前表达</th>
+              <th>建议</th>
+              <th>原因</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${AUDIT.aplus
+              .map((item) => {
+                const image = images.find((candidate) => candidate.index === item.index);
+                return `
+                  <tr>
+                    <td>
+                      ${image ? auditImageThumb(image, `A+ 图 ${item.index}`) : ""}
+                      <strong>A+ ${item.index}</strong>
+                    </td>
+                    <td>${escapeHTML(item.current)}</td>
+                    <td><span class="audit-status ${/删除|替换|拆分/.test(item.decision) ? "is-warning" : ""}">${escapeHTML(item.decision)}</span></td>
+                    <td>${escapeHTML(item.reason)}</td>
+                  </tr>
+                `;
+              })
+              .join("")}
+          </tbody>
+        </table>
+      </div>
+    `;
+  }
+
+  function auditModalTemplate() {
+    const product = baseByAsin.get(AUDIT.productAsin);
+    if (!product) return '<p>没有找到 ONO3Pro 数据。</p>';
+    const working = workingForView(product);
+    return `
+      <div class="audit-summary">
+        <p>${escapeHTML(AUDIT.summary)}</p>
+        <div class="audit-stat-strip">
+          ${AUDIT.stats
+            .map(
+              (stat) => `
+                <div>
+                  <span>${escapeHTML(stat.label)}</span>
+                  <strong>${escapeHTML(stat.value)}</strong>
+                  <small>${escapeHTML(stat.note)}</small>
+                </div>
+              `,
+            )
+            .join("")}
+        </div>
+      </div>
+
+      <div class="audit-tabs" role="tablist" aria-label="ONO3Pro 改版建议">
+        <button class="active" type="button" role="tab" aria-selected="true" data-action="audit-tab" data-audit-tab="overview">结论与顺序</button>
+        <button type="button" role="tab" aria-selected="false" data-action="audit-tab" data-audit-tab="listing">Listing ${AUDIT.listing.length}</button>
+        <button type="button" role="tab" aria-selected="false" data-action="audit-tab" data-audit-tab="aplus">A+ ${AUDIT.aplus.length}</button>
+        <button type="button" role="tab" aria-selected="false" data-action="audit-tab" data-audit-tab="copy">五点改写</button>
+        <button type="button" role="tab" aria-selected="false" data-action="audit-tab" data-audit-tab="risks">发布前核实</button>
+      </div>
+
+      <section class="audit-panel" data-audit-panel="overview" role="tabpanel">
+        <div class="audit-findings">
+          <h3>先改这四件事</h3>
+          <ul>
+            ${AUDIT.findings.map((finding) => `<li>${escapeHTML(finding)}</li>`).join("")}
+          </ul>
+        </div>
+        <div class="audit-table-wrap">
+          <table class="audit-table">
+            <thead>
+              <tr>
+                <th>卖点维度</th>
+                <th>竞品常见做法</th>
+                <th>ONO3Pro 当前</th>
+                <th>建议优化</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${AUDIT.comparison
+                .map(
+                  (row) => `
+                    <tr>
+                      <td><strong>${escapeHTML(row.theme)}</strong></td>
+                      <td>${escapeHTML(row.competitors)}</td>
+                      <td>${escapeHTML(row.current)}</td>
+                      <td>${escapeHTML(row.action)}</td>
+                    </tr>
+                  `,
+                )
+                .join("")}
+            </tbody>
+          </table>
+        </div>
+        <div class="audit-sequence">
+          <div>
+            <span class="section-kicker">RECOMMENDED SEQUENCE</span>
+            <h3>建议的图片叙事顺序</h3>
+          </div>
+          <ol>
+            ${AUDIT.imageOrder.map((item) => `<li>${escapeHTML(item)}</li>`).join("")}
+          </ol>
+        </div>
+      </section>
+
+      <section class="audit-panel" data-audit-panel="listing" role="tabpanel" hidden>
+        <div class="audit-panel-heading">
+          <div>
+            <h3>Listing 逐图诊断</h3>
+            <p>点击左侧缩略图可打开原图。红色状态表示需要优先重做或核实。</p>
+          </div>
+        </div>
+        ${auditListingTable(product, working)}
+      </section>
+
+      <section class="audit-panel" data-audit-panel="aplus" role="tabpanel" hidden>
+        <div class="audit-panel-heading">
+          <div>
+            <h3>商品 A+ 逐图取舍</h3>
+            <p>这里按商品 A+ 的 17 张图片判断；品牌故事素材另行管理。</p>
+          </div>
+        </div>
+        ${auditAplusTable(product, working)}
+      </section>
+
+      <section class="audit-panel" data-audit-panel="copy" role="tabpanel" hidden>
+        <div class="audit-panel-heading">
+          <div>
+            <h3>建议的五点结构</h3>
+            <p>从“升级了什么”改成“用户得到什么”，同时减少每条承载的功能数量。</p>
+          </div>
+        </div>
+        <div class="audit-copy-list">
+          ${AUDIT.fivePoints
+            .map(
+              (item, index) => `
+                <article class="audit-copy-item">
+                  <span class="audit-copy-index">${String(index + 1).padStart(2, "0")}</span>
+                  <div>
+                    <h4>${escapeHTML(item.title)}</h4>
+                    <strong>${escapeHTML(item.direction)}</strong>
+                    <p><b>核心事实</b>${escapeHTML(item.facts)}</p>
+                    <p><b>改写方法</b>${escapeHTML(item.change)}</p>
+                  </div>
+                </article>
+              `,
+            )
+            .join("")}
+        </div>
+      </section>
+
+      <section class="audit-panel" data-audit-panel="risks" role="tabpanel" hidden>
+        <div class="audit-panel-heading">
+          <div>
+            <h3>发布前必须核实</h3>
+            <p>这些不是文案偏好，而是可能影响转化、合规或用户信任的事实冲突。</p>
+          </div>
+        </div>
+        <ol class="audit-risk-list">
+          ${AUDIT.risks.map((risk) => `<li>${escapeHTML(risk)}</li>`).join("")}
+        </ol>
+      </section>
+    `;
+  }
+
+  function openAuditModal() {
+    if (!AUDIT) {
+      showToast("改版建议数据没有加载", "error");
+      return;
+    }
+    openModal({
+      kicker: AUDIT.kicker,
+      title: "ONO3Pro 图片与五点改版建议",
+      body: auditModalTemplate(),
+      className: "modal-audit",
+    });
+  }
+
   function exportVisibleTable() {
     const rows = filteredProducts();
     const headers = [
@@ -1879,6 +2113,18 @@
     if (!button) return;
     if (button.dataset.action === "export-backup") exportBackup();
     if (button.dataset.action === "import-backup") $("#backupImport").click();
+    if (button.dataset.action === "audit-tab") {
+      const activeTab = button.dataset.auditTab;
+      $$("[data-action='audit-tab']", $("#modalBody")).forEach((tab) => {
+        const active = tab.dataset.auditTab === activeTab;
+        tab.classList.toggle("active", active);
+        tab.setAttribute("aria-selected", String(active));
+      });
+      $$("[data-audit-panel]", $("#modalBody")).forEach((panel) => {
+        panel.hidden = panel.dataset.auditPanel !== activeTab;
+      });
+      $("#modalBody").scrollTop = 0;
+    }
   }
 
   function exportBackup() {
@@ -1993,6 +2239,7 @@
     renderCatalog();
     bindCatalogEvents();
     bindDetailEvents();
+    $("#openAuditButton")?.addEventListener("click", openAuditModal);
 
     const params = new URLSearchParams(
       window.location.search ||
@@ -2008,7 +2255,9 @@
     window.addEventListener("resize", updateMobileMenuVisibility);
     const initialAsin = params.get("asin");
     const initialTab = params.get("tab");
-    if (initialAsin && baseByAsin.has(initialAsin)) {
+    if (params.get("audit") === "1") {
+      openAuditModal();
+    } else if (initialAsin && baseByAsin.has(initialAsin)) {
       openDetail(initialAsin);
       if (
         initialTab &&

@@ -11,8 +11,25 @@ ONO3Pro（ASIN `B0HFHN24F1`）与德国站 €200–€400 价格带投影仪的
 - 16 个产品、14 个品牌
 - 404 张本地图片：127 张 Listing 主副图、277 张 A+ 图
 - 五点德语原文、中文译文、核心卖点、规格及逐图内容提炼
+- ONO3Pro 图片与五点专项审计：与 15 个竞品对比、8 张 Listing 逐图诊断、17 张商品 A+ 取舍及五点重建建议
 - 搜索、筛选、排序、最多 4 项产品对比
 - 文字和图片可编辑，支持本地版本保存、历史恢复、CSV 导出与 JSON 备份
+
+## ONO3Pro 改版分析
+
+首页“查看完整竞品对比”可打开专项分析，也可以直接访问：
+
+<https://spotlight520a-ai.github.io/ono3pro-beamer-research/?audit=1>
+
+分析包含五个部分：
+
+- 结论与建议图片顺序
+- 8 张 Listing 图逐图诊断
+- 17 张商品 A+ 图逐图取舍
+- 五点卖点重建框架
+- 发布前必须核实的事实与授权风险
+
+这些内容是优化建议，没有直接修改 Amazon Listing。重量、投距、原生分辨率、自动校正时间、Netflix / Chromecast 授权、测试依据与保修服务口径仍未完成业务核实，发布前应按页面中的核实清单逐项确认。
 
 ## 本地打开
 
@@ -36,6 +53,7 @@ styles.css              页面样式
 app.js                  筛选、编辑、版本和备份逻辑
 data/app-data.js        页面加载的完整内容数据
 data/app-data.json      可复核的结构化数据
+data/audit-analysis.js  ONO3Pro 图片与五点专项审计数据
 assets/images/<ASIN>/   Listing 与 A+ 本地图片
 德国站_200-400欧投影仪_产品表.csv
 使用说明.md
