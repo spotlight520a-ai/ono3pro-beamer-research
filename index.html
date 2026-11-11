@@ -1,0 +1,407 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta
+      name="description"
+      content="德国站 200–400 欧投影仪竞品 Listing、图片与卖点工作台"
+    />
+    <title>Beamer Scout · 德国站投影仪内容工作台</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="page-glow page-glow-a" aria-hidden="true"></div>
+    <div class="page-glow page-glow-b" aria-hidden="true"></div>
+
+    <header class="topbar">
+      <a class="brand" href="#catalog" aria-label="返回产品目录">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 32 32" role="img">
+            <path d="M6 11.2 16 5l10 6.2v9.6L16 27 6 20.8z"></path>
+            <circle cx="16" cy="16" r="3.6"></circle>
+            <path d="m18.8 18.2 7.1 5.2"></path>
+          </svg>
+        </span>
+        <span>
+          <strong>Beamer Scout</strong>
+          <small>产品内容工作台</small>
+        </span>
+      </a>
+
+      <div class="topbar-meta">
+        <span class="sync-dot" aria-hidden="true"></span>
+        <span id="storageStatus">仅保存在本机浏览器</span>
+      </div>
+
+      <div class="topbar-actions">
+        <button
+          class="icon-button mobile-menu-button"
+          id="mobileMenuButton"
+          type="button"
+          aria-label="打开备份与导出菜单"
+          aria-expanded="false"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M5 7h14M5 12h14M5 17h14"></path>
+          </svg>
+        </button>
+        <button class="button button-quiet" id="exportTableButton" type="button">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 3v12m0 0 4-4m-4 4-4-4M5 19h14"></path>
+          </svg>
+          导出表格
+        </button>
+        <button class="button button-primary" id="backupButton" type="button">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 7.5A2.5 2.5 0 0 1 6.5 5h7L19 10.5v7a2 2 0 0 1-2 2H6.5A2.5 2.5 0 0 1 4 17z"></path>
+            <path d="M13 5v6h6"></path>
+          </svg>
+          备份与恢复
+        </button>
+      </div>
+      <div class="mobile-action-menu" id="mobileActionMenu" hidden>
+        <button type="button" data-mobile-action="export-table">
+          <span>导出当前表格</span><small>CSV · 只含当前筛选结果</small>
+        </button>
+        <button type="button" data-mobile-action="backup">
+          <span>备份与恢复</span><small>版本记录与已上传图片</small>
+        </button>
+      </div>
+    </header>
+
+    <main class="shell">
+      <section class="hero" aria-labelledby="pageTitle">
+        <div class="hero-copy">
+          <p class="eyebrow">
+            <span>AMAZON.DE</span>
+            <span class="eyebrow-separator"></span>
+            <span>BSR · BEAMER</span>
+          </p>
+          <h1 id="pageTitle">200–400 欧投影仪 <em>产品内容图谱</em></h1>
+          <p class="hero-description">
+            把价格、规格、Listing 五点、中文译文与主副图 / A+
+            放在同一工作台；文字可编辑，每次保存都会留下可恢复版本。
+          </p>
+        </div>
+        <div class="hero-note">
+          <span class="hero-note-label">数据口径</span>
+          <strong>2026.11.11</strong>
+          <p>BSR 前 100 筛选竞品，并加入自有产品 ONO3Pro；Amazon 页面与图片快照。</p>
+          <div class="hero-note-foot">
+            <span class="mini-pulse"></span>
+            <span>离线图片已本地化</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="kpi-grid" aria-label="数据概览">
+        <article class="kpi-card">
+          <span class="kpi-icon kpi-icon-blue">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4 8.5 12 4l8 4.5v7L12 20l-8-4.5z"></path>
+              <path d="m4 8.5 8 4.5 8-4.5M12 13v7"></path>
+            </svg>
+          </span>
+          <div>
+            <span class="kpi-label">入选产品</span>
+            <strong class="kpi-value" id="kpiProducts">16</strong>
+            <small id="kpiBrands">14 个品牌 · 1 个自有基准</small>
+          </div>
+        </article>
+        <article class="kpi-card">
+          <span class="kpi-icon kpi-icon-gold">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4 17 9 12l3 3 7-8"></path>
+              <path d="M15 7h4v4"></path>
+            </svg>
+          </span>
+          <div>
+            <span class="kpi-label">价格中位数</span>
+            <strong class="kpi-value" id="kpiMedianPrice">€259.99</strong>
+            <small id="kpiMedianNote">16 个产品含税参考价</small>
+          </div>
+        </article>
+        <article class="kpi-card">
+          <span class="kpi-icon kpi-icon-green">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <rect x="4" y="5" width="16" height="14" rx="2"></rect>
+              <circle cx="9" cy="10" r="1.5"></circle>
+              <path d="m5 17 4.5-4 3 3 2-2 4.5 3"></path>
+            </svg>
+          </span>
+          <div>
+            <span class="kpi-label">视觉素材</span>
+            <strong class="kpi-value" id="kpiImages">404</strong>
+            <small id="kpiImageBreakdown">127 张 Listing + 277 张 A+</small>
+          </div>
+        </article>
+        <article class="kpi-card">
+          <span class="kpi-icon kpi-icon-violet">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M6 4h12v16H6z"></path>
+              <path d="M9 8h6M9 12h6M9 16h4"></path>
+            </svg>
+          </span>
+          <div>
+            <span class="kpi-label">图片文字</span>
+            <strong class="kpi-value" id="kpiOcr">357</strong>
+            <small>已识别，可逐图校正</small>
+          </div>
+        </article>
+      </section>
+
+      <section class="catalog-card" id="catalog" aria-labelledby="catalogTitle">
+        <div class="catalog-heading">
+          <div>
+            <p class="section-kicker">PRODUCT MATRIX</p>
+            <h2 id="catalogTitle">产品矩阵</h2>
+          </div>
+          <div class="catalog-heading-actions">
+            <span class="selection-count" id="selectionCount">已选 0 项</span>
+            <button
+              class="button button-secondary"
+              id="compareButton"
+              type="button"
+              disabled
+            >
+              对比所选
+            </button>
+          </div>
+        </div>
+
+        <div class="filter-panel">
+          <label class="search-field" for="searchInput">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="10.8" cy="10.8" r="6.8"></circle>
+              <path d="m16 16 4 4"></path>
+            </svg>
+            <input
+              id="searchInput"
+              type="search"
+              autocomplete="off"
+              placeholder="搜索品牌、型号、ASIN、系统或卖点…"
+            />
+            <kbd>⌘ K</kbd>
+          </label>
+
+          <label class="select-field">
+            <span>品牌</span>
+            <select id="brandFilter">
+              <option value="">全部品牌</option>
+            </select>
+          </label>
+
+          <label class="select-field">
+            <span>价格带</span>
+            <select id="priceFilter">
+              <option value="">全部价格</option>
+              <option value="200-249">€200–249</option>
+              <option value="250-299">€250–299</option>
+              <option value="300-349">€300–349</option>
+              <option value="350-400">€350–400</option>
+            </select>
+          </label>
+
+          <label class="select-field">
+            <span>系统</span>
+            <select id="systemFilter">
+              <option value="">全部系统</option>
+              <option value="Google TV">Google TV</option>
+              <option value="Android TV">Android TV</option>
+              <option value="Linux 智能系统">Linux 智能系统</option>
+              <option value="其他智能系统">其他智能系统</option>
+              <option value="非智能 / 商用">非智能 / 商用</option>
+            </select>
+          </label>
+
+          <label class="select-field select-sort">
+            <span>排序</span>
+            <select id="sortFilter">
+              <option value="rank">自有基准 + BSR 排名</option>
+              <option value="price-asc">价格从低到高</option>
+              <option value="price-desc">价格从高到低</option>
+              <option value="rating-desc">评分从高到低</option>
+              <option value="sales-desc">月销量从高到低</option>
+            </select>
+          </label>
+
+          <button class="reset-button" id="resetFilters" type="button">
+            重置筛选
+          </button>
+        </div>
+
+        <div class="result-strip">
+          <span id="resultSummary">显示 16 / 16 个产品</span>
+          <span class="result-hint">
+            点击行查看与编辑 · 勾选最多 4 个产品进行对比
+          </span>
+        </div>
+
+        <div class="table-wrap">
+          <table class="product-table">
+            <thead>
+              <tr>
+                <th class="check-cell" aria-label="选择"></th>
+                <th>产品</th>
+                <th class="numeric">价格</th>
+                <th>核心规格</th>
+                <th>系统</th>
+                <th class="numeric">市场表现</th>
+                <th class="numeric">BSR</th>
+                <th>素材</th>
+                <th aria-label="操作"></th>
+              </tr>
+            </thead>
+            <tbody id="productRows"></tbody>
+          </table>
+        </div>
+        <div class="product-card-list" id="productCards"></div>
+
+        <div class="empty-state" id="emptyState" hidden>
+          <span class="empty-state-icon">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="11" cy="11" r="6.5"></circle>
+              <path d="m16 16 4 4"></path>
+            </svg>
+          </span>
+          <h3>没有匹配的产品</h3>
+          <p>换一个关键词，或重置价格、品牌与系统筛选。</p>
+          <button class="button button-secondary" id="emptyReset" type="button">
+            重置筛选
+          </button>
+        </div>
+      </section>
+
+      <footer class="page-footer">
+        <div>
+          <strong>Beamer Scout</strong>
+          <span>德国站投影仪竞品内容工作台</span>
+        </div>
+        <p>
+          图片与 Listing 内容仅作内部竞品研究。页面中的亮度为品牌页面口径，
+          ANSI / ISO / 流明并不完全等价。
+        </p>
+      </footer>
+    </main>
+
+    <div class="detail-overlay" id="detailOverlay" hidden>
+      <section
+        class="detail-panel"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="detailTitle"
+      >
+        <header class="detail-header">
+          <button
+            class="icon-button detail-close"
+            id="detailClose"
+            type="button"
+            aria-label="关闭详情"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="m6 6 12 12M18 6 6 18"></path>
+            </svg>
+          </button>
+          <div class="detail-heading-media" id="detailHeadingMedia"></div>
+          <div class="detail-heading-copy">
+            <div class="detail-heading-topline">
+              <span class="rank-chip" id="detailRank"></span>
+              <span class="asin-chip" id="detailAsin"></span>
+              <span class="status-chip" id="detailStatus"></span>
+            </div>
+            <h2 id="detailTitle"></h2>
+            <p id="detailPositioning"></p>
+          </div>
+          <div class="detail-save-area">
+            <span class="save-state" id="saveState">已保存</span>
+            <button class="button button-primary" id="saveProduct" type="button">
+              保存新版本
+            </button>
+          </div>
+        </header>
+
+        <nav class="detail-tabs" aria-label="产品详情导航">
+          <button class="detail-tab active" data-tab="overview" type="button">
+            概览
+          </button>
+          <button class="detail-tab" data-tab="copy" type="button">
+            五点与译文
+          </button>
+          <button class="detail-tab" data-tab="specs" type="button">
+            规格
+          </button>
+          <button class="detail-tab" data-tab="listing" type="button">
+            主副图 <span id="listingCount"></span>
+          </button>
+          <button class="detail-tab" data-tab="aplus" type="button">
+            A+ 图 <span id="aplusCount"></span>
+          </button>
+          <button class="detail-tab" data-tab="versions" type="button">
+            版本记录 <span id="versionCount"></span>
+          </button>
+        </nav>
+
+        <div class="detail-body" id="detailBody"></div>
+        <div class="detail-mobile-save">
+          <span id="mobileSaveState">所有修改已保存</span>
+          <button class="button button-primary" id="saveProductMobile" type="button">
+            保存新版本
+          </button>
+        </div>
+      </section>
+    </div>
+
+    <div class="modal-overlay" id="modalOverlay" hidden>
+      <section
+        class="modal-card"
+        id="modalCard"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modalTitle"
+      >
+        <header class="modal-header">
+          <div>
+            <span class="section-kicker" id="modalKicker"></span>
+            <h2 id="modalTitle"></h2>
+          </div>
+          <button
+            class="icon-button"
+            id="modalClose"
+            type="button"
+            aria-label="关闭弹窗"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="m6 6 12 12M18 6 6 18"></path>
+            </svg>
+          </button>
+        </header>
+        <div class="modal-body" id="modalBody"></div>
+      </section>
+    </div>
+
+    <input id="backupImport" type="file" accept=".json,application/json" hidden />
+    <div class="toast-region" id="toastRegion" aria-live="polite"></div>
+
+    <footer
+      style="
+        max-width: 1440px;
+        margin: 0 auto;
+        padding: 20px 28px 36px;
+        color: #697386;
+        font-size: 12px;
+        line-height: 1.7;
+        text-align: center;
+      "
+    >
+      本页用于公开信息的产品研究与内容结构演示。第三方商标、商品图片和 Listing
+      文案的权利归各自权利人，不代表获得商业再发布授权。
+    </footer>
+
+    <script src="./data/app-data.js"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>
