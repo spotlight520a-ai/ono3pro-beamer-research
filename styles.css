@@ -2629,7 +2629,7 @@ svg {
   background: var(--surface-soft);
   content: counter(image-sequence);
   font-family: var(--font-mono);
-  font-size: 9px;
+  font-size: 11px;
 }
 
 .audit-copy-list {
@@ -2719,7 +2719,7 @@ svg {
   background: #fffbeb;
   content: counter(audit-risk, decimal-leading-zero);
   font-family: var(--font-mono);
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 650;
 }
 
@@ -3730,6 +3730,12 @@ svg {
 
   .audit-stat-strip strong {
     font-size: 17px;
+  }
+
+  .audit-stat-strip small {
+    overflow: visible;
+    text-overflow: clip;
+    white-space: normal;
   }
 
   .audit-tabs {
