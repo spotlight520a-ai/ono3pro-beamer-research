@@ -60,6 +60,13 @@
           </svg>
           导出表格
         </button>
+        <button class="button button-quiet" id="siteVersionsButton" type="button">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 7h10M4 12h8M4 17h6"></path>
+            <path d="M16 5v14m0 0 3-3m-3 3-3-3"></path>
+          </svg>
+          版本记录
+        </button>
         <button class="button button-primary" id="backupButton" type="button">
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <path d="M4 7.5A2.5 2.5 0 0 1 6.5 5h7L19 10.5v7a2 2 0 0 1-2 2H6.5A2.5 2.5 0 0 1 4 17z"></path>
@@ -74,6 +81,9 @@
         </button>
         <button type="button" data-mobile-action="backup">
           <span>备份与恢复</span><small>版本记录与已上传图片</small>
+        </button>
+        <button type="button" data-mobile-action="site-versions">
+          <span>全站版本记录</span><small>恢复研究页与全部产品资料</small>
         </button>
       </div>
     </header>
@@ -163,7 +173,7 @@
         <div class="audit-brief-copy">
           <p class="section-kicker">ONO3PRO · 改版判断</p>
           <h2 id="auditBriefTitle">图量已经够用，卖点还差一个购买理由</h2>
-          <p>
+          <p id="auditBriefSummary">
             无需电视棒、1080P、自动校正与便携已变成行业入场券。更值得改的是占住
             “客厅常驻、随手换房间”的生活选择，再用散热清洁、画质和服务证明高价。
           </p>
@@ -178,7 +188,7 @@
             </button>
           </div>
         </div>
-        <div class="audit-brief-stats" aria-label="改版分析关键数据">
+        <div class="audit-brief-stats" id="auditBriefStats" aria-label="改版分析关键数据">
           <div>
             <span>Listing 图片</span>
             <strong>8 / 8</strong>

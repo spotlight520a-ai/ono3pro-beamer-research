@@ -5,9 +5,16 @@
   const AUDIT = window.BSR_AUDIT;
   const STORAGE_KEY = "beamer-scout-state-v1";
   const DRAFT_KEY = "beamer-scout-draft-v1";
-  const SCHEMA_VERSION = 1;
+  const AUDIT_DRAFT_KEY = "beamer-scout-audit-draft-v1";
+  const SCHEMA_VERSION = 2;
   const MAX_COMPARE = 4;
   const MAX_VERSIONS = 160;
+  const MAX_SITE_VERSIONS = 120;
+  const DEFAULT_HOME_BRIEF = {
+    title: "图量已经够用，卖点还差一个购买理由",
+    summary:
+      "无需电视棒、1080P、自动校正与便携已变成行业入场券。更值得改的是占住“客厅常驻、随手换房间”的生活选择，再用散热清洁、画质和服务证明高价。",
+  };
 
   if (!DATA || !Array.isArray(DATA.products)) {
     document.body.innerHTML =
@@ -51,6 +58,8 @@
     schema: SCHEMA_VERSION,
     working: {},
     versions: [],
+    auditWorking: null,
+    siteVersions: [],
     imageAssets: {},
     updatedAt: null,
   });
@@ -66,6 +75,13 @@
             ? parsed.working
             : {},
         versions: Array.isArray(parsed.versions) ? parsed.versions : [],
+        auditWorking:
+          parsed.auditWorking && typeof parsed.auditWorking === "object"
+            ? parsed.auditWorking
+            : null,
+        siteVersions: Array.isArray(parsed.siteVersions)
+          ? parsed.siteVersions
+          : [],
         imageAssets:
           parsed.imageAssets && typeof parsed.imageAssets === "object"
             ? sanitizeImageAssets(parsed.imageAssets)
@@ -90,13 +106,12 @@
 
   let state = loadState();
   const baseByAsin = new Map(DATA.products.map((product) => [product.asin, product]));
-  const promotionsByAsin = new Map(
-    (AUDIT?.promotions?.rows || []).map((row) => [
-      String(row.asin).toUpperCase(),
-      row,
-    ]),
-  );
-  const priceSnapshot = AUDIT?.promotions?.asOf || "时间未提供";
+  let auditDraft = normalizeAudit(state.auditWorking);
+  let auditDirty = false;
+  const auditUi = {
+    tab: "overview",
+    editMode: false,
+  };
   const ui = {
     query: "",
     brand: "",
@@ -112,6 +127,54 @@
     dirty: false,
     returnFocus: null,
   };
+
+  function deepMerge(base, override) {
+    if (Array.isArray(base)) {
+      return Array.isArray(override) ? clone(override) : clone(base);
+    }
+    if (base && typeof base === "object") {
+      const output = clone(base);
+      if (!override || typeof override !== "object" || Array.isArray(override)) {
+        return output;
+      }
+      for (const [key, value] of Object.entries(override)) {
+        output[key] =
+          key in output ? deepMerge(output[key], value) : clone(value);
+      }
+      return output;
+    }
+    return override === undefined ? base : override;
+  }
+
+  function normalizeAudit(source) {
+    if (!AUDIT) return null;
+    const normalized = deepMerge(clone(AUDIT), source || {});
+    normalized.homeBriefTitle =
+      typeof normalized.homeBriefTitle === "string"
+        ? normalized.homeBriefTitle
+        : DEFAULT_HOME_BRIEF.title;
+    normalized.homeBriefSummary =
+      typeof normalized.homeBriefSummary === "string"
+        ? normalized.homeBriefSummary
+        : DEFAULT_HOME_BRIEF.summary;
+    return normalized;
+  }
+
+  function getAtPath(object, path) {
+    return String(path)
+      .split(".")
+      .reduce((value, key) => value?.[key], object);
+  }
+
+  function setAtPath(object, path, value) {
+    const keys = String(path).split(".");
+    const last = keys.pop();
+    const target = keys.reduce((current, key) => {
+      if (!current[key] || typeof current[key] !== "object") current[key] = {};
+      return current[key];
+    }, object);
+    target[last] = value;
+  }
 
   function deepEqual(a, b) {
     return JSON.stringify(a) === JSON.stringify(b);
@@ -143,7 +206,12 @@
   }
 
   function promotionFor(product) {
-    return promotionsByAsin.get(String(product.asin).toUpperCase()) || null;
+    const rows = auditDraft?.promotions?.rows || AUDIT?.promotions?.rows || [];
+    return (
+      rows.find(
+        (row) => String(row.asin).toUpperCase() === String(product.asin).toUpperCase(),
+      ) || null
+    );
   }
 
   function currentPriceFor(product) {
@@ -173,6 +241,10 @@
   }
 
   function specOf(product, label, working = null) {
+    const override = working?.specOverrides?.[label];
+    if (typeof override === "string" && override.trim()) {
+      return cleanSpecValue(override);
+    }
     return cleanSpecValue(
       product.keySpecs.find((item) => item.label === label)?.value || "—",
     );
@@ -248,6 +320,7 @@
           original: item.original || "",
         }),
       ),
+      specOverrides: {},
       imageMeta: {
         listing: (product.images.listing || []).map((image) => ({
           id: `base-listing-${image.index}`,
@@ -298,6 +371,10 @@
     working.spreadsheetBullets = Array.isArray(working.spreadsheetBullets)
       ? working.spreadsheetBullets
       : base.spreadsheetBullets;
+    working.specOverrides =
+      working.specOverrides && typeof working.specOverrides === "object"
+        ? working.specOverrides
+        : {};
     working.imageMeta = working.imageMeta || {};
 
     for (const kind of ["listing", "aplus"]) {
@@ -480,13 +557,36 @@
     $("#kpiBrands").textContent = `${DATA.meta.brands} 个品牌 · 1 个自有基准`;
     $("#kpiMedianPrice").textContent = priceFormat.format(median);
     $("#kpiMedianNote").textContent =
-      `${prices.length} 个竞品当前价 · ${priceSnapshot.slice(0, 16)}`;
+      `${prices.length} 个竞品当前价 · ${String(auditDraft?.promotions?.asOf || AUDIT?.promotions?.asOf || "时间未提供").slice(0, 16)}`;
     $("#kpiImages").textContent = numberFormat.format(
       DATA.meta.listingImages + DATA.meta.aplusImages,
     );
     $("#kpiImageBreakdown").textContent =
       `${DATA.meta.listingImages} 张 Listing + ${DATA.meta.aplusImages} 张 A+`;
     $("#kpiOcr").textContent = numberFormat.format(DATA.meta.ocrRecognized);
+    renderAuditBrief();
+  }
+
+  function renderAuditBrief() {
+    if (!auditDraft) return;
+    const title = $("#auditBriefTitle");
+    const summary = $("#auditBriefSummary");
+    const stats = $("#auditBriefStats");
+    if (title) title.textContent = auditDraft.homeBriefTitle;
+    if (summary) summary.textContent = auditDraft.homeBriefSummary;
+    if (stats) {
+      stats.innerHTML = auditDraft.stats
+        .map(
+          (stat) => `
+            <div>
+              <span>${escapeHTML(stat.label)}</span>
+              <strong>${escapeHTML(stat.value)}</strong>
+              <small>${escapeHTML(stat.note)}</small>
+            </div>
+          `,
+        )
+        .join("");
+    }
   }
 
   function productRowTemplate(entry) {
@@ -502,8 +602,8 @@
     const rating = product.live?.rating || product.metrics?.rating || "—";
     const reviews = product.live?.reviewsCount || product.metrics?.reviews || "—";
     const specs = [
-      ["亮度", specOf(product, "亮度")],
-      ["分辨率", specOf(product, "原生分辨率")],
+      ["亮度", specOf(product, "亮度", working)],
+      ["分辨率", specOf(product, "原生分辨率", working)],
     ];
     const visibleImages = imagesFor(product, working, "listing").filter(
       (image) => !image.hidden,
@@ -663,6 +763,7 @@
     $("#emptyReset").addEventListener("click", resetFilters);
     $("#compareButton").addEventListener("click", openCompareModal);
     $("#exportTableButton").addEventListener("click", exportVisibleTable);
+    $("#siteVersionsButton").addEventListener("click", openSiteVersionsModal);
     $("#backupButton").addEventListener("click", openBackupModal);
     $("#backupImport").addEventListener("change", importBackup);
     $("#mobileMenuButton").addEventListener("click", () => {
@@ -677,6 +778,7 @@
       $("#mobileMenuButton").setAttribute("aria-expanded", "false");
       if (button.dataset.mobileAction === "export-table") exportVisibleTable();
       if (button.dataset.mobileAction === "backup") openBackupModal();
+      if (button.dataset.mobileAction === "site-versions") openSiteVersionsModal();
     });
 
     $("#productRows").addEventListener("click", handleCatalogClick);
@@ -807,7 +909,7 @@
         : detail.tab === "copy"
           ? copyTemplate(product, working)
           : detail.tab === "specs"
-            ? specsTemplate(product)
+            ? specsTemplate(product, working)
             : detail.tab === "listing"
               ? galleryTemplate(product, working, "listing")
               : detail.tab === "aplus"
@@ -1053,7 +1155,7 @@
     `;
   }
 
-  function specsTemplate(product) {
+  function specsTemplate(product, working) {
     return `
       <section class="detail-section">
         <div class="section-heading">
@@ -1063,12 +1165,22 @@
           </div>
         </div>
         <table class="spec-table">
-          <thead><tr><th>字段</th><th>页面值</th></tr></thead>
+          <thead><tr><th>字段</th><th>整理后的页面值（可编辑）</th></tr></thead>
           <tbody>
             ${product.keySpecs
               .map(
                 (spec) => `
-                  <tr><td>${escapeHTML(spec.label)}</td><td>${escapeHTML(cleanSpecValue(spec.value))}</td></tr>
+                  <tr>
+                    <td>${escapeHTML(spec.label)}</td>
+                    <td>
+                      <input
+                        class="text-input spec-edit-input"
+                        data-edit-spec="${escapeAttr(spec.label)}"
+                        value="${escapeAttr(specOf(product, spec.label, working))}"
+                        aria-label="${escapeAttr(spec.label)}整理值"
+                      />
+                    </td>
+                  </tr>
                 `,
               )
               .join("")}
@@ -1079,7 +1191,7 @@
         <div class="section-heading">
           <div>
             <h3>Amazon 原始详情</h3>
-            <p>保留当前页面返回的全部产品参数，方便复核字段映射。</p>
+            <p>采集来源保持只读，方便复核字段映射；需要修正时改上方整理值。</p>
           </div>
         </div>
         <div class="raw-spec-wrap">
@@ -1292,6 +1404,9 @@
       if (event.target === $("#modalOverlay")) closeModal();
     });
     $("#modalBody").addEventListener("click", handleModalClick);
+    $("#modalBody").addEventListener("input", handleSiteAuditInput);
+    $("#modalBody").addEventListener("keydown", handleSiteAuditKeydown);
+    $("#modalBody").addEventListener("paste", handleSiteAuditPaste);
 
     document.addEventListener("keydown", (event) => {
       const command = event.ctrlKey || event.metaKey;
@@ -1300,9 +1415,19 @@
         $("#searchInput").focus();
         $("#searchInput").select();
       }
-      if (command && event.key.toLowerCase() === "s" && detail.asin) {
-        event.preventDefault();
-        commitVersion();
+      if (command && event.key.toLowerCase() === "s") {
+        const auditOpen =
+          !$("#modalOverlay").hidden &&
+          ["modal-audit", "modal-site-versions"].some((className) =>
+            $("#modalCard").classList.contains(className),
+          );
+        if (auditOpen) {
+          event.preventDefault();
+          commitSiteVersion();
+        } else if (detail.asin) {
+          event.preventDefault();
+          commitVersion();
+        }
       }
       if (event.key === "Escape") {
         if (!$("#modalOverlay").hidden) closeModal();
@@ -1311,8 +1436,9 @@
     });
 
     window.addEventListener("beforeunload", (event) => {
-      if (!detail.dirty) return;
-      saveDraft();
+      if (!detail.dirty && !auditDirty) return;
+      if (detail.dirty) saveDraft();
+      if (auditDirty) saveAuditDraft();
       event.preventDefault();
       event.returnValue = "";
     });
@@ -1372,6 +1498,11 @@
     if (target.dataset.editBulletLabel !== undefined) {
       const index = Number(target.dataset.editBulletLabel);
       detail.working.listingBullets[index].label = target.value;
+      changed = true;
+    }
+
+    if (target.dataset.editSpec) {
+      detail.working.specOverrides[target.dataset.editSpec] = target.value;
       changed = true;
     }
 
@@ -1705,6 +1836,8 @@
       fields.push("Listing 原文");
     if (!deepEqual(before.spreadsheetBullets, after.spreadsheetBullets))
       fields.push("原表补充原文");
+    if (!deepEqual(before.specOverrides, after.specOverrides))
+      fields.push("整理规格");
     if (!deepEqual(before.imageMeta, after.imageMeta)) fields.push("图片信息");
     if (!deepEqual(before.customImages, after.customImages))
       fields.push("图片增删");
@@ -1783,9 +1916,11 @@
 
   function updateStorageStatus() {
     const savedCount = Object.keys(state.working).length;
-    $("#storageStatus").textContent = savedCount
-      ? `已保存 ${savedCount} 个产品的本机修改`
-      : "仅保存在本机浏览器";
+    const siteVersionCount = state.siteVersions.length;
+    $("#storageStatus").textContent =
+      savedCount || siteVersionCount
+        ? `本机已保存 ${savedCount} 个产品 · ${siteVersionCount} 个全站版本`
+        : "仅保存在本机浏览器";
   }
 
   function showImagePreview(image, kind) {
@@ -1821,9 +1956,9 @@
             : "无现金折后价",
       ],
       ["品牌 / 型号", (p) => `${p.brand} · ${modelOf(p)}`],
-      ["亮度（页面口径）", (p) => specOf(p, "亮度")],
-      ["原生分辨率", (p) => specOf(p, "原生分辨率")],
-      ["显示技术", (p) => specOf(p, "显示技术")],
+      ["亮度（页面口径）", (p, w) => specOf(p, "亮度", w)],
+      ["原生分辨率", (p, w) => specOf(p, "原生分辨率", w)],
+      ["显示技术", (p, w) => specOf(p, "显示技术", w)],
       ["智能系统", (p) => systemOf(p)],
       ["评分 / 评价数", (p) => `★ ${p.live?.rating || "—"} / ${numberFormat.format(p.live?.reviewsCount || 0)}`],
       [
@@ -1834,8 +1969,8 @@
             : "未提供",
       ],
       ["BSR", (p) => `#${p.metrics?.subcategoryBsr || p.rank} / 大类 ${p.metrics?.majorBsr || "—"}`],
-      ["重量", (p) => specOf(p, "重量")],
-      ["尺寸", (p) => specOf(p, "机身尺寸")],
+      ["重量", (p, w) => specOf(p, "重量", w)],
+      ["尺寸", (p, w) => specOf(p, "机身尺寸", w)],
       ["核心卖点", (p, w) => w.content.highlights.slice(0, 3).join("；")],
     ];
     const table = `
@@ -1897,6 +2032,161 @@
     `;
   }
 
+  function auditEditable(
+    value,
+    path,
+    { tag = "span", className = "", multiline = false } = {},
+  ) {
+    const editing = auditUi.editMode;
+    return `<${tag}
+      class="${`audit-editable ${className} ${editing ? "is-editing" : ""}`.trim()}"
+      ${editing ? 'contenteditable="true" spellcheck="false"' : ""}
+      data-audit-path="${escapeAttr(path)}"
+      data-audit-multiline="${multiline ? "true" : "false"}"
+      ${editing ? 'title="点击修改"' : ""}
+    >${escapeHTML(value)}</${tag}>`;
+  }
+
+  function auditNumberInput(value, path, className = "") {
+    if (!auditUi.editMode) {
+      return value === "" || value === null || value === undefined
+        ? "—"
+        : priceFormat.format(Number(value));
+    }
+    return `<input
+      class="${`audit-number-input ${className}`.trim()}"
+      type="number"
+      inputmode="decimal"
+      step="0.01"
+      value="${escapeAttr(value)}"
+      data-audit-path="${escapeAttr(path)}"
+      data-audit-number="true"
+      aria-label="修改数字"
+    />`;
+  }
+
+  function auditAssetUrl(item) {
+    if (item?.assetId && state.imageAssets[item.assetId]) {
+      return state.imageAssets[item.assetId];
+    }
+    return item?.file ? `./${item.file}` : "";
+  }
+
+  function auditVersionNumber(version) {
+    const ordered = [...state.siteVersions].sort((a, b) =>
+      String(a.at).localeCompare(String(b.at)),
+    );
+    return (
+      ordered.findIndex((item) => item.id === version.id) + 1
+    );
+  }
+
+  function auditDiff(before, after) {
+    const fields = [];
+    if (before.homeBriefTitle !== after.homeBriefTitle) fields.push("首页判断标题");
+    if (before.homeBriefSummary !== after.homeBriefSummary) fields.push("首页判断摘要");
+    if (before.summary !== after.summary) fields.push("研究结论");
+    if (!deepEqual(before.stats, after.stats)) fields.push("首页指标");
+    if (!deepEqual(before.findings, after.findings)) fields.push("改版发现");
+    if (!deepEqual(before.comparison, after.comparison)) fields.push("卖点对比");
+    if (!deepEqual(before.imageOrder, after.imageOrder)) fields.push("图片顺序");
+    if (!deepEqual(before.imageExamples, after.imageExamples))
+      fields.push("建议图");
+    if (!deepEqual(before.competitorImageReferences, after.competitorImageReferences))
+      fields.push("竞品图片参考");
+    if (!deepEqual(before.marketResearch, after.marketResearch))
+      fields.push("市场定位");
+    if (!deepEqual(before.promotions, after.promotions))
+      fields.push("价格促销");
+    if (!deepEqual(before.listing, after.listing)) fields.push("Listing 诊断");
+    if (!deepEqual(before.aplus, after.aplus)) fields.push("A+ 诊断");
+    if (!deepEqual(before.fivePoints, after.fivePoints)) fields.push("五点改写");
+    if (!deepEqual(before.risks, after.risks)) fields.push("核实风险");
+    return fields;
+  }
+
+  function saveAuditDraft() {
+    try {
+      localStorage.setItem(
+        AUDIT_DRAFT_KEY,
+        JSON.stringify({
+          audit: auditDraft,
+          at: new Date().toISOString(),
+        }),
+      );
+    } catch (error) {
+      console.warn("Audit draft save failed", error);
+    }
+  }
+
+  function restoreAuditDraft() {
+    try {
+      const draft = JSON.parse(localStorage.getItem(AUDIT_DRAFT_KEY) || "null");
+      const latestVersion = [...state.siteVersions]
+        .sort((a, b) => String(b.at).localeCompare(String(a.at)))[0];
+      if (
+        draft?.audit &&
+        (!latestVersion || String(draft.at) > String(latestVersion.at))
+      ) {
+        auditDraft = normalizeAudit(draft.audit);
+        auditDirty = true;
+        showToast("已恢复研究页上次未保存的草稿");
+      }
+    } catch (error) {
+      console.warn("Failed to restore audit draft", error);
+    }
+  }
+
+  function markAuditDirty() {
+    auditDirty = true;
+    saveAuditDraft();
+    updateAuditSaveState();
+  }
+
+  function updateAuditSaveState() {
+    const stateNode = $("#auditSaveState");
+    if (stateNode) {
+      stateNode.textContent = auditDirty ? "有未保存修改" : "已保存";
+      stateNode.classList.toggle("is-dirty", auditDirty);
+    }
+  }
+
+  function auditControlsTemplate() {
+    return `
+      <div class="audit-edit-bar">
+        <div class="audit-edit-status">
+          <span class="sync-dot" aria-hidden="true"></span>
+          <strong>全篇可编辑</strong>
+          <span id="auditSaveState" class="${auditDirty ? "is-dirty" : ""}">${auditDirty ? "有未保存修改" : "已保存"}</span>
+        </div>
+        <div class="audit-edit-actions">
+          <button class="button ${auditUi.editMode ? "button-secondary" : "button-quiet"} button-small" type="button" data-action="toggle-audit-edit">
+            ${auditUi.editMode ? "退出编辑" : "编辑全篇"}
+          </button>
+          ${
+            auditUi.editMode
+              ? '<button class="button button-primary button-small" type="button" data-action="save-site-version">保存全站版本</button>'
+              : ""
+          }
+          <button class="button button-quiet button-small" type="button" data-action="open-site-versions">
+            版本记录 ${state.siteVersions.length}
+          </button>
+        </div>
+      </div>
+      ${
+        auditUi.editMode
+          ? `<div class="audit-home-editor">
+              <span>首页“改版判断”</span>
+              <div>
+                <strong>${auditEditable(auditDraft.homeBriefTitle, "homeBriefTitle")}</strong>
+                <p>${auditEditable(auditDraft.homeBriefSummary, "homeBriefSummary", { multiline: true })}</p>
+              </div>
+            </div>`
+          : ""
+      }
+    `;
+  }
+
   function auditListingTable(product, working) {
     const images = imagesFor(product, working, "listing");
     return `
@@ -1912,8 +2202,8 @@
             </tr>
           </thead>
           <tbody>
-            ${AUDIT.listing
-              .map((item) => {
+            ${auditDraft.listing
+              .map((item, index) => {
                 const image = images.find((candidate) => candidate.index === item.index);
                 return `
                   <tr>
@@ -1921,10 +2211,10 @@
                       ${image ? auditImageThumb(image, `Listing 图 ${item.index}`) : ""}
                       <strong>Listing ${item.index}</strong>
                     </td>
-                    <td>${escapeHTML(item.current)}</td>
-                    <td>${escapeHTML(item.issue)}</td>
-                    <td>${escapeHTML(item.action)}</td>
-                    <td><span class="audit-status ${item.priority === "高" || item.priority === "先核实" ? "is-warning" : ""}">${escapeHTML(item.priority)}</span></td>
+                    <td>${auditEditable(item.current, `listing.${index}.current`, { multiline: true })}</td>
+                    <td>${auditEditable(item.issue, `listing.${index}.issue`, { multiline: true })}</td>
+                    <td>${auditEditable(item.action, `listing.${index}.action`, { multiline: true })}</td>
+                    <td><span class="audit-status ${item.priority === "高" || item.priority === "先核实" ? "is-warning" : ""}">${auditEditable(item.priority, `listing.${index}.priority`)}</span></td>
                   </tr>
                 `;
               })
@@ -1949,8 +2239,8 @@
             </tr>
           </thead>
           <tbody>
-            ${AUDIT.aplus
-              .map((item) => {
+            ${auditDraft.aplus
+              .map((item, index) => {
                 const image = images.find((candidate) => candidate.index === item.index);
                 return `
                   <tr>
@@ -1958,9 +2248,9 @@
                       ${image ? auditImageThumb(image, `A+ 图 ${item.index}`) : ""}
                       <strong>A+ ${item.index}</strong>
                     </td>
-                    <td>${escapeHTML(item.current)}</td>
-                    <td><span class="audit-status ${/删除|替换|拆分/.test(item.decision) ? "is-warning" : ""}">${escapeHTML(item.decision)}</span></td>
-                    <td>${escapeHTML(item.reason)}</td>
+                    <td>${auditEditable(item.current, `aplus.${index}.current`, { multiline: true })}</td>
+                    <td><span class="audit-status ${/删除|替换|拆分/.test(item.decision) ? "is-warning" : ""}">${auditEditable(item.decision, `aplus.${index}.decision`)}</span></td>
+                    <td>${auditEditable(item.reason, `aplus.${index}.reason`, { multiline: true })}</td>
                   </tr>
                 `;
               })
@@ -1972,23 +2262,23 @@
   }
 
   function auditMarketPanel() {
-    const market = AUDIT.marketResearch;
+    const market = auditDraft.marketResearch;
     return `
       <section class="audit-panel" data-audit-panel="market" role="tabpanel" hidden>
         <div class="market-lead">
           <div>
-            <p class="section-kicker">${escapeHTML(market.positioning.label)}</p>
-            <h3>市场机会不在“功能更多”，而在“结果更确定”</h3>
-            <p>${escapeHTML(market.summary)}</p>
+            <p class="section-kicker">${auditEditable(market.positioning.label, "marketResearch.positioning.label")}</p>
+            <h3>${auditEditable(auditDraft.marketHeadline || "市场机会不在“功能更多”，而在“结果更确定”", "marketHeadline")}</h3>
+            <p>${auditEditable(market.summary, "marketResearch.summary", { multiline: true })}</p>
           </div>
           <div class="market-stat-grid">
             ${market.stats
               .map(
-                (stat) => `
+                (stat, index) => `
                   <div>
-                    <span>${escapeHTML(stat.label)}</span>
-                    <strong>${escapeHTML(stat.value)}</strong>
-                    <small>${escapeHTML(stat.note)}</small>
+                    <span>${auditEditable(stat.label, `marketResearch.stats.${index}.label`)}</span>
+                    <strong>${auditEditable(stat.value, `marketResearch.stats.${index}.value`)}</strong>
+                    <small>${auditEditable(stat.note, `marketResearch.stats.${index}.note`, { multiline: true })}</small>
                   </div>
                 `,
               )
@@ -2000,29 +2290,29 @@
           <div class="market-differentiation-heading">
             <div>
               <span class="section-kicker">DIFFERENTIATION REALITY</span>
-              <h3>${escapeHTML(market.differentiation.headline)}</h3>
+              <h3>${auditEditable(market.differentiation.headline, "marketResearch.differentiation.headline")}</h3>
             </div>
-            <p>${escapeHTML(market.differentiation.read)}</p>
+            <p>${auditEditable(market.differentiation.read, "marketResearch.differentiation.read", { multiline: true })}</p>
           </div>
           <div class="market-differentiation-grid">
             ${market.differentiation.rows
               .map(
-                (row) => `
+                (row, index) => `
                   <article>
-                    <span>${escapeHTML(row.label)}</span>
-                    <h4>${escapeHTML(row.title)}</h4>
-                    <p>${escapeHTML(row.body)}</p>
+                    <span>${auditEditable(row.label, `marketResearch.differentiation.rows.${index}.label`)}</span>
+                    <h4>${auditEditable(row.title, `marketResearch.differentiation.rows.${index}.title`)}</h4>
+                    <p>${auditEditable(row.body, `marketResearch.differentiation.rows.${index}.body`, { multiline: true })}</p>
                   </article>
                 `,
               )
               .join("")}
           </div>
-          <p class="market-differentiation-story">${escapeHTML(market.differentiation.narrative)}</p>
+          <p class="market-differentiation-story">${auditEditable(market.differentiation.narrative, "marketResearch.differentiation.narrative", { multiline: true })}</p>
           <div class="market-differentiation-boundaries">
             <strong>发布前不要这样写</strong>
             <ul>
               ${market.differentiation.notClaims
-                .map((item) => `<li>${escapeHTML(item)}</li>`)
+                .map((item, index) => `<li>${auditEditable(item, `marketResearch.differentiation.notClaims.${index}`, { multiline: true })}</li>`)
                 .join("")}
             </ul>
           </div>
@@ -2031,24 +2321,24 @@
         <div class="market-positioning">
           <div class="market-positioning-main">
             <span>建议定位</span>
-            <p>${escapeHTML(market.positioning.statement)}</p>
+            <p>${auditEditable(market.positioning.statement, "marketResearch.positioning.statement", { multiline: true })}</p>
           </div>
           <dl>
             <div>
               <dt>核心人群</dt>
-              <dd>${escapeHTML(market.positioning.audience)}</dd>
+              <dd>${auditEditable(market.positioning.audience, "marketResearch.positioning.audience", { multiline: true })}</dd>
             </div>
             <div>
               <dt>用户承诺</dt>
-              <dd>${escapeHTML(market.positioning.promise)}</dd>
+              <dd>${auditEditable(market.positioning.promise, "marketResearch.positioning.promise", { multiline: true })}</dd>
             </div>
             <div>
               <dt>必须证明</dt>
-              <dd>${escapeHTML(market.positioning.proof)}</dd>
+              <dd>${auditEditable(market.positioning.proof, "marketResearch.positioning.proof", { multiline: true })}</dd>
             </div>
             <div>
               <dt>不要这样定位</dt>
-              <dd>${escapeHTML(market.positioning.avoid)}</dd>
+              <dd>${auditEditable(market.positioning.avoid, "marketResearch.positioning.avoid", { multiline: true })}</dd>
             </div>
           </dl>
         </div>
@@ -2058,7 +2348,7 @@
             <span class="section-kicker">PRICE POSITION</span>
             <h3>价格已经进入竞争判断</h3>
           </div>
-          <p>${escapeHTML(market.priceRead)}</p>
+          <p>${auditEditable(market.priceRead, "marketResearch.priceRead", { multiline: true })}</p>
         </article>
 
         <div class="audit-panel-heading market-section-heading">
@@ -2070,15 +2360,15 @@
         <div class="market-breakthrough-grid">
           ${market.breakthroughs
             .map(
-              (item) => `
+              (item, index) => `
                 <article class="market-breakthrough">
-                  <span class="market-breakthrough-index">${escapeHTML(item.index)}</span>
-                  <h4>${escapeHTML(item.title)}</h4>
+                  <span class="market-breakthrough-index">${auditEditable(item.index, `marketResearch.breakthroughs.${index}.index`)}</span>
+                  <h4>${auditEditable(item.title, `marketResearch.breakthroughs.${index}.title`)}</h4>
                   <dl>
-                    <div><dt>用户问题</dt><dd>${escapeHTML(item.problem)}</dd></div>
-                    <div><dt>建议主张</dt><dd>${escapeHTML(item.claim)}</dd></div>
-                    <div><dt>证据要求</dt><dd>${escapeHTML(item.proof)}</dd></div>
-                    <div><dt>为什么是 ONO3Pro</dt><dd>${escapeHTML(item.why)}</dd></div>
+                    <div><dt>用户问题</dt><dd>${auditEditable(item.problem, `marketResearch.breakthroughs.${index}.problem`, { multiline: true })}</dd></div>
+                    <div><dt>建议主张</dt><dd>${auditEditable(item.claim, `marketResearch.breakthroughs.${index}.claim`, { multiline: true })}</dd></div>
+                    <div><dt>证据要求</dt><dd>${auditEditable(item.proof, `marketResearch.breakthroughs.${index}.proof`, { multiline: true })}</dd></div>
+                    <div><dt>为什么是 ONO3Pro</dt><dd>${auditEditable(item.why, `marketResearch.breakthroughs.${index}.why`, { multiline: true })}</dd></div>
                   </dl>
                 </article>
               `,
@@ -2090,7 +2380,7 @@
           <section class="market-subcard">
             <h3>不能再当独占卖点</h3>
             <ul class="market-plain-list">
-              ${market.nonBreakthroughs.map((item) => `<li>${escapeHTML(item)}</li>`).join("")}
+              ${market.nonBreakthroughs.map((item, index) => `<li>${auditEditable(item, `marketResearch.nonBreakthroughs.${index}`, { multiline: true })}</li>`).join("")}
             </ul>
           </section>
           <section class="market-subcard">
@@ -2098,11 +2388,11 @@
             <div class="market-tier-list">
               ${market.priceTiers
                 .map(
-                  (tier) => `
+                  (tier, index) => `
                     <div>
-                      <strong>${escapeHTML(tier.range)}</strong>
-                      <span>${escapeHTML(tier.count)}</span>
-                      <p>${escapeHTML(tier.role)}</p>
+                      <strong>${auditEditable(tier.range, `marketResearch.priceTiers.${index}.range`)}</strong>
+                      <span>${auditEditable(tier.count, `marketResearch.priceTiers.${index}.count`)}</span>
+                      <p>${auditEditable(tier.role, `marketResearch.priceTiers.${index}.role`, { multiline: true })}</p>
                     </div>
                   `,
                 )
@@ -2130,12 +2420,12 @@
             <tbody>
               ${market.competitorMoves
                 .map(
-                  (row) => `
+                  (row, index) => `
                     <tr>
-                      <td><strong>${escapeHTML(row.pattern)}</strong></td>
-                      <td>${escapeHTML(row.examples)}</td>
-                      <td>${escapeHTML(row.expression)}</td>
-                      <td>${escapeHTML(row.implication)}</td>
+                      <td><strong>${auditEditable(row.pattern, `marketResearch.competitorMoves.${index}.pattern`)}</strong></td>
+                      <td>${auditEditable(row.examples, `marketResearch.competitorMoves.${index}.examples`, { multiline: true })}</td>
+                      <td>${auditEditable(row.expression, `marketResearch.competitorMoves.${index}.expression`, { multiline: true })}</td>
+                      <td>${auditEditable(row.implication, `marketResearch.competitorMoves.${index}.implication`, { multiline: true })}</td>
                     </tr>
                   `,
                 )
@@ -2148,19 +2438,19 @@
   }
 
   function auditPromotionTable() {
-    const promotion = AUDIT.promotions;
+    const promotion = auditDraft.promotions;
     const rows = [...promotion.rows].sort((a, b) => a.bdPrice - b.bdPrice);
     return `
       <section class="audit-panel" data-audit-panel="promotions" role="tabpanel" hidden>
         <div class="audit-panel-heading">
           <div>
             <h3>当前售价与促销估算</h3>
-            <p>${escapeHTML(promotion.summary)}</p>
+            <p>${auditEditable(promotion.summary, "promotions.summary", { multiline: true })}</p>
           </div>
         </div>
         <div class="promotion-note">
-          <strong>${escapeHTML(promotion.asOf)}</strong>
-          <span>${escapeHTML(promotion.note)}</span>
+          <strong>${auditEditable(promotion.asOf, "promotions.asOf")}</strong>
+          <span>${auditEditable(promotion.note, "promotions.note", { multiline: true })}</span>
         </div>
         <div class="audit-table-wrap">
           <table class="audit-table promotion-table">
@@ -2176,24 +2466,25 @@
             </thead>
             <tbody>
               ${rows
-                .map(
-                  (row) => `
+                .map((row) => {
+                  const sourceIndex = promotion.rows.indexOf(row);
+                  return `
                     <tr class="${row.own ? "is-own" : ""}">
                       <td>
-                        <strong>${escapeHTML(row.brand)} ${escapeHTML(row.model)}</strong>
-                        <a href="https://www.amazon.de/dp/${encodeURIComponent(row.asin)}" target="_blank" rel="noopener noreferrer">${escapeHTML(row.asin)}</a>
+                        <strong>${auditEditable(row.brand, `promotions.rows.${sourceIndex}.brand`)} ${auditEditable(row.model, `promotions.rows.${sourceIndex}.model`)}</strong>
+                        <a href="https://www.amazon.de/dp/${encodeURIComponent(row.asin)}" target="_blank" rel="noopener noreferrer">${auditEditable(row.asin, `promotions.rows.${sourceIndex}.asin`)}</a>
                       </td>
-                      <td class="promotion-number">${priceFormat.format(row.listPrice)}</td>
-                      <td class="promotion-number is-current">${priceFormat.format(row.bdPrice)}</td>
-                      <td>${escapeHTML(row.coupon)}</td>
-                      <td class="promotion-number ${row.promoPrice && row.promoPrice < row.bdPrice ? "is-promo" : ""}">${row.promoPrice ? priceFormat.format(row.promoPrice) : "—"}</td>
+                      <td class="promotion-number">${auditNumberInput(row.listPrice, `promotions.rows.${sourceIndex}.listPrice`)}</td>
+                      <td class="promotion-number is-current">${auditNumberInput(row.bdPrice, `promotions.rows.${sourceIndex}.bdPrice`)}</td>
+                      <td>${auditEditable(row.coupon, `promotions.rows.${sourceIndex}.coupon`, { multiline: true })}</td>
+                      <td class="promotion-number ${row.promoPrice && row.promoPrice < row.bdPrice ? "is-promo" : ""}">${auditNumberInput(row.promoPrice ?? "", `promotions.rows.${sourceIndex}.promoPrice`)}</td>
                       <td>
-                        <span class="audit-status ${/条件|赠品/.test(row.type) ? "is-warning" : ""}">${escapeHTML(row.type)}</span>
-                        <small>${escapeHTML(row.condition)}</small>
+                        <span class="audit-status ${/条件|赠品/.test(row.type) ? "is-warning" : ""}">${auditEditable(row.type, `promotions.rows.${sourceIndex}.type`)}</span>
+                        <small>${auditEditable(row.condition, `promotions.rows.${sourceIndex}.condition`, { multiline: true })}</small>
                       </td>
                     </tr>
-                  `,
-                )
+                  `;
+                })
                 .join("")}
             </tbody>
           </table>
@@ -2203,20 +2494,29 @@
   }
 
   function auditModalTemplate() {
-    const product = baseByAsin.get(AUDIT.productAsin);
+    const product = baseByAsin.get(auditDraft.productAsin);
     if (!product) return '<p>没有找到 ONO3Pro 数据。</p>';
     const working = workingForView(product);
+    const examples = auditDraft.imageExamples
+      .map((example, index) => ({ example, index }))
+      .filter(({ example }) => !example.hidden || auditUi.editMode)
+      .sort((a, b) => a.example.order - b.example.order);
+    const references = auditDraft.competitorImageReferences
+      .map((reference, index) => ({ reference, index }))
+      .filter(({ reference }) => !reference.hidden || auditUi.editMode)
+      .sort((a, b) => a.reference.order - b.reference.order);
     return `
+      ${auditControlsTemplate()}
       <div class="audit-summary">
-        <p>${escapeHTML(AUDIT.summary)}</p>
+        <p>${auditEditable(auditDraft.summary, "summary", { multiline: true })}</p>
         <div class="audit-stat-strip">
-          ${AUDIT.stats
+          ${auditDraft.stats
             .map(
-              (stat) => `
+              (stat, index) => `
                 <div>
-                  <span>${escapeHTML(stat.label)}</span>
-                  <strong>${escapeHTML(stat.value)}</strong>
-                  <small>${escapeHTML(stat.note)}</small>
+                  <span>${auditEditable(stat.label, `stats.${index}.label`)}</span>
+                  <strong>${auditEditable(stat.value, `stats.${index}.value`)}</strong>
+                  <small>${auditEditable(stat.note, `stats.${index}.note`, { multiline: true })}</small>
                 </div>
               `,
             )
@@ -2228,8 +2528,8 @@
         <button class="active" type="button" role="tab" aria-selected="true" data-action="audit-tab" data-audit-tab="overview">结论与顺序</button>
         <button type="button" role="tab" aria-selected="false" data-action="audit-tab" data-audit-tab="market">市场定位</button>
         <button type="button" role="tab" aria-selected="false" data-action="audit-tab" data-audit-tab="promotions">当前促销</button>
-        <button type="button" role="tab" aria-selected="false" data-action="audit-tab" data-audit-tab="listing">Listing ${AUDIT.listing.length}</button>
-        <button type="button" role="tab" aria-selected="false" data-action="audit-tab" data-audit-tab="aplus">A+ ${AUDIT.aplus.length}</button>
+        <button type="button" role="tab" aria-selected="false" data-action="audit-tab" data-audit-tab="listing">Listing ${auditDraft.listing.length}</button>
+        <button type="button" role="tab" aria-selected="false" data-action="audit-tab" data-audit-tab="aplus">A+ ${auditDraft.aplus.length}</button>
         <button type="button" role="tab" aria-selected="false" data-action="audit-tab" data-audit-tab="copy">五点改写</button>
         <button type="button" role="tab" aria-selected="false" data-action="audit-tab" data-audit-tab="risks">发布前核实</button>
       </div>
@@ -2238,7 +2538,7 @@
         <div class="audit-findings">
           <h3>先改这四件事</h3>
           <ul>
-            ${AUDIT.findings.map((finding) => `<li>${escapeHTML(finding)}</li>`).join("")}
+            ${auditDraft.findings.map((finding, index) => `<li>${auditEditable(finding, `findings.${index}`, { multiline: true })}</li>`).join("")}
           </ul>
         </div>
         <div class="audit-table-wrap">
@@ -2252,14 +2552,14 @@
               </tr>
             </thead>
             <tbody>
-              ${AUDIT.comparison
+              ${auditDraft.comparison
                 .map(
-                  (row) => `
+                  (row, index) => `
                     <tr>
-                      <td><strong>${escapeHTML(row.theme)}</strong></td>
-                      <td>${escapeHTML(row.competitors)}</td>
-                      <td>${escapeHTML(row.current)}</td>
-                      <td>${escapeHTML(row.action)}</td>
+                      <td><strong>${auditEditable(row.theme, `comparison.${index}.theme`)}</strong></td>
+                      <td>${auditEditable(row.competitors, `comparison.${index}.competitors`, { multiline: true })}</td>
+                      <td>${auditEditable(row.current, `comparison.${index}.current`, { multiline: true })}</td>
+                      <td>${auditEditable(row.action, `comparison.${index}.action`, { multiline: true })}</td>
                     </tr>
                   `,
                 )
@@ -2273,7 +2573,7 @@
             <h3>建议的图片叙事顺序</h3>
           </div>
           <ol>
-            ${AUDIT.imageOrder.map((item) => `<li>${escapeHTML(item)}</li>`).join("")}
+            ${auditDraft.imageOrder.map((item, index) => `<li>${auditEditable(item, `imageOrder.${index}`, { multiline: true })}</li>`).join("")}
           </ol>
         </div>
         <div class="audit-examples">
@@ -2282,9 +2582,12 @@
               <span class="section-kicker">STATIC LISTING IMAGE DIRECTIONS</span>
               <h3>1:1 静态副图参考</h3>
             </div>
-            <p>
-              每张图只讲一个购买结论。产品和真实生活场景占主体，功能标注只做辅助；四格流程属于视频分镜，继续放回视频，不混入副图。
-            </p>
+            <div>
+              <p>
+                每张图只讲一个购买结论。产品和真实生活场景占主体，功能标注只做辅助；四格流程属于视频分镜，继续放回视频，不混入副图。
+              </p>
+              ${auditUi.editMode ? '<button class="button button-secondary button-small" type="button" data-action="add-audit-image">新增建议图</button>' : ""}
+            </div>
           </div>
           <div class="audit-example-rules" aria-label="静态副图三个原则">
             <div>
@@ -2301,27 +2604,41 @@
             </div>
           </div>
           <div class="audit-example-grid">
-            ${[...AUDIT.imageExamples]
-              .sort((left, right) => left.order - right.order)
+            ${examples
               .map(
-                (example) => `
-                  <figure class="audit-example">
-                    <a class="audit-example-visual" href="./${escapeAttr(example.file)}" target="_blank" rel="noopener noreferrer" aria-label="打开${escapeAttr(example.title)}可编辑 SVG">
-                      <img src="./${escapeAttr(example.file)}" alt="${escapeAttr(example.alt)}" loading="lazy" />
-                    </a>
+                ({ example, index }) => {
+                  const imageUrl = auditAssetUrl(example);
+                  return `
+                  <figure class="audit-example ${example.hidden ? "is-audit-hidden" : ""}">
+                    <div class="audit-example-visual-wrap">
+                      <a class="audit-example-visual" href="${escapeAttr(imageUrl || "#")}" target="_blank" rel="noopener noreferrer" aria-label="打开${escapeAttr(example.title)}图片">
+                        ${imageUrl ? `<img src="${escapeAttr(imageUrl)}" alt="${escapeAttr(example.alt)}" loading="lazy" />` : '<span class="audit-image-missing">尚未上传图片</span>'}
+                      </a>
+                      ${
+                        auditUi.editMode
+                          ? `<div class="audit-image-actions">
+                              <button class="button button-secondary button-small" type="button" data-action="replace-audit-image" data-audit-collection="imageExamples" data-audit-index="${index}">替换图片</button>
+                              ${example.assetId ? `<button class="button button-quiet button-small" type="button" data-action="reset-audit-image" data-audit-collection="imageExamples" data-audit-index="${index}">恢复原图</button>` : ""}
+                              <button class="button button-quiet button-small" type="button" data-action="toggle-audit-image" data-audit-collection="imageExamples" data-audit-index="${index}">${example.hidden ? "恢复显示" : "删除图片"}</button>
+                            </div>`
+                          : ""
+                      }
+                    </div>
                     <figcaption>
                       <div class="audit-example-copy">
-                        <span>${escapeHTML(example.eyebrow)}</span>
-                        <h4>${escapeHTML(example.title)}</h4>
-                        <p>${escapeHTML(example.summary)}</p>
+                        <span>${auditEditable(example.eyebrow, `imageExamples.${index}.eyebrow`)}</span>
+                        <h4>${auditEditable(example.title, `imageExamples.${index}.title`)}</h4>
+                        <p>${auditEditable(example.summary, `imageExamples.${index}.summary`, { multiline: true })}</p>
+                        ${auditUi.editMode ? `<label class="audit-order-edit"><span>显示顺序</span>${auditNumberInput(example.order, `imageExamples.${index}.order`)}</label>` : ""}
                       </div>
                       <div class="audit-example-foot">
-                        <small>${escapeHTML(example.disclosure)}</small>
-                        <a href="./${escapeAttr(example.file)}" target="_blank" rel="noopener noreferrer">打开可编辑 SVG ↗</a>
+                        <small>${auditEditable(example.disclosure, `imageExamples.${index}.disclosure`, { multiline: true })}</small>
+                        ${example.assetId ? "" : `<a href="${escapeAttr(imageUrl)}" target="_blank" rel="noopener noreferrer">打开可编辑 SVG ↗</a>`}
                       </div>
                     </figcaption>
                   </figure>
-                `,
+                `;
+                },
               )
               .join("")}
           </div>
@@ -2331,25 +2648,43 @@
                 <span class="section-kicker">LIVE LISTING REFERENCES</span>
                 <h3>竞品纯副图参考</h3>
               </div>
-              <p>
-                以下都是 Amazon.de 当前 Listing 中的单张副图。重点看“一张图如何完成一个结论”，不要把竞品原图重新上传为 ONO3Pro 素材。
-              </p>
+              <div>
+                <p>
+                  以下都是 Amazon.de 当前 Listing 中的单张副图。重点看“一张图如何完成一个结论”，不要把竞品原图重新上传为 ONO3Pro 素材。
+                </p>
+                ${auditUi.editMode ? '<button class="button button-secondary button-small" type="button" data-action="add-audit-image" data-audit-collection="competitorImageReferences">新增竞品参考</button>' : ""}
+              </div>
             </div>
             <div class="audit-reference-grid">
-              ${AUDIT.competitorImageReferences
+              ${references
                 .map(
-                  (reference) => `
-                    <figure class="audit-reference-card">
-                      <a class="audit-reference-visual" href="./${escapeAttr(reference.file)}" target="_blank" rel="noopener noreferrer" aria-label="打开 ${escapeAttr(reference.product)} ${escapeAttr(reference.image)} 原图">
-                        <img src="./${escapeAttr(reference.file)}" alt="${escapeAttr(reference.product)} ${escapeAttr(reference.title)}" loading="lazy" />
-                      </a>
+                  ({ reference, index }) => {
+                    const imageUrl = auditAssetUrl(reference);
+                    return `
+                    <figure class="audit-reference-card ${reference.hidden ? "is-audit-hidden" : ""}">
+                      <div class="audit-reference-visual-wrap">
+                        <a class="audit-reference-visual" href="${escapeAttr(imageUrl || "#")}" target="_blank" rel="noopener noreferrer" aria-label="打开 ${escapeAttr(reference.product)} ${escapeAttr(reference.image)} 原图">
+                          ${imageUrl ? `<img src="${escapeAttr(imageUrl)}" alt="${escapeAttr(reference.product)} ${escapeAttr(reference.title)}" loading="lazy" />` : '<span class="audit-image-missing">尚未上传图片</span>'}
+                        </a>
+                        ${
+                          auditUi.editMode
+                            ? `<div class="audit-image-actions">
+                                <button class="button button-secondary button-small" type="button" data-action="replace-audit-image" data-audit-collection="competitorImageReferences" data-audit-index="${index}">替换图片</button>
+                                ${reference.assetId ? `<button class="button button-quiet button-small" type="button" data-action="reset-audit-image" data-audit-collection="competitorImageReferences" data-audit-index="${index}">恢复原图</button>` : ""}
+                                <button class="button button-quiet button-small" type="button" data-action="toggle-audit-image" data-audit-collection="competitorImageReferences" data-audit-index="${index}">${reference.hidden ? "恢复显示" : "删除图片"}</button>
+                              </div>`
+                            : ""
+                        }
+                      </div>
                       <figcaption>
-                        <span>${escapeHTML(reference.product)} · ${escapeHTML(reference.image)} · ${escapeHTML(reference.asin)}</span>
-                        <h4>${escapeHTML(reference.title)}</h4>
-                        <p>${escapeHTML(reference.read)}</p>
+                        <span>${auditEditable(reference.product, `competitorImageReferences.${index}.product`)} · ${auditEditable(reference.image, `competitorImageReferences.${index}.image`)} · ${auditEditable(reference.asin, `competitorImageReferences.${index}.asin`)}</span>
+                        <h4>${auditEditable(reference.title, `competitorImageReferences.${index}.title`)}</h4>
+                        <p>${auditEditable(reference.read, `competitorImageReferences.${index}.read`, { multiline: true })}</p>
+                        ${auditUi.editMode ? `<label class="audit-order-edit"><span>显示顺序</span>${auditNumberInput(reference.order, `competitorImageReferences.${index}.order`)}</label>` : ""}
                       </figcaption>
                     </figure>
-                  `,
+                  `;
+                  },
                 )
                 .join("")}
             </div>
@@ -2391,16 +2726,16 @@
           </div>
         </div>
         <div class="audit-copy-list">
-          ${AUDIT.fivePoints
+          ${auditDraft.fivePoints
             .map(
               (item, index) => `
                 <article class="audit-copy-item">
                   <span class="audit-copy-index">${String(index + 1).padStart(2, "0")}</span>
                   <div>
-                    <h4>${escapeHTML(item.title)}</h4>
-                    <strong>${escapeHTML(item.direction)}</strong>
-                    <p><b>核心事实</b>${escapeHTML(item.facts)}</p>
-                    <p><b>改写方法</b>${escapeHTML(item.change)}</p>
+                    <h4>${auditEditable(item.title, `fivePoints.${index}.title`)}</h4>
+                    <strong>${auditEditable(item.direction, `fivePoints.${index}.direction`, { multiline: true })}</strong>
+                    <p><b>核心事实</b>${auditEditable(item.facts, `fivePoints.${index}.facts`, { multiline: true })}</p>
+                    <p><b>改写方法</b>${auditEditable(item.change, `fivePoints.${index}.change`, { multiline: true })}</p>
                   </div>
                 </article>
               `,
@@ -2417,7 +2752,7 @@
           </div>
         </div>
         <ol class="audit-risk-list">
-          ${AUDIT.risks.map((risk) => `<li>${escapeHTML(risk)}</li>`).join("")}
+          ${auditDraft.risks.map((risk, index) => `<li>${auditEditable(risk, `risks.${index}`, { multiline: true })}</li>`).join("")}
         </ol>
       </section>
     `;
@@ -2435,6 +2770,7 @@
       "risks",
     ]);
     const selected = validTabs.has(auditTab) ? auditTab : "overview";
+    auditUi.tab = selected;
     $$("[data-action='audit-tab']", modalBody).forEach((tab) => {
       const active = tab.dataset.auditTab === selected;
       tab.classList.toggle("active", active);
@@ -2447,17 +2783,28 @@
   }
 
   function openAuditModal(initialTab = "overview") {
-    if (!AUDIT) {
+    if (!AUDIT || !auditDraft) {
       showToast("改版建议数据没有加载", "error");
       return;
     }
+    auditUi.tab = initialTab;
+    auditUi.editMode = false;
     openModal({
-      kicker: AUDIT.kicker,
+      kicker: auditDraft.kicker,
       title: "ONO3Pro 市场与内容改版研究",
       body: auditModalTemplate(),
       className: "modal-audit",
     });
     activateAuditTab(initialTab);
+  }
+
+  function renderAuditModalBody({ keepScroll = false } = {}) {
+    const body = $("#modalBody");
+    const scrollTop = keepScroll ? body.scrollTop : 0;
+    body.innerHTML = auditModalTemplate();
+    activateAuditTab(auditUi.tab);
+    if (keepScroll) body.scrollTop = scrollTop;
+    updateAuditSaveState();
   }
 
   function exportVisibleTable() {
@@ -2512,8 +2859,8 @@
         currentPriceFor(product),
         promotionSignal(product),
         promoPriceFor(product) || "",
-        specOf(product, "亮度"),
-        specOf(product, "原生分辨率"),
+        specOf(product, "亮度", working),
+        specOf(product, "原生分辨率", working),
         system,
         product.live?.rating || product.metrics?.rating || "",
         product.live?.reviewsCount || product.metrics?.reviews || "",
@@ -2571,13 +2918,14 @@
             <p>版本与文字修改保存在当前浏览器；清理浏览器数据、换电脑或换浏览器前，请先导出完整备份。</p>
             <div class="backup-stats">
               <div><span>已编辑产品</span><strong>${savedCount}</strong></div>
-              <div><span>版本记录</span><strong>${state.versions.length}</strong></div>
+              <div><span>产品版本</span><strong>${state.versions.length}</strong></div>
+              <div><span>全站版本</span><strong>${state.siteVersions.length}</strong></div>
               <div><span>上传图片</span><strong>${imageAssetCount}</strong></div>
             </div>
           </article>
           <article class="backup-card">
             <h3>导出完整备份</h3>
-            <p>包含内容修改、版本记录，以及你在工具中替换或新增的图片。原始 404 张素材已随工具文件夹保存。</p>
+            <p>包含研究页分析、全部产品资料、产品与全站版本，以及你在工具中替换或新增的图片。原始 404 张素材已随工具文件夹保存。</p>
             <button class="button button-primary" type="button" data-action="export-backup">下载备份 JSON</button>
           </article>
           <article class="backup-card">
@@ -2594,13 +2942,461 @@
     });
   }
 
-  function handleModalClick(event) {
+  function pruneSiteVersions() {
+    if (state.siteVersions.length <= MAX_SITE_VERSIONS) return;
+    state.siteVersions = state.siteVersions
+      .sort((a, b) => String(b.at).localeCompare(String(a.at)))
+      .slice(0, MAX_SITE_VERSIONS);
+  }
+
+  function pushSiteVersion({
+    title,
+    reason,
+    fields,
+    snapshot,
+    sourceVersion = null,
+  }) {
+    const version = {
+      id: createId("site-version"),
+      at: new Date().toISOString(),
+      title,
+      reason,
+      fields,
+      sourceVersion,
+      snapshot: clone(snapshot),
+    };
+    state.siteVersions.push(version);
+    pruneSiteVersions();
+    return version;
+  }
+
+  function latestSiteVersion() {
+    return [...state.siteVersions].sort((a, b) =>
+      String(b.at).localeCompare(String(a.at)),
+    )[0];
+  }
+
+  function siteFieldsSince(snapshot = {}) {
+    const previousAudit = normalizeAudit(snapshot.audit);
+    const fields = auditDiff(previousAudit, auditDraft);
+    if (!deepEqual(snapshot.working || {}, state.working)) {
+      fields.push("产品资料");
+    }
+    if (
+      Number.isFinite(snapshot.productVersionCount) &&
+      snapshot.productVersionCount !== state.versions.length
+    ) {
+      fields.push("产品历史");
+    }
+    return [...new Set(fields)];
+  }
+
+  function commitSiteVersion(options = {}) {
+    if (!auditDraft) return;
+    const previousVersion = latestSiteVersion();
+    const fields = siteFieldsSince(previousVersion?.snapshot || {});
+    if (!fields.length && !options.force) {
+      if (auditDirty) {
+        auditDirty = false;
+        localStorage.removeItem(AUDIT_DRAFT_KEY);
+        updateAuditSaveState();
+      }
+      showToast("全站内容与已保存版本一致");
+      return;
+    }
+    const reason =
+      options.reason ||
+      ($("#siteVersionReason")?.value || "").trim() ||
+      "更新研究页与产品资料";
+    state.auditWorking = clone(auditDraft);
+    const version = pushSiteVersion({
+      title: options.title || "保存当前全站版本",
+      reason,
+      fields: fields.length ? fields : ["恢复内容"],
+      sourceVersion: options.sourceVersion || null,
+      snapshot: {
+        audit: auditDraft,
+        working: state.working,
+        productVersionCount: state.versions.length,
+      },
+    });
+    auditDirty = false;
+    if (persistState()) {
+      localStorage.removeItem(AUDIT_DRAFT_KEY);
+      showToast(`已保存全站 v${auditVersionNumber(version)}`, "success");
+      renderCatalog();
+      updateKpis();
+      updateStorageStatus();
+      if (!$("#modalOverlay").hidden && $("#modalCard").classList.contains("modal-audit")) {
+        renderAuditModalBody({ keepScroll: true });
+      } else if (
+        !$("#modalOverlay").hidden &&
+        $("#modalCard").classList.contains("modal-site-versions")
+      ) {
+        openSiteVersionsModal();
+      }
+    }
+  }
+
+  function siteVersionsTemplate() {
+    const versions = [...state.siteVersions].sort((a, b) =>
+      String(b.at).localeCompare(String(a.at)),
+    );
+    return `
+      <div class="site-version-intro">
+        <p>每次保存会记录分析、市场定位、促销价格、建议图说明和所有产品资料的当时状态。恢复旧版会先生成一条新记录，产品版本与更早的全站版本都会保留。</p>
+        <div class="site-version-save">
+          <label for="siteVersionReason">保存说明</label>
+          <input class="text-input" id="siteVersionReason" placeholder="例如：完成新版五点、更新竞品价格" />
+          <button class="button button-primary" type="button" data-action="save-site-version">保存当前全站版本</button>
+        </div>
+      </div>
+      ${
+        versions.length
+          ? `<div class="site-version-list">
+              ${versions
+                .map(
+                  (version) => `
+                    <article class="site-version-item">
+                      <span class="version-node">v${auditVersionNumber(version)}</span>
+                      <div class="site-version-copy">
+                        <strong>${escapeHTML(version.title || "保存全站版本")}</strong>
+                        <p>${escapeHTML(version.reason || "未填写保存说明")} · ${escapeHTML(formatDateTime(version.at))}</p>
+                        ${
+                          version.snapshot?.working
+                            ? `<small class="site-version-scope">含 ${Object.keys(version.snapshot.working).length} 个已保存产品 · ${version.snapshot.productVersionCount || 0} 条产品历史</small>`
+                            : '<small class="site-version-scope">旧版快照未记录产品范围</small>'
+                        }
+                        <div class="version-meta">
+                          ${(version.fields || []).map((field) => `<span>${escapeHTML(field)}</span>`).join("")}
+                          ${version.sourceVersion ? `<span>来自全站 v${escapeHTML(version.sourceVersion)}</span>` : ""}
+                        </div>
+                      </div>
+                      <button class="button button-secondary button-small" type="button" data-action="restore-site-version" data-version-id="${escapeAttr(version.id)}">恢复</button>
+                    </article>
+                  `,
+                )
+                .join("")}
+            </div>`
+          : '<div class="version-empty">还没有全站版本。编辑研究页或产品资料后，点击“保存当前全站版本”。</div>'
+      }
+      <div class="site-version-footer">
+        <button class="button button-quiet button-small" type="button" data-action="reset-audit">恢复研究页初始内容</button>
+        <span>当前浏览器最多保留最近 ${MAX_SITE_VERSIONS} 个全站版本；完整备份可另存当前全部记录。</span>
+      </div>
+    `;
+  }
+
+  function openSiteVersionsModal() {
+    const auditWasOpen =
+      !$("#modalOverlay").hidden &&
+      $("#modalCard").classList.contains("modal-audit");
+    openModal({
+      kicker: "EDITABLE HISTORY",
+      title: `全站版本记录 · ${state.siteVersions.length}`,
+      body: `
+        ${
+          auditWasOpen
+            ? '<button class="site-version-back" type="button" data-action="close-site-versions-back">← 返回研究页</button>'
+            : ""
+        }
+        ${siteVersionsTemplate()}
+      `,
+      className: "modal-site-versions",
+    });
+  }
+
+  function restoreSiteVersion(versionId) {
+    const version = state.siteVersions.find((item) => item.id === versionId);
+    if (!version?.snapshot) return;
+    const proceed = window.confirm(
+      `恢复到全站 v${auditVersionNumber(version)}？当前未保存内容会先自动保存为一条新版本。`,
+    );
+    if (!proceed) return;
+    const latest = latestSiteVersion();
+    const currentFields = siteFieldsSince(latest?.snapshot || {});
+    if (currentFields.length) {
+      pushSiteVersion({
+        title: "恢复旧版前自动保存",
+        reason: `准备恢复全站 v${auditVersionNumber(version)}`,
+        fields: currentFields,
+        snapshot: {
+          audit: auditDraft,
+          working: state.working,
+          productVersionCount: state.versions.length,
+        },
+      });
+      persistState();
+    }
+    auditDraft = normalizeAudit(version.snapshot.audit);
+    state.auditWorking = clone(auditDraft);
+    state.working =
+      version.snapshot.working && typeof version.snapshot.working === "object"
+        ? clone(version.snapshot.working)
+        : {};
+    const restored = pushSiteVersion({
+      title: `恢复至全站 v${auditVersionNumber(version)}`,
+      reason: `从 ${formatDateTime(version.at)} 的版本恢复；恢复前差异：${
+        currentFields.join("、") || "无额外内容"
+      }`,
+      fields: [...new Set([...(version.fields || ["恢复全站内容"]), ...currentFields])],
+      sourceVersion: auditVersionNumber(version),
+      snapshot: {
+        audit: auditDraft,
+        working: state.working,
+        productVersionCount: state.versions.length,
+      },
+    });
+    auditDirty = false;
+    localStorage.removeItem(AUDIT_DRAFT_KEY);
+    localStorage.removeItem(DRAFT_KEY);
+    persistState();
+    renderCatalog();
+    updateKpis();
+    updateStorageStatus();
+    closeDetail(true);
+    openSiteVersionsModal();
+    showToast(`已恢复并记录为全站 v${auditVersionNumber(restored)}`, "success");
+  }
+
+  function auditCollection(collection) {
+    return ["imageExamples", "competitorImageReferences"].includes(collection)
+      ? collection
+      : "imageExamples";
+  }
+
+  async function addAuditImage(collectionName) {
+    const collection = auditCollection(collectionName);
+    const file = await chooseImageFile();
+    if (!file) return;
+    try {
+      const image = await resizeImage(file);
+      const assetId = createId("image");
+      state.imageAssets[assetId] = image.dataUrl;
+      const maxOrder = Math.max(
+        0,
+        ...auditDraft[collection].map((item) => Number(item.order) || 0),
+      );
+      const item =
+        collection === "imageExamples"
+          ? {
+              id: createId("audit-example"),
+              eyebrow: "NEW DIRECTION",
+              title: "新增建议图",
+              summary: "说明这张图要完成的单一购买结论。",
+              disclosure: "规格、功能与授权信息发布前需由业务核实。",
+              alt: "ONO3Pro 新增建议图",
+              order: maxOrder + 1,
+              hidden: false,
+              assetId,
+            }
+          : {
+              id: createId("audit-reference"),
+              product: "新增竞品参考",
+              image: "Listing 图",
+              asin: "",
+              title: "新增竞品参考图",
+              read: "说明这张图如何用一个画面完成一个卖点。",
+              alt: "竞品 Listing 参考图",
+              order: maxOrder + 1,
+              hidden: false,
+              assetId,
+            };
+      auditDraft[collection].push(item);
+      persistState();
+      markAuditDirty();
+      renderAuditModalBody({ keepScroll: true });
+      showToast("图片已加入；保存全站版本后写入历史", "success");
+    } catch (error) {
+      console.error(error);
+      showToast(error.message || "图片处理失败", "error");
+    }
+  }
+
+  async function replaceAuditImage(collectionName, index) {
+    const collection = auditCollection(collectionName);
+    const item = auditDraft[collection][Number(index)];
+    if (!item) return;
+    const file = await chooseImageFile();
+    if (!file) return;
+    try {
+      const image = await resizeImage(file);
+      const assetId = createId("image");
+      state.imageAssets[assetId] = image.dataUrl;
+      item.assetId = assetId;
+      item.hidden = false;
+      persistState();
+      markAuditDirty();
+      renderAuditModalBody({ keepScroll: true });
+      showToast("图片已替换；保存全站版本后写入历史", "success");
+    } catch (error) {
+      console.error(error);
+      showToast(error.message || "图片处理失败", "error");
+    }
+  }
+
+  function resetAuditImage(collectionName, index) {
+    const collection = auditCollection(collectionName);
+    const item = auditDraft[collection][Number(index)];
+    if (!item?.assetId) return;
+    delete item.assetId;
+    markAuditDirty();
+    renderAuditModalBody({ keepScroll: true });
+    showToast("已恢复列表中的原始图片");
+  }
+
+  function toggleAuditImage(collectionName, index) {
+    const collection = auditCollection(collectionName);
+    const item = auditDraft[collection][Number(index)];
+    if (!item) return;
+    item.hidden = !item.hidden;
+    markAuditDirty();
+    renderAuditModalBody({ keepScroll: true });
+    showToast(item.hidden ? "图片已从当前视图删除" : "图片已恢复显示");
+  }
+
+  function editableText(target) {
+    const raw = (target.innerText ?? target.textContent ?? "")
+      .replaceAll("\u00a0", " ")
+      .replace(/\r\n?/g, "\n");
+    return target.dataset.auditMultiline === "true"
+      ? raw.trimEnd()
+      : raw.replace(/\s*\n+\s*/g, " ").trim();
+  }
+
+  function handleSiteAuditInput(event) {
+    if (!auditUi.editMode) return;
+    const target = event.target.closest?.("[data-audit-path]");
+    if (!target || !$("#modalBody").contains(target)) return;
+    const path = target.dataset.auditPath;
+    let value;
+    if (target.dataset.auditNumber === "true") {
+      const raw = target.value.trim();
+      value = raw === "" ? null : Number(raw);
+      if (value !== null && !Number.isFinite(value)) return;
+    } else {
+      value = editableText(target);
+    }
+    setAtPath(auditDraft, path, value);
+    markAuditDirty();
+    if (/^promotions\.rows\.\d+\.(listPrice|bdPrice|promoPrice)$/.test(path)) {
+      renderCatalog();
+      updateKpis();
+    }
+  }
+
+  function handleSiteAuditKeydown(event) {
+    const target = event.target.closest?.(
+      '[contenteditable="true"][data-audit-path]',
+    );
+    if (!target) return;
+    if (
+      event.key === "Enter" &&
+      target.dataset.auditMultiline !== "true"
+    ) {
+      event.preventDefault();
+      target.blur();
+    }
+  }
+
+  function handleSiteAuditPaste(event) {
+    const target = event.target.closest?.(
+      '[contenteditable="true"][data-audit-path]',
+    );
+    if (!target) return;
+    event.preventDefault();
+    const text = event.clipboardData?.getData("text/plain") || "";
+    const selection = window.getSelection();
+    if (!selection?.rangeCount) return;
+    const range = selection.getRangeAt(0);
+    range.deleteContents();
+    range.insertNode(document.createTextNode(text));
+    range.collapse(false);
+    selection.removeAllRanges();
+    selection.addRange(range);
+    target.dispatchEvent(new Event("input", { bubbles: true }));
+  }
+
+  async function handleModalClick(event) {
     const button = event.target.closest("[data-action]");
+    if (
+      auditUi.editMode &&
+      event.target.closest(".audit-editable")?.closest("a")
+    ) {
+      event.preventDefault();
+    }
     if (!button) return;
-    if (button.dataset.action === "export-backup") exportBackup();
-    if (button.dataset.action === "import-backup") $("#backupImport").click();
-    if (button.dataset.action === "audit-tab") {
+    const action = button.dataset.action;
+    if (action === "export-backup") {
+      exportBackup();
+      return;
+    }
+    if (action === "import-backup") {
+      $("#backupImport").click();
+      return;
+    }
+    if (action === "audit-tab") {
       activateAuditTab(button.dataset.auditTab);
+      return;
+    }
+    if (action === "toggle-audit-edit") {
+      auditUi.editMode = !auditUi.editMode;
+      renderAuditModalBody({ keepScroll: true });
+      return;
+    }
+    if (action === "save-site-version") {
+      commitSiteVersion();
+      return;
+    }
+    if (action === "close-site-versions-back") {
+      openAuditModal(auditUi.tab);
+      return;
+    }
+    if (action === "open-site-versions") {
+      openSiteVersionsModal();
+      return;
+    }
+    if (action === "restore-site-version") {
+      restoreSiteVersion(button.dataset.versionId);
+      return;
+    }
+    if (action === "reset-audit") {
+      const proceed = window.confirm(
+        "把研究结论、市场定位、促销价格、图片说明和图片调整恢复为初始内容？这会新增一条全站版本，旧历史继续保留。",
+      );
+      if (!proceed) return;
+      auditDraft = normalizeAudit(null);
+      auditDirty = true;
+      commitSiteVersion({
+        force: true,
+        title: "恢复研究页初始内容",
+        reason: "用户从全站版本记录恢复研究页初始内容",
+      });
+      return;
+    }
+    if (action === "add-audit-image") {
+      await addAuditImage(button.dataset.auditCollection || "imageExamples");
+      return;
+    }
+    if (action === "replace-audit-image") {
+      await replaceAuditImage(
+        button.dataset.auditCollection,
+        button.dataset.auditIndex,
+      );
+      return;
+    }
+    if (action === "reset-audit-image") {
+      resetAuditImage(
+        button.dataset.auditCollection,
+        button.dataset.auditIndex,
+      );
+      return;
+    }
+    if (action === "toggle-audit-image") {
+      toggleAuditImage(
+        button.dataset.auditCollection,
+        button.dataset.auditIndex,
+      );
     }
   }
 
@@ -2613,6 +3409,9 @@
       data: {
         working: state.working,
         versions: state.versions,
+        auditWorking: state.auditWorking,
+        auditDraft: auditDirty ? auditDraft : null,
+        siteVersions: state.siteVersions,
         imageAssets: state.imageAssets,
         updatedAt: state.updatedAt,
       },
@@ -2635,7 +3434,10 @@
       if (
         !data ||
         typeof data !== "object" ||
-        (!data.working && !data.versions)
+        (!data.working &&
+          !data.versions &&
+          !data.auditWorking &&
+          !data.siteVersions)
       ) {
         throw new Error("不是有效的 Beamer Scout 备份文件");
       }
@@ -2648,16 +3450,27 @@
         working:
           data.working && typeof data.working === "object" ? data.working : {},
         versions: Array.isArray(data.versions) ? data.versions : [],
+        auditWorking:
+          data.auditWorking && typeof data.auditWorking === "object"
+            ? data.auditWorking
+            : null,
+        siteVersions: Array.isArray(data.siteVersions) ? data.siteVersions : [],
         imageAssets: sanitizeImageAssets(data.imageAssets),
         updatedAt: new Date().toISOString(),
       };
+      auditDraft = normalizeAudit(data.auditDraft || state.auditWorking);
+      auditDirty = Boolean(data.auditDraft);
+      if (auditDirty) saveAuditDraft();
+      else localStorage.removeItem(AUDIT_DRAFT_KEY);
       persistState();
       localStorage.removeItem(DRAFT_KEY);
       closeModal();
       closeDetail(true);
       renderCatalog();
+      updateKpis();
+      updateStorageStatus();
       showToast(
-        `已恢复 ${Object.keys(state.working).length} 个产品与 ${state.versions.length} 条版本`,
+        `已恢复 ${Object.keys(state.working).length} 个产品、${state.versions.length} 条产品版本与 ${state.siteVersions.length} 条全站版本`,
         "success",
       );
     } catch (error) {
@@ -2710,6 +3523,7 @@
   }
 
   function init() {
+    restoreAuditDraft();
     initFilters();
     updateKpis();
     updateStorageStatus();
