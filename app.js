@@ -1842,6 +1842,205 @@
     `;
   }
 
+  function auditMarketPanel() {
+    const market = AUDIT.marketResearch;
+    return `
+      <section class="audit-panel" data-audit-panel="market" role="tabpanel" hidden>
+        <div class="market-lead">
+          <div>
+            <p class="section-kicker">${escapeHTML(market.positioning.label)}</p>
+            <h3>市场机会不在“功能更多”，而在“结果更确定”</h3>
+            <p>${escapeHTML(market.summary)}</p>
+          </div>
+          <div class="market-stat-grid">
+            ${market.stats
+              .map(
+                (stat) => `
+                  <div>
+                    <span>${escapeHTML(stat.label)}</span>
+                    <strong>${escapeHTML(stat.value)}</strong>
+                    <small>${escapeHTML(stat.note)}</small>
+                  </div>
+                `,
+              )
+              .join("")}
+          </div>
+        </div>
+
+        <div class="market-positioning">
+          <div class="market-positioning-main">
+            <span>建议定位</span>
+            <p>${escapeHTML(market.positioning.statement)}</p>
+          </div>
+          <dl>
+            <div>
+              <dt>核心人群</dt>
+              <dd>${escapeHTML(market.positioning.audience)}</dd>
+            </div>
+            <div>
+              <dt>用户承诺</dt>
+              <dd>${escapeHTML(market.positioning.promise)}</dd>
+            </div>
+            <div>
+              <dt>必须证明</dt>
+              <dd>${escapeHTML(market.positioning.proof)}</dd>
+            </div>
+            <div>
+              <dt>不要这样定位</dt>
+              <dd>${escapeHTML(market.positioning.avoid)}</dd>
+            </div>
+          </dl>
+        </div>
+
+        <article class="market-price-callout">
+          <div>
+            <span class="section-kicker">PRICE POSITION</span>
+            <h3>价格已经进入竞争判断</h3>
+          </div>
+          <p>${escapeHTML(market.priceRead)}</p>
+        </article>
+
+        <div class="audit-panel-heading market-section-heading">
+          <div>
+            <h3>可形成差异的四个破局点</h3>
+            <p>它们不是新增功能，而是把现有能力包装成用户能验证的结果；每一项都同时写明所需证据。</p>
+          </div>
+        </div>
+        <div class="market-breakthrough-grid">
+          ${market.breakthroughs
+            .map(
+              (item) => `
+                <article class="market-breakthrough">
+                  <span class="market-breakthrough-index">${escapeHTML(item.index)}</span>
+                  <h4>${escapeHTML(item.title)}</h4>
+                  <dl>
+                    <div><dt>用户问题</dt><dd>${escapeHTML(item.problem)}</dd></div>
+                    <div><dt>建议主张</dt><dd>${escapeHTML(item.claim)}</dd></div>
+                    <div><dt>证据要求</dt><dd>${escapeHTML(item.proof)}</dd></div>
+                    <div><dt>为什么是 ONO3Pro</dt><dd>${escapeHTML(item.why)}</dd></div>
+                  </dl>
+                </article>
+              `,
+            )
+            .join("")}
+        </div>
+
+        <div class="market-two-column">
+          <section class="market-subcard">
+            <h3>不能再当独占卖点</h3>
+            <ul class="market-plain-list">
+              ${market.nonBreakthroughs.map((item) => `<li>${escapeHTML(item)}</li>`).join("")}
+            </ul>
+          </section>
+          <section class="market-subcard">
+            <h3>当前价格带分布</h3>
+            <div class="market-tier-list">
+              ${market.priceTiers
+                .map(
+                  (tier) => `
+                    <div>
+                      <strong>${escapeHTML(tier.range)}</strong>
+                      <span>${escapeHTML(tier.count)}</span>
+                      <p>${escapeHTML(tier.role)}</p>
+                    </div>
+                  `,
+                )
+                .join("")}
+            </div>
+          </section>
+        </div>
+
+        <div class="audit-panel-heading market-section-heading">
+          <div>
+            <h3>竞品卖点表达差异</h3>
+            <p>同样是系统、画质、便携和售后，不同品牌选择用参数、场景、品牌或证据抢注意力。</p>
+          </div>
+        </div>
+        <div class="audit-table-wrap">
+          <table class="audit-table market-expression-table">
+            <thead>
+              <tr>
+                <th>表达路线</th>
+                <th>代表产品</th>
+                <th>怎么表达</th>
+                <th>对 ONO3Pro 的启示</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${market.competitorMoves
+                .map(
+                  (row) => `
+                    <tr>
+                      <td><strong>${escapeHTML(row.pattern)}</strong></td>
+                      <td>${escapeHTML(row.examples)}</td>
+                      <td>${escapeHTML(row.expression)}</td>
+                      <td>${escapeHTML(row.implication)}</td>
+                    </tr>
+                  `,
+                )
+                .join("")}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    `;
+  }
+
+  function auditPromotionTable() {
+    const promotion = AUDIT.promotions;
+    const rows = [...promotion.rows].sort((a, b) => a.bdPrice - b.bdPrice);
+    return `
+      <section class="audit-panel" data-audit-panel="promotions" role="tabpanel" hidden>
+        <div class="audit-panel-heading">
+          <div>
+            <h3>当前售价与促销估算</h3>
+            <p>${escapeHTML(promotion.summary)}</p>
+          </div>
+        </div>
+        <div class="promotion-note">
+          <strong>${escapeHTML(promotion.asOf)}</strong>
+          <span>${escapeHTML(promotion.note)}</span>
+        </div>
+        <div class="audit-table-wrap">
+          <table class="audit-table promotion-table">
+            <thead>
+              <tr>
+                <th>产品</th>
+                <th>页面原价</th>
+                <th>当前 BD 价 / 售价</th>
+                <th>页面优惠</th>
+                <th>估算优惠价</th>
+                <th>类型与条件</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rows
+                .map(
+                  (row) => `
+                    <tr class="${row.own ? "is-own" : ""}">
+                      <td>
+                        <strong>${escapeHTML(row.brand)} ${escapeHTML(row.model)}</strong>
+                        <a href="https://www.amazon.de/dp/${encodeURIComponent(row.asin)}" target="_blank" rel="noopener noreferrer">${escapeHTML(row.asin)}</a>
+                      </td>
+                      <td class="promotion-number">${priceFormat.format(row.listPrice)}</td>
+                      <td class="promotion-number is-current">${priceFormat.format(row.bdPrice)}</td>
+                      <td>${escapeHTML(row.coupon)}</td>
+                      <td class="promotion-number ${row.promoPrice && row.promoPrice < row.bdPrice ? "is-promo" : ""}">${row.promoPrice ? priceFormat.format(row.promoPrice) : "—"}</td>
+                      <td>
+                        <span class="audit-status ${/条件|赠品/.test(row.type) ? "is-warning" : ""}">${escapeHTML(row.type)}</span>
+                        <small>${escapeHTML(row.condition)}</small>
+                      </td>
+                    </tr>
+                  `,
+                )
+                .join("")}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    `;
+  }
+
   function auditModalTemplate() {
     const product = baseByAsin.get(AUDIT.productAsin);
     if (!product) return '<p>没有找到 ONO3Pro 数据。</p>';
@@ -1866,6 +2065,8 @@
 
       <div class="audit-tabs" role="tablist" aria-label="ONO3Pro 改版建议">
         <button class="active" type="button" role="tab" aria-selected="true" data-action="audit-tab" data-audit-tab="overview">结论与顺序</button>
+        <button type="button" role="tab" aria-selected="false" data-action="audit-tab" data-audit-tab="market">市场定位</button>
+        <button type="button" role="tab" aria-selected="false" data-action="audit-tab" data-audit-tab="promotions">当前促销</button>
         <button type="button" role="tab" aria-selected="false" data-action="audit-tab" data-audit-tab="listing">Listing ${AUDIT.listing.length}</button>
         <button type="button" role="tab" aria-selected="false" data-action="audit-tab" data-audit-tab="aplus">A+ ${AUDIT.aplus.length}</button>
         <button type="button" role="tab" aria-selected="false" data-action="audit-tab" data-audit-tab="copy">五点改写</button>
@@ -1915,6 +2116,9 @@
           </ol>
         </div>
       </section>
+
+      ${auditMarketPanel()}
+      ${auditPromotionTable()}
 
       <section class="audit-panel" data-audit-panel="listing" role="tabpanel" hidden>
         <div class="audit-panel-heading">
@@ -1976,17 +2180,41 @@
     `;
   }
 
-  function openAuditModal() {
+  function activateAuditTab(auditTab = "overview") {
+    const modalBody = $("#modalBody");
+    const validTabs = new Set([
+      "overview",
+      "market",
+      "promotions",
+      "listing",
+      "aplus",
+      "copy",
+      "risks",
+    ]);
+    const selected = validTabs.has(auditTab) ? auditTab : "overview";
+    $$("[data-action='audit-tab']", modalBody).forEach((tab) => {
+      const active = tab.dataset.auditTab === selected;
+      tab.classList.toggle("active", active);
+      tab.setAttribute("aria-selected", String(active));
+    });
+    $$("[data-audit-panel]", modalBody).forEach((panel) => {
+      panel.hidden = panel.dataset.auditPanel !== selected;
+    });
+    modalBody.scrollTop = 0;
+  }
+
+  function openAuditModal(initialTab = "overview") {
     if (!AUDIT) {
       showToast("改版建议数据没有加载", "error");
       return;
     }
     openModal({
       kicker: AUDIT.kicker,
-      title: "ONO3Pro 图片与五点改版建议",
+      title: "ONO3Pro 市场与内容改版研究",
       body: auditModalTemplate(),
       className: "modal-audit",
     });
+    activateAuditTab(initialTab);
   }
 
   function exportVisibleTable() {
@@ -2114,16 +2342,7 @@
     if (button.dataset.action === "export-backup") exportBackup();
     if (button.dataset.action === "import-backup") $("#backupImport").click();
     if (button.dataset.action === "audit-tab") {
-      const activeTab = button.dataset.auditTab;
-      $$("[data-action='audit-tab']", $("#modalBody")).forEach((tab) => {
-        const active = tab.dataset.auditTab === activeTab;
-        tab.classList.toggle("active", active);
-        tab.setAttribute("aria-selected", String(active));
-      });
-      $$("[data-audit-panel]", $("#modalBody")).forEach((panel) => {
-        panel.hidden = panel.dataset.auditPanel !== activeTab;
-      });
-      $("#modalBody").scrollTop = 0;
+      activateAuditTab(button.dataset.auditTab);
     }
   }
 
@@ -2239,7 +2458,12 @@
     renderCatalog();
     bindCatalogEvents();
     bindDetailEvents();
-    $("#openAuditButton")?.addEventListener("click", openAuditModal);
+    $("#openAuditButton")?.addEventListener("click", () =>
+      openAuditModal("overview"),
+    );
+    $("#openMarketButton")?.addEventListener("click", () =>
+      openAuditModal("market"),
+    );
 
     const params = new URLSearchParams(
       window.location.search ||
@@ -2256,7 +2480,7 @@
     const initialAsin = params.get("asin");
     const initialTab = params.get("tab");
     if (params.get("audit") === "1") {
-      openAuditModal();
+      openAuditModal(params.get("auditTab") || "overview");
     } else if (initialAsin && baseByAsin.has(initialAsin)) {
       openDetail(initialAsin);
       if (
