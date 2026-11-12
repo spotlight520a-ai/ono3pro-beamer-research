@@ -1,0 +1,95 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="620" viewBox="0 0 1200 620" role="img" aria-labelledby="title desc">
+  <title id="title">ONO3Pro 画质证明构图示例</title>
+  <desc id="desc">用同画面、明暗细节和弱光观影两个画框说明原生1080P、1800 ANSI、HDR10与色彩表现。此图是构图模板，不代表实拍画质。</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f6f9fc"/>
+      <stop offset="1" stop-color="#edf3f8"/>
+    </linearGradient>
+    <linearGradient id="sceneA" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0c2239"/>
+      <stop offset=".55" stop-color="#174f6e"/>
+      <stop offset="1" stop-color="#b16c45"/>
+    </linearGradient>
+    <linearGradient id="sceneB" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#071521"/>
+      <stop offset=".55" stop-color="#143e56"/>
+      <stop offset="1" stop-color="#8d5633"/>
+    </linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="170%" height="180%">
+      <feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="#21364a" flood-opacity=".14"/>
+    </filter>
+    <style>
+      .title{font:700 31px "Microsoft YaHei","PingFang SC",sans-serif;fill:#172231}
+      .sub{font:400 15px "Microsoft YaHei","PingFang SC",sans-serif;fill:#5f6b7a}
+      .label{font:700 18px "Microsoft YaHei","PingFang SC",sans-serif;fill:#172231}
+      .note{font:400 12px "Microsoft YaHei","PingFang SC",sans-serif;fill:#5f6b7a}
+      .tiny{font:400 11px "Microsoft YaHei","PingFang SC",sans-serif;fill:#697585}
+      .fact{font:700 21px "Segoe UI","Microsoft YaHei",sans-serif;fill:#172231}
+    </style>
+  </defs>
+  <rect width="1200" height="620" rx="18" fill="url(#bg)"/>
+  <text x="48" y="58" class="title">画质证明：不要只放参数，要让差异同画面可见</text>
+  <text x="48" y="86" class="sub">主标题准确写“原生 1080P，支持 4K 解码”；画面负责证明 HDR、明暗与色彩，而不是替参数夸大分辨率。</text>
+  <rect x="938" y="38" width="214" height="32" rx="16" fill="#fff7e8" stroke="#eed9ad"/>
+  <text x="1045" y="59" text-anchor="middle" class="note" fill="#8a5a12">构图示意 · 非实拍画质</text>
+
+  <g filter="url(#shadow)">
+    <rect x="48" y="130" width="536" height="384" rx="16" fill="#fff" stroke="#dce4ec"/>
+    <rect x="616" y="130" width="536" height="384" rx="16" fill="#fff" stroke="#dce4ec"/>
+  </g>
+
+  <text x="78" y="170" class="label">同画面 · 明暗与细节</text>
+  <text x="78" y="192" class="note">用一张有高光、阴影和纹理的实拍画面作为基准。</text>
+  <rect x="78" y="212" width="220" height="236" rx="8" fill="#f4f7fa" stroke="#cbd5df"/>
+  <rect x="308" y="212" width="220" height="236" rx="8" fill="#f4f7fa" stroke="#cbd5df"/>
+  <rect x="90" y="224" width="196" height="196" fill="#8997a3"/>
+  <rect x="320" y="224" width="196" height="196" fill="url(#sceneA)"/>
+  <circle cx="188" cy="284" r="34" fill="#c8d2da" opacity=".65"/>
+  <circle cx="418" cy="284" r="34" fill="#f0c16e"/>
+  <path d="M90 420 170 332l62 58 54-34v64H90Z" fill="#697987"/>
+  <path d="M320 420 405 318l50 62 61-39v79H320Z" fill="#0a2336"/>
+  <path d="M320 420 405 318l50 62" fill="none" stroke="#5fb6c5" stroke-width="2" opacity=".8"/>
+  <text x="118" y="236" class="note" fill="#fff">参考画面</text>
+  <text x="348" y="236" class="note" fill="#fff">待替换实拍</text>
+  <text x="195" y="438" text-anchor="middle" class="note">信息压平</text>
+  <text x="425" y="438" text-anchor="middle" class="note">层次可辨</text>
+  <text x="78" y="486" class="tiny">左右两侧必须来自同一片源、同一机位与同一曝光设置。</text>
+
+  <text x="646" y="170" class="label">弱光观影 · 色彩与画面完整性</text>
+  <text x="646" y="192" class="note">把产品放回卧室场景，用一个完整画面收口卖点。</text>
+  <rect x="646" y="212" width="228" height="236" rx="8" fill="#f4f7fa" stroke="#cbd5df"/>
+  <rect x="894" y="212" width="228" height="236" rx="8" fill="#f4f7fa" stroke="#cbd5df"/>
+  <rect x="658" y="224" width="204" height="196" fill="#aab4bc"/>
+  <rect x="906" y="224" width="204" height="196" fill="url(#sceneB)"/>
+  <path d="M658 392c38-44 74-49 108-15 39-49 67-35 96 15v28H658Z" fill="#788791"/>
+  <path d="M906 396c43-48 77-43 108-8 36-45 64-33 96 7v25H906Z" fill="#091925"/>
+  <circle cx="760" cy="280" r="24" fill="#d6dee3" opacity=".75"/>
+  <circle cx="1009" cy="280" r="24" fill="#f4c164"/>
+  <path d="M658 380c36-30 70-27 102 3 39-34 72-27 102 7" fill="none" stroke="#84949f" stroke-width="2"/>
+  <path d="M906 382c38-35 75-27 108 2 36-34 67-25 96 6" fill="none" stroke="#e5a25b" stroke-width="2"/>
+  <g transform="translate(756 410)">
+    <path d="M0 22h60l7-18 5 28 8-15h38z" fill="#1c2430"/>
+    <rect x="-4" y="5" width="64" height="15" rx="6" fill="#252d38"/>
+    <circle cx="10" cy="13" r="5" fill="#6ca8cf"/>
+  </g>
+  <g transform="translate(1004 410)">
+    <path d="M0 22h60l7-18 5 28 8-15h38z" fill="#1c2430"/>
+    <rect x="-4" y="5" width="64" height="15" rx="6" fill="#252d38"/>
+    <circle cx="10" cy="13" r="5" fill="#6ca8cf"/>
+  </g>
+  <text x="760" y="484" text-anchor="middle" class="note">只看亮度</text>
+  <text x="1008" y="484" text-anchor="middle" class="note">同时看色彩与细节</text>
+
+  <g transform="translate(78 536)">
+    <rect width="334" height="56" rx="10" fill="#f3f7fb" stroke="#d8e1e9"/>
+    <rect x="366" width="334" height="56" rx="10" fill="#f3f7fb" stroke="#d8e1e9"/>
+    <rect x="732" width="390" height="56" rx="10" fill="#f3f7fb" stroke="#d8e1e9"/>
+    <text x="18" y="24" class="note">清晰度</text>
+    <text x="18" y="47" class="fact">原生 1080P</text>
+    <text x="384" y="24" class="note">动态范围</text>
+    <text x="384" y="47" class="fact">HDR10</text>
+    <text x="750" y="24" class="note">亮度与色彩</text>
+    <text x="750" y="47" class="fact">1800 ANSI · 98% NTSC</text>
+  </g>
+</svg>

@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="620" viewBox="0 0 1200 620" role="img" aria-labelledby="title desc">
+  <title id="title">ONO3Pro 耐用与信任构图示例</title>
+  <desc id="desc">把质量测试、附件清单、保修范围与售后响应集中在同一张信任图里。所有承诺发布前需要业务核实。</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f6f9fc"/>
+      <stop offset="1" stop-color="#edf3f8"/>
+    </linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="180%" height="190%">
+      <feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="#21364a" flood-opacity=".14"/>
+    </filter>
+    <style>
+      .title{font:700 31px "Microsoft YaHei","PingFang SC",sans-serif;fill:#172231}
+      .sub{font:400 15px "Microsoft YaHei","PingFang SC",sans-serif;fill:#5f6b7a}
+      .label{font:700 18px "Microsoft YaHei","PingFang SC",sans-serif;fill:#172231}
+      .note{font:400 12px "Microsoft YaHei","PingFang SC",sans-serif;fill:#5f6b7a}
+      .tiny{font:400 11px "Microsoft YaHei","PingFang SC",sans-serif;fill:#697585}
+      .fact{font:700 24px "Segoe UI","Microsoft YaHei",sans-serif;fill:#172231}
+    </style>
+  </defs>
+  <rect width="1200" height="620" rx="18" fill="url(#bg)"/>
+  <text x="48" y="58" class="title">耐用与信任：把“应该没问题”变成一张可检查的图</text>
+  <text x="48" y="86" class="sub">测试、附件、保修与响应一起回答高价便携投影最怕的三个问题：会不会坏、坏了怎么办、买回来有什么。</text>
+  <rect x="938" y="38" width="214" height="32" rx="16" fill="#fff7e8" stroke="#eed9ad"/>
+  <text x="1045" y="59" text-anchor="middle" class="note" fill="#8a5a12">构图示意 · 承诺待核实</text>
+
+  <g filter="url(#shadow)">
+    <rect x="48" y="128" width="554" height="426" rx="16" fill="#fff" stroke="#dce4ec"/>
+    <rect x="628" y="128" width="524" height="426" rx="16" fill="#fff" stroke="#dce4ec"/>
+  </g>
+
+  <text x="78" y="168" class="label">12 项质量测试</text>
+  <text x="78" y="190" class="note">不要只写“严格测试”；让用户看到测试项目与对应证据。</text>
+  <g transform="translate(78 216)">
+    <g fill="#f3f7fb" stroke="#d8e1e9">
+      <rect width="112" height="58" rx="9"/><rect x="126" width="112" height="58" rx="9"/><rect x="252" width="112" height="58" rx="9"/><rect x="378" width="112" height="58" rx="9"/>
+      <rect y="72" width="112" height="58" rx="9"/><rect x="126" y="72" width="112" height="58" rx="9"/><rect x="252" y="72" width="112" height="58" rx="9"/><rect x="378" y="72" width="112" height="58" rx="9"/>
+      <rect y="144" width="112" height="58" rx="9"/><rect x="126" y="144" width="112" height="58" rx="9"/><rect x="252" y="144" width="112" height="58" rx="9"/><rect x="378" y="144" width="112" height="58" rx="9"/>
+    </g>
+    <g class="tiny" text-anchor="middle" fill="#435366">
+      <text x="56" y="33">画质</text><text x="182" y="33">对焦</text><text x="308" y="33">亮度</text><text x="434" y="33">振动</text>
+      <text x="56" y="105">音质</text><text x="182" y="105">老化</text><text x="308" y="105">压力</text><text x="434" y="105">散热</text>
+      <text x="56" y="177">盐雾</text><text x="182" y="177">对焦复测</text><text x="308" y="177">噪音</text><text x="434" y="177">光学</text>
+    </g>
+  </g>
+  <path d="M78 436h496" stroke="#d5dde5" stroke-width="2"/>
+  <circle cx="104" cy="470" r="18" fill="#e3f4eb"/>
+  <path d="m95 470 6 6 12-13" fill="none" stroke="#2b7f5a" stroke-width="3" stroke-linecap="round"/>
+  <text x="134" y="466" class="fact" font-size="18">把测试报告做成可点开的证据</text>
+  <text x="134" y="488" class="note">正式素材可替换为报告封面、测试场景和关键结论，不放无法核对的装饰图标。</text>
+
+  <text x="658" y="168" class="label">买后发生什么</text>
+  <text x="658" y="190" class="note">把保修与服务承诺放进同一条购买理由。</text>
+
+  <g transform="translate(658 220)">
+    <rect width="464" height="108" rx="12" fill="#f3f7fb" stroke="#d8e1e9"/>
+    <circle cx="53" cy="54" r="26" fill="#e4edf7"/>
+    <path d="M39 53h28M53 39v28" stroke="#356fae" stroke-width="3" stroke-linecap="round"/>
+    <text x="96" y="43" class="note">随箱内容</text>
+    <text x="96" y="70" class="fact">主机 · 遥控器 · 电源 · 线材</text>
+    <text x="96" y="91" class="tiny">最终以实际包装清单与实物图为准</text>
+  </g>
+
+  <g transform="translate(658 346)">
+    <rect width="222" height="164" rx="12" fill="#eef7f2" stroke="#cee7d9"/>
+    <text x="20" y="32" class="note">保修</text>
+    <text x="20" y="72" class="fact">365 天</text>
+    <text x="20" y="99" class="tiny">范围与起算日需核实</text>
+    <path d="M20 120h182" stroke="#c7dfd2"/>
+    <text x="20" y="144" class="tiny">购买凭证与注册路径</text>
+  </g>
+
+  <g transform="translate(900 346)">
+    <rect width="222" height="164" rx="12" fill="#f7f4fb" stroke="#e1d7ec"/>
+    <text x="20" y="32" class="note">售后支持</text>
+    <text x="20" y="72" class="fact">入口清晰</text>
+    <text x="20" y="99" class="tiny">响应时长按实际团队口径</text>
+    <path d="M20 120h182" stroke="#ddd3e7"/>
+    <text x="20" y="144" class="tiny">故障排查与替换流程</text>
+  </g>
+
+  <rect x="48" y="572" width="1104" height="30" rx="8" fill="#fffdf7" stroke="#eadfc8"/>
+  <text x="66" y="592" class="tiny" fill="#6e4d1b">发布前逐项确认：测试名称、365 天保修范围、响应时长、附件数量与售后服务路径；不要把示意图当作承诺证据。</text>
+</svg>

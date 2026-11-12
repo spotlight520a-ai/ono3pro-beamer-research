@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="620" viewBox="0 0 1200 620" role="img" aria-labelledby="title desc">
+  <title id="title">ONO3Pro 便携与安装构图示例</title>
+  <desc id="desc">用提手、机身比例、投距和移动后校正四个信息说明便携价值。重量和投距数字需要发布前核准，本图为构图示意。</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f6f9fc"/>
+      <stop offset="1" stop-color="#edf3f8"/>
+    </linearGradient>
+    <linearGradient id="wall" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#eef3f6"/>
+      <stop offset="1" stop-color="#dce6ec"/>
+    </linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="180%" height="190%">
+      <feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="#21364a" flood-opacity=".14"/>
+    </filter>
+    <style>
+      .title{font:700 31px "Microsoft YaHei","PingFang SC",sans-serif;fill:#172231}
+      .sub{font:400 15px "Microsoft YaHei","PingFang SC",sans-serif;fill:#5f6b7a}
+      .label{font:700 18px "Microsoft YaHei","PingFang SC",sans-serif;fill:#172231}
+      .note{font:400 12px "Microsoft YaHei","PingFang SC",sans-serif;fill:#5f6b7a}
+      .tiny{font:400 11px "Microsoft YaHei","PingFang SC",sans-serif;fill:#697585}
+      .fact{font:700 21px "Segoe UI","Microsoft YaHei",sans-serif;fill:#172231}
+    </style>
+  </defs>
+  <rect width="1200" height="620" rx="18" fill="url(#bg)"/>
+  <text x="48" y="58" class="title">便携与安装：把“能移动”变成用户看得懂的动作</text>
+  <text x="48" y="86" class="sub">同一张图里依次回答：怎么拿、放哪里、投多大、搬动后要不要重新调。</text>
+  <rect x="938" y="38" width="214" height="32" rx="16" fill="#fff7e8" stroke="#eed9ad"/>
+  <text x="1045" y="59" text-anchor="middle" class="note" fill="#8a5a12">构图示意 · 数字待核准</text>
+
+  <g filter="url(#shadow)">
+    <rect x="48" y="128" width="350" height="406" rx="16" fill="#fff" stroke="#dce4ec"/>
+    <rect x="424" y="128" width="350" height="406" rx="16" fill="#fff" stroke="#dce4ec"/>
+    <rect x="800" y="128" width="352" height="406" rx="16" fill="#fff" stroke="#dce4ec"/>
+  </g>
+
+  <text x="76" y="168" class="label">01 · 一只手提起</text>
+  <text x="76" y="190" class="note">用真手和真实机身建立尺寸感。</text>
+  <rect x="76" y="214" width="294" height="252" rx="10" fill="#f4f7fa"/>
+  <g transform="translate(106 250)">
+    <path d="M46 34c0-32 16-45 44-45h95c27 0 42 14 42 44" fill="none" stroke="#313944" stroke-width="11" stroke-linecap="round"/>
+    <rect x="0" y="34" width="228" height="70" rx="15" fill="#1c2430"/>
+    <rect x="18" y="48" width="192" height="43" rx="8" fill="#28313d"/>
+    <circle cx="82" cy="69" r="25" fill="#446d84" stroke="#91bad1" stroke-width="4"/>
+    <circle cx="82" cy="69" r="12" fill="#122c3d"/>
+    <circle cx="73" cy="58" r="4" fill="#d9f0ff" opacity=".8"/>
+    <path d="M146 58h41M146 68h34M146 78h45" stroke="#8c9ba7" stroke-width="2" opacity=".55"/>
+    <path d="M8 114h212" stroke="#c9d2da" stroke-width="3"/>
+    <text x="114" y="148" text-anchor="middle" class="tiny">皮革提手 · 薄机身</text>
+  </g>
+  <path d="M192 229c-37-43-75-53-92-29-15 22 16 57 71 79" fill="#dcae88"/>
+  <path d="M210 234c-30-27-58-30-70-17-10 12 13 35 42 47" fill="#eed0b6"/>
+  <path d="M113 260c28 17 56 26 86 27" fill="none" stroke="#cb9d78" stroke-width="2"/>
+  <text x="76" y="490" class="fact">移动动作</text>
+  <text x="76" y="513" class="note">比单独放大重量数字更有画面记忆点。</text>
+
+  <text x="452" y="168" class="label">02 · 一处摆放，投出画面</text>
+  <text x="452" y="190" class="note">投距示意必须按官方比例重画。</text>
+  <rect x="452" y="214" width="294" height="252" rx="10" fill="url(#wall)"/>
+  <rect x="518" y="240" width="192" height="132" rx="4" fill="#fbfdff" stroke="#c6d1db"/>
+  <rect x="526" y="248" width="176" height="116" fill="#173c5b"/>
+  <path d="M526 333c40-36 73-31 104-4 24-33 48-23 72 4v31H526Z" fill="#0c263d"/>
+  <circle cx="672" cy="276" r="15" fill="#eab762"/>
+  <g transform="translate(470 394)">
+    <path d="M0 28h64l8-20 5 32 8-17h45z" fill="#1c2430"/>
+    <rect x="-4" y="8" width="69" height="17" rx="7" fill="#252d38"/>
+    <path d="M4 8c4-14 13-19 25-19s23 5 27 19" fill="none" stroke="#303946" stroke-width="4"/>
+    <circle cx="15" cy="17" r="5" fill="#6ca8cf"/>
+  </g>
+  <path d="M546 390 614 260m30 0 79 130" stroke="#7ca7c7" stroke-width="2" stroke-dasharray="5 6"/>
+  <text x="615" y="427" text-anchor="middle" class="note">短投距 / 大画面</text>
+  <text x="452" y="490" class="fact">投距与画面尺寸</text>
+  <text x="452" y="513" class="note">建议叠加真实房间标尺与人工参照。</text>
+
+  <text x="828" y="168" class="label">03 · 移动后再校正</text>
+  <text x="828" y="190" class="note">把“便携”直接连接到省心结果。</text>
+  <rect x="828" y="214" width="296" height="252" rx="10" fill="#f4f7fa"/>
+  <rect x="854" y="238" width="112" height="160" rx="8" fill="#fff" stroke="#d2dbe4"/>
+  <rect x="986" y="238" width="112" height="160" rx="8" fill="#fff" stroke="#d2dbe4"/>
+  <path d="M872 254 950 263 938 365 880 355Z" fill="#376c96"/>
+  <rect x="1001" y="252" width="82" height="132" fill="#376c96"/>
+  <path d="M862 419h80" stroke="#9aa8b5" stroke-width="2"/>
+  <path d="m938 412 8 7-8 7" fill="none" stroke="#9aa8b5" stroke-width="2"/>
+  <path d="M990 419h80" stroke="#9aa8b5" stroke-width="2" opacity="0"/>
+  <text x="910" y="443" text-anchor="middle" class="note">歪斜</text>
+  <text x="1042" y="443" text-anchor="middle" class="note">自动校正</text>
+  <text x="828" y="490" class="fact">减少重复调整</text>
+  <text x="828" y="513" class="note">用固定机位真实演示替换示意图。</text>
+
+  <g transform="translate(48 552)">
+    <rect width="1104" height="40" rx="9" fill="#fffdf7" stroke="#eadfc8"/>
+    <text x="18" y="24" class="tiny" fill="#6e4d1b">发布前先统一重量口径：当前素材出现 0.9 kg、1 kg 与 2.4 lb；投距和画面尺寸也要按官方规格表复核。</text>
+  </g>
+</svg>

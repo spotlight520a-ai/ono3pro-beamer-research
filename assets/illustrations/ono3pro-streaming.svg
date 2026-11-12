@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="620" viewBox="0 0 1200 620" role="img" aria-labelledby="title desc">
+  <title id="title">ONO3Pro 无需电视棒构图示例</title>
+  <desc id="desc">用投影仪直连内容首页、应用入口、遥控器与在线更新说明无需电视棒的购买结果。此图为构图示意。</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f6f9fc"/>
+      <stop offset="1" stop-color="#edf3f8"/>
+    </linearGradient>
+    <linearGradient id="screenglow" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#11375e"/>
+      <stop offset="1" stop-color="#0a233a"/>
+    </linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="170%" height="180%">
+      <feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="#21364a" flood-opacity=".14"/>
+    </filter>
+    <style>
+      .title{font:700 31px "Microsoft YaHei","PingFang SC",sans-serif;fill:#172231}
+      .sub{font:400 15px "Microsoft YaHei","PingFang SC",sans-serif;fill:#5f6b7a}
+      .label{font:700 18px "Microsoft YaHei","PingFang SC",sans-serif;fill:#172231}
+      .note{font:400 12px "Microsoft YaHei","PingFang SC",sans-serif;fill:#5f6b7a}
+      .tiny{font:400 11px "Microsoft YaHei","PingFang SC",sans-serif;fill:#697585}
+      .metric{font:700 28px "Segoe UI","Microsoft YaHei",sans-serif;fill:#172231}
+    </style>
+  </defs>
+  <rect width="1200" height="620" rx="18" fill="url(#bg)"/>
+  <text x="48" y="58" class="title">无需电视棒：先让用户看见“开机后得到什么”</text>
+  <text x="48" y="86" class="sub">不要先讲 MOVIN 版本历史；用内容入口、开机状态与应用操作完成一句话证明。</text>
+  <rect x="938" y="38" width="214" height="32" rx="16" fill="#fff7e8" stroke="#eed9ad"/>
+  <text x="1045" y="59" text-anchor="middle" class="note" fill="#8a5a12">构图示意 · 需替换实拍</text>
+
+  <g filter="url(#shadow)">
+    <rect x="48" y="128" width="716" height="392" rx="16" fill="#fff" stroke="#dce4ec"/>
+    <rect x="796" y="128" width="356" height="392" rx="16" fill="#fff" stroke="#dce4ec"/>
+  </g>
+
+  <rect x="84" y="164" width="520" height="300" rx="12" fill="#f7f9fb" stroke="#cbd5df"/>
+  <rect x="110" y="190" width="468" height="246" rx="6" fill="url(#screenglow)"/>
+  <rect x="136" y="216" width="104" height="16" rx="8" fill="#f3f7fb"/>
+  <rect x="136" y="258" width="128" height="72" rx="9" fill="#3b78b4"/>
+  <rect x="278" y="258" width="128" height="72" rx="9" fill="#397b86"/>
+  <rect x="420" y="258" width="128" height="72" rx="9" fill="#6d5b96"/>
+  <rect x="136" y="346" width="412" height="64" rx="8" fill="#173c5b"/>
+  <circle cx="170" cy="378" r="17" fill="#eef7ff" opacity=".9"/>
+  <path d="m165 369 14 9-14 9z" fill="#1b4b71"/>
+  <text x="198" y="383" class="note" fill="#dbe9f5">应用入口与内容首页</text>
+  <text x="136" y="448" class="note">图内文字建议改为实际系统语言，并用真实首页截图替换。</text>
+
+  <g transform="translate(636 382)">
+    <path d="M0 80h86l10-27 7 42 12-23h72z" fill="#1c2430"/>
+    <rect x="-5" y="56" width="91" height="22" rx="9" fill="#252d38"/>
+    <path d="M7 56c5-20 17-25 31-25s28 6 33 25" fill="none" stroke="#303946" stroke-width="5"/>
+    <circle cx="20" cy="67" r="7" fill="#6ca8cf" stroke="#a9d5ed" stroke-width="2"/>
+    <rect x="92" y="76" width="94" height="8" rx="4" fill="#e3e9ef"/>
+  </g>
+
+  <path d="M872 205h202" stroke="#d4dce4" stroke-width="2" stroke-dasharray="5 6"/>
+  <path d="m1068 198 8 7-8 7" fill="none" stroke="#9ba9b8" stroke-width="2"/>
+  <g transform="translate(842 262)">
+    <rect x="0" y="0" width="76" height="38" rx="7" fill="#fff" stroke="#9ba8b5"/>
+    <rect x="35" y="38" width="8" height="20" fill="#9ba8b5"/>
+    <path d="M12 12h52M12 22h39" stroke="#c1cad4" stroke-width="3"/>
+    <path d="M4 4 72 34M72 4 4 34" stroke="#c4474d" stroke-width="4"/>
+  </g>
+  <text x="880" y="338" class="label">电视棒</text>
+  <path d="M864 325h65" stroke="#c4474d" stroke-width="3"/>
+  <text x="976" y="245" class="metric">= 0</text>
+  <text x="976" y="267" class="note">额外设备步骤</text>
+
+  <g transform="translate(824 376)">
+    <rect x="0" y="0" width="92" height="92" rx="12" fill="#f3f7fb" stroke="#d8e1e9"/>
+    <rect x="104" y="0" width="92" height="92" rx="12" fill="#f3f7fb" stroke="#d8e1e9"/>
+    <rect x="208" y="0" width="92" height="92" rx="12" fill="#f3f7fb" stroke="#d8e1e9"/>
+    <text x="46" y="32" text-anchor="middle" class="note">应用入口</text>
+    <text x="46" y="56" text-anchor="middle" class="label" font-size="15">直接打开</text>
+    <text x="150" y="32" text-anchor="middle" class="note">遥控操作</text>
+    <text x="150" y="56" text-anchor="middle" class="label" font-size="15">一只遥控</text>
+    <text x="254" y="32" text-anchor="middle" class="note">系统更新</text>
+    <text x="254" y="56" text-anchor="middle" class="label" font-size="15">OTA</text>
+  </g>
+
+  <rect x="48" y="548" width="1104" height="34" rx="8" fill="#fffdf7" stroke="#eadfc8"/>
+  <text x="66" y="570" class="tiny" fill="#6e4d1b">发布前请用真实系统首页、官方应用入口与遥控器实拍替换占位画面；不要暗示未取得授权的品牌认证。</text>
+</svg>

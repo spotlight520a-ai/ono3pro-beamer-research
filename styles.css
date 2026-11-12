@@ -2680,6 +2680,140 @@ svg {
   font-size: 11px;
 }
 
+.audit-examples {
+  margin-top: 16px;
+}
+
+.audit-examples-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  gap: 28px;
+}
+
+.audit-examples-heading h3 {
+  margin: 0;
+  color: var(--ink);
+  font-size: 16px;
+  line-height: 1.35;
+}
+
+.audit-examples .section-kicker {
+  margin-bottom: 5px;
+  font-size: 11px;
+}
+
+.audit-examples-heading p {
+  max-width: 650px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.65;
+}
+
+.audit-example-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.audit-example {
+  display: flex;
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  flex-direction: column;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+}
+
+.audit-example.is-wide {
+  grid-column: 1 / -1;
+}
+
+.audit-example-visual {
+  display: block;
+  overflow: hidden;
+  background: #eef3f8;
+}
+
+.audit-example-visual img {
+  display: block;
+  width: 100%;
+  height: auto;
+  transition: transform 180ms ease;
+}
+
+.audit-example-visual:hover img {
+  transform: scale(1.012);
+}
+
+.audit-example-visual:focus-visible,
+.audit-example-foot a:focus-visible {
+  outline: 3px solid #8fb4ea;
+  outline-offset: 2px;
+}
+
+.audit-example figcaption {
+  display: grid;
+  padding: 14px 15px 15px;
+  gap: 12px;
+}
+
+.audit-example-copy > span {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--primary);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.audit-example-copy h4 {
+  margin: 0;
+  color: var(--ink);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.audit-example-copy p {
+  margin: 6px 0 0;
+  color: var(--ink-soft);
+  font-size: 11px;
+  line-height: 1.65;
+}
+
+.audit-example-foot {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  padding-top: 10px;
+  gap: 16px;
+  border-top: 1px solid #edf0f3;
+}
+
+.audit-example-foot small {
+  max-width: 78%;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+.audit-example-foot a {
+  flex: 0 0 auto;
+  color: var(--primary);
+  font-size: 11px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.audit-example-foot a:hover {
+  text-decoration: underline;
+}
+
 .audit-copy-list {
   display: grid;
   gap: 10px;
@@ -4340,6 +4474,38 @@ svg {
 
   .audit-sequence ol {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .audit-examples-heading {
+    display: grid;
+    align-items: start;
+    gap: 8px;
+  }
+
+  .audit-example-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .audit-example.is-wide {
+    grid-column: auto;
+  }
+
+  .audit-example figcaption {
+    padding: 12px;
+  }
+
+  .audit-example-foot {
+    display: grid;
+    align-items: start;
+    gap: 8px;
+  }
+
+  .audit-example-foot small {
+    max-width: none;
+  }
+
+  .audit-example-copy > span {
+    font-size: 11px;
   }
 
   .audit-copy-item {

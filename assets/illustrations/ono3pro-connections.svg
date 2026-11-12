@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="620" viewBox="0 0 1200 620" role="img" aria-labelledby="title desc">
+  <title id="title">ONO3Pro 娱乐连接构图示例</title>
+  <desc id="desc">把WiFi 6、Bluetooth 5.4、HDMI eARC与CEC、游戏模式连接到耳机、Soundbar与主机三种实际使用结果。此图为构图示意。</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f6f9fc"/>
+      <stop offset="1" stop-color="#edf3f8"/>
+    </linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="180%" height="190%">
+      <feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="#21364a" flood-opacity=".14"/>
+    </filter>
+    <style>
+      .title{font:700 31px "Microsoft YaHei","PingFang SC",sans-serif;fill:#172231}
+      .sub{font:400 15px "Microsoft YaHei","PingFang SC",sans-serif;fill:#5f6b7a}
+      .label{font:700 18px "Microsoft YaHei","PingFang SC",sans-serif;fill:#172231}
+      .note{font:400 12px "Microsoft YaHei","PingFang SC",sans-serif;fill:#5f6b7a}
+      .tiny{font:400 11px "Microsoft YaHei","PingFang SC",sans-serif;fill:#697585}
+      .fact{font:700 17px "Segoe UI","Microsoft YaHei",sans-serif;fill:#172231}
+    </style>
+  </defs>
+  <rect width="1200" height="620" rx="18" fill="url(#bg)"/>
+  <text x="48" y="58" class="title">娱乐连接：从接口名称走到三种实际使用结果</text>
+  <text x="48" y="86" class="sub">用户不需要背 WiFi 6、Bluetooth 5.4、eARC 与 CEC；需要知道他能在什么场景里怎么用。</text>
+  <rect x="938" y="38" width="214" height="32" rx="16" fill="#fff7e8" stroke="#eed9ad"/>
+  <text x="1045" y="59" text-anchor="middle" class="note" fill="#8a5a12">构图示意 · 需实拍验证</text>
+
+  <g filter="url(#shadow)">
+    <rect x="48" y="128" width="1104" height="426" rx="16" fill="#fff" stroke="#dce4ec"/>
+  </g>
+
+  <g transform="translate(500 224)">
+    <path d="M38 36c0-24 14-36 40-36h124c26 0 40 12 40 36" fill="none" stroke="#313944" stroke-width="9" stroke-linecap="round"/>
+    <rect x="0" y="38" width="280" height="86" rx="17" fill="#1c2430"/>
+    <rect x="20" y="54" width="240" height="52" rx="9" fill="#28313d"/>
+    <circle cx="102" cy="80" r="30" fill="#446d84" stroke="#91bad1" stroke-width="4"/>
+    <circle cx="102" cy="80" r="14" fill="#122c3d"/>
+    <circle cx="91" cy="68" r="5" fill="#d9f0ff" opacity=".8"/>
+    <path d="M174 65h57M174 78h45M174 91h54" stroke="#8c9ba7" stroke-width="2" opacity=".55"/>
+  </g>
+  <text x="640" y="385" text-anchor="middle" class="label">ONO3Pro</text>
+  <text x="640" y="407" text-anchor="middle" class="note">一个娱乐中心，三类连接结果</text>
+
+  <path d="M505 270 326 205M505 324 326 324M775 270 878 205M775 324 878 324" stroke="#c5d1dd" stroke-width="2" stroke-dasharray="5 6"/>
+
+  <g transform="translate(76 158)">
+    <rect width="250" height="96" rx="12" fill="#f3f7fb" stroke="#d8e1e9"/>
+    <text x="20" y="30" class="note">卧室夜间观影</text>
+    <text x="20" y="57" class="fact">蓝牙耳机</text>
+    <text x="20" y="78" class="tiny">Bluetooth 5.4</text>
+    <path d="M196 28c20 8 20 40 0 48m12-62c33 15 33 61 0 76" fill="none" stroke="#6f91ad" stroke-width="2"/>
+  </g>
+
+  <g transform="translate(76 278)">
+    <rect width="250" height="96" rx="12" fill="#f3f7fb" stroke="#d8e1e9"/>
+    <text x="20" y="30" class="note">客厅影音</text>
+    <text x="20" y="57" class="fact">Soundbar</text>
+    <text x="20" y="78" class="tiny">HDMI eARC · Dolby</text>
+    <rect x="186" y="28" width="42" height="8" rx="4" fill="#7790a3"/>
+    <circle cx="196" cy="33" r="3" fill="#3a566c"/>
+    <circle cx="218" cy="33" r="3" fill="#3a566c"/>
+  </g>
+
+  <g transform="translate(878 158)">
+    <rect width="250" height="96" rx="12" fill="#f3f7fb" stroke="#d8e1e9"/>
+    <text x="20" y="30" class="note">周末游戏</text>
+    <text x="20" y="57" class="fact">低延迟模式</text>
+    <text x="20" y="78" class="tiny">HDMI 游戏模式</text>
+    <path d="M186 36h45c14 0 17 20 7 28l-9 8h-38l-9-8c-10-8-7-28 7-28Z" fill="#6f91ad" opacity=".7"/>
+  </g>
+
+  <g transform="translate(878 278)">
+    <rect width="250" height="96" rx="12" fill="#f3f7fb" stroke="#d8e1e9"/>
+    <text x="20" y="30" class="note">流媒体播放</text>
+    <text x="20" y="57" class="fact">连接更稳定</text>
+    <text x="20" y="78" class="tiny">WiFi 6 · 一只遥控 CEC</text>
+    <path d="M200 58c-17-13-29-13-42 0M195 70c-11-8-20-8-31 0" fill="none" stroke="#6f91ad" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="179" cy="80" r="3" fill="#6f91ad"/>
+  </g>
+
+  <rect x="476" y="430" width="328" height="92" rx="12" fill="#eef6f2" stroke="#cfe6da"/>
+  <text x="640" y="458" text-anchor="middle" class="note" fill="#2b6e54">建议画面结构</text>
+  <text x="640" y="481" text-anchor="middle" class="fact">设备在中央 · 场景在四周</text>
+  <text x="640" y="504" text-anchor="middle" class="tiny">每个连接只保留一个结果，不再堆接口图标</text>
+
+  <rect x="48" y="574" width="1104" height="28" rx="8" fill="#fffdf7" stroke="#eadfc8"/>
+  <text x="66" y="593" class="tiny" fill="#6e4d1b">最终素材应展示真实设备连接与可用状态；低延迟、Dolby 与 eARC 能力发布前需按实际规格复核。</text>
+</svg>

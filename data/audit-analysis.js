@@ -98,6 +98,70 @@ window.BSR_AUDIT = {
     "WiFi 6、Bluetooth 5.4、eARC 与游戏模式",
     "质量测试、附件、365 天保修与售后服务",
   ],
+  imageExamples: [
+    {
+      id: "streaming",
+      eyebrow: "建议图 02",
+      title: "无需电视棒",
+      summary:
+        "先让用户看见开机后的内容入口，再用“没有额外设备步骤”收口，而不是先讲系统版本历史。",
+      file: "assets/illustrations/ono3pro-streaming.svg",
+      alt: "无需电视棒构图示例，展示内容首页、应用入口、遥控器与 OTA 更新",
+      disclosure: "正式素材需替换为真实系统首页与遥控器实拍。",
+    },
+    {
+      id: "picture-quality",
+      eyebrow: "建议图 03 · 05",
+      title: "画质证明与观看场景",
+      summary:
+        "用同片源、同机位的画面对比证明明暗和色彩，再把产品放回卧室弱光场景，参数只做准确注释。",
+      file: "assets/illustrations/ono3pro-picture-quality.svg",
+      alt: "画质证明构图示例，同画面展示明暗细节与弱光观影色彩",
+      disclosure: "示意画面不代表实拍画质，上线前替换为真实固定机位画面。",
+    },
+    {
+      id: "auto-correction",
+      eyebrow: "建议图 04",
+      title: "自动校正过程",
+      summary:
+        "把歪斜画面、识别障碍、自动入幕和校正完成连成一段连续结果，让用户一眼看懂省掉了哪些手动步骤。",
+      file: "assets/illustrations/ono3pro-auto-correction-process.svg",
+      alt: "自动校正四阶段构图示例：歪斜画面、发现障碍、自动入幕、校正完成",
+      disclosure:
+        "过程示意，不代表实拍性能或“3 秒”实测；正式素材应以固定机位真实演示替换。",
+      wide: true,
+    },
+    {
+      id: "portability",
+      eyebrow: "建议图 06",
+      title: "便携与安装",
+      summary:
+        "依次展示一只手提起、一处摆放、投距与画面尺寸、移动后重新校正，把便携从重量数字变成动作。",
+      file: "assets/illustrations/ono3pro-portability.svg",
+      alt: "便携与安装构图示例，展示提手、投距示意和移动后自动校正",
+      disclosure: "重量、投距与画面尺寸需要按官方规格复核后在实拍中标注。",
+    },
+    {
+      id: "connections",
+      eyebrow: "建议图 07",
+      title: "娱乐连接",
+      summary:
+        "把接口名称改成具体使用结果：夜里戴耳机、客厅接 Soundbar、周末低延迟游戏，以及稳定播放流媒体。",
+      file: "assets/illustrations/ono3pro-connections.svg",
+      alt: "娱乐连接构图示例，展示蓝牙耳机、Soundbar、游戏模式与 WiFi 6 流媒体",
+      disclosure: "最终素材需展示真实设备连接状态，能力口径按实际规格复核。",
+    },
+    {
+      id: "trust",
+      eyebrow: "建议图 08",
+      title: "耐用与售后信任",
+      summary:
+        "把 12 项测试、附件清单、保修范围与售后入口集中成一张信任图，并前移到购买决策路径中。",
+      file: "assets/illustrations/ono3pro-trust.svg",
+      alt: "耐用与售后信任构图示例，展示质量测试、附件、365 天保修与售后支持",
+      disclosure: "测试、保修、响应时长与附件承诺发布前必须由业务团队逐项确认。",
+    },
+  ],
   listing: [
     {
       index: 1,

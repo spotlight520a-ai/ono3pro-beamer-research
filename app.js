@@ -2182,6 +2182,41 @@
             ${AUDIT.imageOrder.map((item) => `<li>${escapeHTML(item)}</li>`).join("")}
           </ol>
         </div>
+        <div class="audit-examples">
+          <div class="audit-examples-heading">
+            <div>
+              <span class="section-kicker">EDITABLE VISUAL DIRECTIONS</span>
+              <h3>卖点示例图</h3>
+            </div>
+            <p>
+              每张都是可修改的 SVG 构图模板。先确认叙事，再把示意画面替换成固定机位实拍、真实系统截图或已核实的证据。
+            </p>
+          </div>
+          <div class="audit-example-grid">
+            ${AUDIT.imageExamples
+              .map(
+                (example) => `
+                  <figure class="audit-example ${example.wide ? "is-wide" : ""}">
+                    <a class="audit-example-visual" href="./${escapeAttr(example.file)}" target="_blank" rel="noopener noreferrer" aria-label="打开${escapeAttr(example.title)}可编辑 SVG">
+                      <img src="./${escapeAttr(example.file)}" alt="${escapeAttr(example.alt)}" loading="lazy" />
+                    </a>
+                    <figcaption>
+                      <div class="audit-example-copy">
+                        <span>${escapeHTML(example.eyebrow)}</span>
+                        <h4>${escapeHTML(example.title)}</h4>
+                        <p>${escapeHTML(example.summary)}</p>
+                      </div>
+                      <div class="audit-example-foot">
+                        <small>${escapeHTML(example.disclosure)}</small>
+                        <a href="./${escapeAttr(example.file)}" target="_blank" rel="noopener noreferrer">打开可编辑 SVG ↗</a>
+                      </div>
+                    </figcaption>
+                  </figure>
+                `,
+              )
+              .join("")}
+          </div>
+        </div>
       </section>
 
       ${auditMarketPanel()}
