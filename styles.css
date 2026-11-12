@@ -766,7 +766,7 @@ svg {
 
 .product-table {
   width: 100%;
-  min-width: 1120px;
+  min-width: 1220px;
   border-collapse: separate;
   border-spacing: 0;
   table-layout: fixed;
@@ -796,30 +796,34 @@ svg {
 }
 
 .product-table th:nth-child(3) {
-  width: 88px;
+  width: 105px;
 }
 
 .product-table th:nth-child(4) {
-  width: 210px;
+  width: 165px;
 }
 
 .product-table th:nth-child(5) {
-  width: 142px;
+  width: 180px;
 }
 
 .product-table th:nth-child(6) {
-  width: 145px;
+  width: 125px;
 }
 
 .product-table th:nth-child(7) {
-  width: 80px;
+  width: 128px;
 }
 
 .product-table th:nth-child(8) {
-  width: 100px;
+  width: 70px;
 }
 
 .product-table th:nth-child(9) {
+  width: 90px;
+}
+
+.product-table th:nth-child(10) {
   width: 48px;
 }
 
@@ -991,7 +995,40 @@ svg {
 
 .price-cell span {
   color: var(--muted-light);
-  font-size: 9px;
+  font-size: 11px;
+}
+
+.promotion-cell {
+  text-align: right;
+}
+
+.promotion-cell strong {
+  display: block;
+  color: #a34817;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.promotion-cell strong.is-muted {
+  color: var(--muted);
+  font-family: var(--font-sans);
+  font-size: 11px;
+}
+
+.promotion-cell span,
+.promotion-cell small {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.promotion-cell small {
+  overflow: hidden;
+  margin-top: 2px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .spec-stack {
@@ -3580,7 +3617,7 @@ svg {
     display: grid;
     grid-template-columns: auto 64px minmax(0, 1fr) auto;
     align-items: center;
-    min-height: 86px;
+    min-height: 94px;
     padding: 10px 12px;
     gap: 10px;
     border-bottom: 1px solid var(--line);
@@ -3626,27 +3663,44 @@ svg {
     overflow: hidden;
     margin-top: 3px;
     color: var(--muted);
-    font-size: 9px;
+    font-size: 11px;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
 
+  .mobile-promotion-signal {
+    display: block;
+    overflow: hidden;
+    margin-top: 4px;
+    color: #a34817;
+    font-size: 11px;
+    font-weight: 650;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .mobile-promotion-signal.is-muted {
+    color: var(--muted);
+    font-weight: 500;
+  }
+
   .mobile-numbers {
     display: flex;
+    flex-wrap: wrap;
     margin-top: 6px;
-    gap: 10px;
+    gap: 4px 10px;
   }
 
   .mobile-numbers span {
     color: var(--muted);
-    font-size: 8px;
+    font-size: 11px;
   }
 
   .mobile-numbers strong {
     display: inline;
     color: var(--ink);
     font-family: var(--font-mono);
-    font-size: 9px;
+    font-size: 11px;
   }
 
   .mobile-open {

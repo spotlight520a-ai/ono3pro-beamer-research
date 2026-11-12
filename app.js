@@ -90,6 +90,13 @@
 
   let state = loadState();
   const baseByAsin = new Map(DATA.products.map((product) => [product.asin, product]));
+  const promotionsByAsin = new Map(
+    (AUDIT?.promotions?.rows || []).map((row) => [
+      String(row.asin).toUpperCase(),
+      row,
+    ]),
+  );
+  const priceSnapshot = AUDIT?.promotions?.asOf || "时间未提供";
   const ui = {
     query: "",
     brand: "",
@@ -133,6 +140,29 @@
     if (fromLive) return fromLive.replace(/^ONO3\s+Pro$/i, "ONO3Pro");
     const title = product.content?.titleZh || product.sourceTitle || "";
     return title.split(/[：:]/)[0].replace(product.brand, "").trim();
+  }
+
+  function promotionFor(product) {
+    return promotionsByAsin.get(String(product.asin).toUpperCase()) || null;
+  }
+
+  function currentPriceFor(product) {
+    return promotionFor(product)?.bdPrice ?? Number(product.sourcePrice);
+  }
+
+  function promoPriceFor(product) {
+    const promotion = promotionFor(product);
+    return promotion?.promoPrice && promotion.promoPrice < promotion.bdPrice
+      ? promotion.promoPrice
+      : null;
+  }
+
+  function promotionSignal(product) {
+    const promotion = promotionFor(product);
+    if (!promotion) return "未采集";
+    if (promoPriceFor(product)) return promotion.coupon;
+    if (promotion.type === "赠品") return "免费赠品";
+    return "无现金优惠";
   }
 
   function cleanSpecValue(value) {
@@ -377,7 +407,8 @@
         if (ui.system && system !== ui.system) return false;
         if (ui.price) {
           const [min, max] = ui.price.split("-").map(Number);
-          if (product.sourcePrice < min || product.sourcePrice > max) return false;
+          if (currentPriceFor(product) < min || currentPriceFor(product) > max)
+            return false;
         }
         return !query || searchableText(product, working).includes(query);
       });
@@ -387,8 +418,10 @@
         Number(Boolean(b.product.manualFocus)) -
           Number(Boolean(a.product.manualFocus)) ||
         a.product.rank - b.product.rank,
-      "price-asc": (a, b) => a.product.sourcePrice - b.product.sourcePrice,
-      "price-desc": (a, b) => b.product.sourcePrice - a.product.sourcePrice,
+      "price-asc": (a, b) =>
+        currentPriceFor(a.product) - currentPriceFor(b.product),
+      "price-desc": (a, b) =>
+        currentPriceFor(b.product) - currentPriceFor(a.product),
       "rating-desc": (a, b) =>
         Number(b.product.live?.rating || b.product.metrics?.rating || 0) -
         Number(a.product.live?.rating || a.product.metrics?.rating || 0),
@@ -418,7 +451,8 @@
 
   function updateKpis() {
     const prices = DATA.products
-      .map((product) => Number(product.sourcePrice))
+      .filter((product) => !product.manualFocus)
+      .map(currentPriceFor)
       .sort((a, b) => a - b);
     const median =
       prices.length % 2
@@ -428,7 +462,7 @@
     $("#kpiBrands").textContent = `${DATA.meta.brands} 个品牌 · 1 个自有基准`;
     $("#kpiMedianPrice").textContent = priceFormat.format(median);
     $("#kpiMedianNote").textContent =
-      `${DATA.meta.products} 个产品含税参考价`;
+      `${prices.length} 个竞品当前价 · ${priceSnapshot.slice(0, 16)}`;
     $("#kpiImages").textContent = numberFormat.format(
       DATA.meta.listingImages + DATA.meta.aplusImages,
     );
@@ -439,6 +473,9 @@
 
   function productRowTemplate(entry) {
     const { product, working, system } = entry;
+    const promotion = promotionFor(product);
+    const currentPrice = currentPriceFor(product);
+    const promoPrice = promoPriceFor(product);
     const thumb = primaryImage(product, working);
     const imageURL = thumb ? imageSource(thumb) : "";
     const saved = Boolean(state.working[product.asin]);
@@ -474,8 +511,22 @@
           </div>
         </td>
         <td class="price-cell">
-          <strong>${priceFormat.format(product.sourcePrice)}</strong>
-          <span>含税参考价</span>
+          <strong>${priceFormat.format(currentPrice)}</strong>
+          <span>${promotion ? "当前 BD 价 / 售价" : "参考资料价"}</span>
+        </td>
+        <td class="promotion-cell">
+          ${
+            promoPrice
+              ? `
+                <strong>${priceFormat.format(promoPrice)}</strong>
+                <span>估算折后价</span>
+                <small>${escapeHTML(promotionSignal(product))}</small>
+              `
+              : `
+                <strong class="is-muted">${escapeHTML(promotionSignal(product))}</strong>
+                <small>${promotion?.type === "赠品" ? "有赠品，无现金折后价" : "当前页未识别现金券"}</small>
+              `
+          }
         </td>
         <td>
           <div class="spec-stack">
@@ -509,6 +560,9 @@
 
   function mobileCardTemplate(entry) {
     const { product, working, system } = entry;
+    const promotion = promotionFor(product);
+    const currentPrice = currentPriceFor(product);
+    const promoPrice = promoPriceFor(product);
     const thumb = primaryImage(product, working);
     const imageURL = thumb ? imageSource(thumb) : "";
     const selected = ui.selected.has(product.asin);
@@ -518,12 +572,13 @@
         <span class="mobile-thumb">${imageURL ? `<img src="${escapeAttr(imageURL)}" alt="" loading="lazy" />` : ""}</span>
         <div class="mobile-copy">
           <strong>${escapeHTML(working.content.titleZh)}${product.manualFocus ? '<span class="own-product-mark">自有产品</span>' : ""}</strong>
-          <span class="mobile-sub">${escapeHTML(product.brand)} · ${escapeHTML(system)}</span>
+          <span class="mobile-sub">${escapeHTML(product.brand)} · ${escapeHTML(system)} · #${escapeHTML(product.metrics?.subcategoryBsr || product.rank)}</span>
           <div class="mobile-numbers">
-            <span><strong>${priceFormat.format(product.sourcePrice)}</strong></span>
+            <span>当前 <strong>${priceFormat.format(currentPrice)}</strong></span>
+            <span>折后 <strong>${promoPrice ? priceFormat.format(promoPrice) : "—"}</strong></span>
             <span>★ <strong>${escapeHTML(product.live?.rating || "—")}</strong></span>
-            <span>#<strong>${escapeHTML(product.metrics?.subcategoryBsr || product.rank)}</strong></span>
           </div>
+          <span class="mobile-promotion-signal ${promoPrice ? "" : "is-muted"}">${escapeHTML(promotionSignal(product))}</span>
         </div>
         <button class="mobile-open" type="button" data-action="open-detail" aria-label="打开详情">
           <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m9 5 7 7-7 7"></path></svg>
@@ -1690,7 +1745,19 @@
       return;
     }
     const fields = [
-      ["价格", (p, w) => priceFormat.format(p.sourcePrice)],
+      [
+        "页面原价",
+        (p) => priceFormat.format(promotionFor(p)?.listPrice || p.sourcePrice),
+      ],
+      ["当前 BD 价 / 售价", (p) => priceFormat.format(currentPriceFor(p))],
+      ["页面优惠", (p) => promotionSignal(p)],
+      [
+        "估算折后价",
+        (p) =>
+          promoPriceFor(p)
+            ? priceFormat.format(promoPriceFor(p))
+            : "无现金折后价",
+      ],
       ["品牌 / 型号", (p) => `${p.brand} · ${modelOf(p)}`],
       ["亮度（页面口径）", (p) => specOf(p, "亮度")],
       ["原生分辨率", (p) => specOf(p, "原生分辨率")],
@@ -2225,7 +2292,10 @@
       "品牌",
       "型号",
       "ASIN",
-      "价格(EUR)",
+      "页面原价(EUR)",
+      "当前BD价/售价(EUR)",
+      "页面优惠",
+      "估算折后价(EUR)",
       "亮度",
       "原生分辨率",
       "智能系统",
@@ -2260,7 +2330,10 @@
         product.brand,
         modelOf(product),
         product.asin,
-        product.sourcePrice,
+        promotionFor(product)?.listPrice || product.sourcePrice,
+        currentPriceFor(product),
+        promotionSignal(product),
+        promoPriceFor(product) || "",
         specOf(product, "亮度"),
         specOf(product, "原生分辨率"),
         system,
