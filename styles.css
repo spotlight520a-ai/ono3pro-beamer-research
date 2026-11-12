@@ -655,10 +655,11 @@ svg {
 
 .filter-panel {
   display: grid;
-  grid-template-columns: minmax(280px, 1.6fr) repeat(3, minmax(120px, 0.6fr)) minmax(
-      130px,
-      0.65fr
-    ) auto;
+  grid-template-columns:
+    minmax(260px, 1.55fr)
+    repeat(4, minmax(112px, 0.58fr))
+    minmax(128px, 0.64fr)
+    auto;
   gap: 9px;
   padding: 9px 20px;
   border-block: 1px solid var(--line);
@@ -959,6 +960,28 @@ svg {
   font-size: 11px;
   font-weight: 700;
   vertical-align: 1px;
+}
+
+.coverage-mark {
+  display: inline-block;
+  margin-left: 5px;
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-family: var(--font-sans);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.5;
+  vertical-align: 1px;
+}
+
+.coverage-mark.is-deep {
+  color: #1d4ed8;
+  background: #eaf1ff;
+}
+
+.coverage-mark.is-base {
+  color: #667085;
+  background: #f0f2f6;
 }
 
 .own-product-mark {
@@ -4104,10 +4127,10 @@ p.audit-editable {
   }
 
   .filter-panel {
-    grid-template-columns: minmax(250px, 1.4fr) repeat(2, minmax(120px, 0.65fr)) auto;
+    grid-template-columns: minmax(230px, 1.4fr) repeat(3, minmax(108px, 0.62fr)) auto;
   }
 
-  .filter-panel .select-field:nth-of-type(3),
+  .filter-panel .select-system,
   .filter-panel .select-sort {
     display: none;
   }
@@ -4143,7 +4166,8 @@ p.audit-editable {
     grid-column: 1 / -1;
   }
 
-  .filter-panel .select-field:nth-of-type(2) {
+  .filter-panel .select-field:nth-of-type(2),
+  .filter-panel .select-system {
     display: flex;
   }
 

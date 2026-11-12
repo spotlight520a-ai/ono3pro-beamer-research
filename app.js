@@ -117,6 +117,7 @@
     brand: "",
     price: "",
     system: "",
+    coverage: "",
     sort: "rank",
     selected: new Set(),
   };
@@ -205,6 +206,11 @@
     return title.split(/[：:]/)[0].replace(product.brand, "").trim();
   }
 
+  function coverageLabel(product) {
+    if (product.manualFocus || product.coverage === "own") return "自有深挖";
+    return product.coverage === "base" ? "基础档案" : "深挖";
+  }
+
   function promotionFor(product) {
     const rows = auditDraft?.promotions?.rows || AUDIT?.promotions?.rows || [];
     return (
@@ -255,6 +261,16 @@
     const match = raw.match(/[\d.,]+/);
     if (!match) return 0;
     return Number(match[0].replace(/\./g, "").replace(",", ".")) || 0;
+  }
+
+  function metricNumber(value) {
+    if (typeof value === "number") return Number.isFinite(value) ? value : 0;
+    const cleaned = String(value ?? "")
+      .replace(/[^\d,.-]/g, "")
+      .replace(/\.(?=\d{3}(?:\D|$))/g, "")
+      .replace(",", ".");
+    const parsed = Number(cleaned);
+    return Number.isFinite(parsed) ? parsed : 0;
   }
 
   function systemOf(product) {
@@ -432,6 +448,15 @@
     ) {
       return `./${image.localPath}`;
     }
+    const remoteUrl = image.remoteUrl || image.sourceUrl;
+    if (
+      typeof remoteUrl === "string" &&
+      /^https:\/\/(?:images-na\.ssl-images-amazon\.com|m\.media-amazon\.com)\/images\//i.test(
+        remoteUrl,
+      )
+    ) {
+      return remoteUrl;
+    }
     return "";
   }
 
@@ -500,6 +525,14 @@
       .filter(({ product, working, system }) => {
         if (ui.brand && product.brand !== ui.brand) return false;
         if (ui.system && system !== ui.system) return false;
+        if (ui.coverage === "deep" && product.coverage === "base") return false;
+        if (ui.coverage === "base" && product.coverage !== "base") return false;
+        if (
+          ui.coverage === "own" &&
+          product.coverage !== "own" &&
+          !product.manualFocus
+        )
+          return false;
         if (ui.price) {
           const [min, max] = ui.price.split("-").map(Number);
           if (currentPriceFor(product) < min || currentPriceFor(product) > max)
@@ -521,8 +554,8 @@
         Number(b.product.live?.rating || b.product.metrics?.rating || 0) -
         Number(a.product.live?.rating || a.product.metrics?.rating || 0),
       "sales-desc": (a, b) =>
-        Number(b.product.metrics?.monthlySales || 0) -
-        Number(a.product.metrics?.monthlySales || 0),
+        metricNumber(b.product.metrics?.monthlySales) -
+        metricNumber(a.product.metrics?.monthlySales),
     };
     list.sort(sorters[ui.sort] || sorters.rank);
     return list;
@@ -557,12 +590,12 @@
     $("#kpiBrands").textContent = `${DATA.meta.brands} 个品牌 · 1 个自有基准`;
     $("#kpiMedianPrice").textContent = priceFormat.format(median);
     $("#kpiMedianNote").textContent =
-      `${prices.length} 个竞品当前价 · ${String(auditDraft?.promotions?.asOf || AUDIT?.promotions?.asOf || "时间未提供").slice(0, 16)}`;
+      `全量 ${prices.length} 个 BSR 竞品当前价 · ${String(auditDraft?.promotions?.asOf || AUDIT?.promotions?.asOf || "时间未提供").slice(0, 16)}`;
     $("#kpiImages").textContent = numberFormat.format(
       DATA.meta.listingImages + DATA.meta.aplusImages,
     );
     $("#kpiImageBreakdown").textContent =
-      `${DATA.meta.listingImages} 张 Listing + ${DATA.meta.aplusImages} 张 A+`;
+      `${DATA.meta.listingImages} Listing + ${DATA.meta.aplusImages} A+；基础层另有 ${DATA.meta.remoteCatalogImages || 0} 张远程主图`;
     $("#kpiOcr").textContent = numberFormat.format(DATA.meta.ocrRecognized);
     renderAuditBrief();
   }
@@ -623,7 +656,7 @@
               ${favorite ? '<span class="favorite-mark" title="已收藏">★</span>' : ""}
             </span>
             <span class="product-name">
-              <strong title="${escapeAttr(working.content.titleZh)}">${escapeHTML(working.content.titleZh)}${product.manualFocus ? '<span class="own-product-mark">自有产品</span>' : ""}${saved ? '<span class="edited-mark">已编辑</span>' : ""}</strong>
+              <strong title="${escapeAttr(working.content.titleZh)}">${escapeHTML(working.content.titleZh)}${product.manualFocus ? '<span class="own-product-mark">自有产品</span>' : `<span class="coverage-mark ${product.coverage === "base" ? "is-base" : "is-deep"}">${coverageLabel(product)}</span>`}${saved ? '<span class="edited-mark">已编辑</span>' : ""}</strong>
               <span>${escapeHTML(product.brand)} · ${escapeHTML(modelOf(product))} · ${escapeHTML(product.asin)}</span>
             </span>
           </div>
@@ -654,8 +687,8 @@
         </td>
         <td><span class="system-pill ${systemClass(system)}">${escapeHTML(system)}</span></td>
         <td class="metric-cell">
-          <strong><span class="rating-star">★</span> ${escapeHTML(rating)} <span>· ${escapeHTML(numberFormat.format(Number(String(reviews).replaceAll(".", "")) || reviews))} 评</span></strong>
-          <span>${product.metrics?.monthlySales ? `近 30 天 ${escapeHTML(numberFormat.format(Number(product.metrics.monthlySales)))} 件` : "近 30 天销量未提供"}</span>
+          <strong><span class="rating-star">★</span> ${escapeHTML(rating)} <span>· ${escapeHTML(numberFormat.format(metricNumber(reviews)))} 评</span></strong>
+          <span>${product.metrics?.monthlySales ? `近 30 天 ${escapeHTML(numberFormat.format(metricNumber(product.metrics.monthlySales)))} 件` : "近 30 天销量未提供"}</span>
         </td>
         <td class="bsr-cell">
           <strong>#${escapeHTML(product.metrics?.subcategoryBsr || product.rank)}</strong>
@@ -689,7 +722,7 @@
         <input class="compare-check" type="checkbox" aria-label="选择 ${escapeAttr(product.brand)} ${escapeAttr(product.asin)}" data-action="select-product" ${selected ? "checked" : ""} />
         <span class="mobile-thumb">${imageURL ? `<img src="${escapeAttr(imageURL)}" alt="" loading="lazy" />` : ""}</span>
         <div class="mobile-copy">
-          <strong>${escapeHTML(working.content.titleZh)}${product.manualFocus ? '<span class="own-product-mark">自有产品</span>' : ""}</strong>
+          <strong>${escapeHTML(working.content.titleZh)}${product.manualFocus ? '<span class="own-product-mark">自有产品</span>' : `<span class="coverage-mark ${product.coverage === "base" ? "is-base" : "is-deep"}">${coverageLabel(product)}</span>`}</strong>
           <span class="mobile-sub">${escapeHTML(product.brand)} · ${escapeHTML(system)} · #${escapeHTML(product.metrics?.subcategoryBsr || product.rank)}</span>
           <div class="mobile-numbers">
             <span>当前 <strong>${priceFormat.format(currentPrice)}</strong></span>
@@ -733,7 +766,9 @@
     $("#brandFilter").value = "";
     $("#priceFilter").value = "";
     $("#systemFilter").value = "";
+    $("#coverageFilter").value = "";
     $("#sortFilter").value = "rank";
+    ui.coverage = "";
     renderCatalog();
   }
 
@@ -753,6 +788,10 @@
     });
     $("#systemFilter").addEventListener("change", (event) => {
       ui.system = event.target.value;
+      renderCatalog();
+    });
+    $("#coverageFilter").addEventListener("change", (event) => {
+      ui.coverage = event.target.value;
       renderCatalog();
     });
     $("#sortFilter").addEventListener("change", (event) => {
@@ -955,7 +994,7 @@
 
   function overviewTemplate(product, working) {
     const system = systemOf(product);
-    const themes = product.aplusThemes
+    const themes = (product.aplusThemes || [])
       .map(
         (theme) =>
           `<span class="theme-chip">${escapeHTML(theme.label)} <strong>${theme.count}</strong></span>`,
@@ -1029,8 +1068,8 @@
             </div>
             <div class="metric-grid">
               <div class="metric-item"><span>价格</span><strong>${priceFormat.format(product.sourcePrice)}</strong></div>
-              <div class="metric-item"><span>用户评分</span><strong>★ ${escapeHTML(rating)}</strong><small>${escapeHTML(numberFormat.format(Number(String(reviews).replaceAll(".", "")) || reviews))} 条评价</small></div>
-              <div class="metric-item"><span>近 30 天销量</span><strong>${product.metrics?.monthlySales ? escapeHTML(numberFormat.format(Number(product.metrics.monthlySales))) : "—"}</strong><small>件</small></div>
+              <div class="metric-item"><span>用户评分</span><strong>★ ${escapeHTML(rating)}</strong><small>${escapeHTML(numberFormat.format(metricNumber(reviews)))} 条评价</small></div>
+              <div class="metric-item"><span>近 30 天销量</span><strong>${product.metrics?.monthlySales ? escapeHTML(numberFormat.format(metricNumber(product.metrics.monthlySales))) : "—"}</strong><small>件</small></div>
               <div class="metric-item"><span>BSR</span><strong>#${escapeHTML(product.metrics?.subcategoryBsr || product.rank)}</strong><small>大类 ${escapeHTML(product.metrics?.majorBsr || "—")}</small></div>
               <div class="metric-item"><span>系统</span><strong style="font-family:var(--font-sans);font-size:11px">${escapeHTML(system)}</strong></div>
               <div class="metric-item"><span>素材</span><strong>${imageCount} / ${aplusCount}</strong><small>Listing / A+</small></div>
@@ -1060,6 +1099,8 @@
             </div>
             <div class="source-note">
               ${product.manualFocus ? `<strong>自有产品基准：</strong>${escapeHTML(product.sourceNote)}<br /><br />` : ""}
+              ${product.coverageNote ? `<strong>资料深度：</strong>${escapeHTML(product.coverageNote)}<br /><br />` : ""}
+              ${!product.manualFocus && product.sourceNote ? `<strong>基础档案提示：</strong>${escapeHTML(product.sourceNote)}<br /><br />` : ""}
               价格为产品表中的含税参考价；页面指标来自 Amazon.de 页面快照。亮度存在
               ANSI、ISO 与普通“流明”混用，不能直接等值换算。图片文字由本机 OCR
               识别，复杂排版可能有误，请以原图为准。<br /><br />
@@ -1082,6 +1123,7 @@
 
   function copyTemplate(product, working) {
     const translations = working.content.bulletTranslations;
+    const isBase = product.coverage === "base";
     const listingCount = working.listingBullets.length;
     const supplementalBullets = (working.spreadsheetBullets || [])
       .slice(listingCount)
@@ -1092,16 +1134,16 @@
             listingCount + index
           ] || "",
       }))
-      .filter((bullet) => bullet.translation);
+      .filter((bullet) => bullet.original || bullet.translation);
     return `
       <section class="detail-section">
         <div class="section-heading">
           <div>
-            <h3>Amazon Listing 五点：完整原文 × 全文译文</h3>
-            <p>这里不是摘要翻译：每条商品描述中的数字、条件、场景和补充说明都逐段译出。修改后可保存为新版本。</p>
+            <h3>Amazon Listing 全部卖点：原始文本 × 中文译文</h3>
+            <p>${isBase ? "当前为基础档案：德文原始卖点已完整保留。中文全文译文尚未完成，译文框保持空白并可直接补录，避免把摘要冒充全文翻译。" : "这里不是摘要翻译：每条商品描述中的数字、条件、场景和补充说明都逐段译出。修改后可保存为新版本。"}</p>
           </div>
           <div class="section-heading-actions">
-            <span class="status-chip">${working.listingBullets.length} 条正文 / ${translations.length} 条全文译文</span>
+            <span class="status-chip">${working.spreadsheetBullets.length} 条原文 / ${translations.length + (working.content.spreadsheetBulletTranslations || []).filter(Boolean).length} 条全文译文${isBase ? " · 待补" : ""}</span>
           </div>
         </div>
         <div class="bullet-editor">
@@ -1117,7 +1159,7 @@
                   </div>
                   <div class="bullet-cell zh-cell">
                     <label>ZH · 中文译文</label>
-                    <textarea class="bullet-textarea" data-edit-translation="${index}" aria-label="第 ${index + 1} 点中文译文">${escapeHTML(translations[index] || "")}</textarea>
+                    <textarea class="bullet-textarea" data-edit-translation="${index}" aria-label="第 ${index + 1} 点中文译文" placeholder="${isBase ? "基础档案待补全文译文" : ""}">${escapeHTML(translations[index] || "")}</textarea>
                   </div>
                 </article>
               `,
@@ -1128,7 +1170,7 @@
           supplementalBullets.length
             ? `
               <details class="spreadsheet-details" open>
-                <summary>原表另有 ${supplementalBullets.length} 条原始卖点字段（已补全文译文）</summary>
+                <summary>原表另有 ${supplementalBullets.length} 条原始卖点字段（${isBase ? "原文已保留，译文待补" : "已补全文译文"}）</summary>
                 <div class="spreadsheet-bullet-list">
                   ${supplementalBullets
                     .map(
@@ -1140,7 +1182,7 @@
                             <textarea class="spreadsheet-bullet-input" data-edit-spreadsheet-label="${listingCount + index}" aria-label="原表第 ${listingCount + index + 1} 条德语小标题">${escapeHTML(bullet.label || "原始卖点")}</textarea>
                             <textarea class="spreadsheet-bullet-textarea" data-edit-spreadsheet-original="${listingCount + index}" aria-label="原表第 ${listingCount + index + 1} 条德语原文">${escapeHTML(bullet.original)}</textarea>
                             <b>ZH · 全文译文</b>
-                            <textarea class="spreadsheet-bullet-textarea" data-edit-spreadsheet-translation="${listingCount + index}" aria-label="原表第 ${listingCount + index + 1} 条中文全文译文">${escapeHTML(bullet.translation)}</textarea>
+                            <textarea class="spreadsheet-bullet-textarea" data-edit-spreadsheet-translation="${listingCount + index}" aria-label="原表第 ${listingCount + index + 1} 条中文全文译文" placeholder="${isBase ? "基础档案待补全文译文" : ""}">${escapeHTML(bullet.translation)}</textarea>
                           </div>
                         </article>
                       `,
@@ -1228,7 +1270,7 @@
         <div class="image-card-body">
           <div class="image-card-title">
             <strong>${escapeHTML(meta)} · ${escapeHTML(role)}</strong>
-            <span>${image.sourceWidth ? `${image.sourceWidth}×${image.sourceHeight || ""}` : "本地上传"}</span>
+            <span>${image.remoteUrl ? "Amazon 远程" : image.sourceWidth ? `${image.sourceWidth}×${image.sourceHeight || ""}` : "本地上传"}</span>
           </div>
           <label class="image-card-field">
             <span>图片角色</span>
@@ -1960,12 +2002,12 @@
       ["原生分辨率", (p, w) => specOf(p, "原生分辨率", w)],
       ["显示技术", (p, w) => specOf(p, "显示技术", w)],
       ["智能系统", (p) => systemOf(p)],
-      ["评分 / 评价数", (p) => `★ ${p.live?.rating || "—"} / ${numberFormat.format(p.live?.reviewsCount || 0)}`],
+      ["评分 / 评价数", (p) => `★ ${p.live?.rating || "—"} / ${numberFormat.format(metricNumber(p.live?.reviewsCount))}`],
       [
         "近 30 天销量",
         (p) =>
           p.metrics?.monthlySales
-            ? `${numberFormat.format(Number(p.metrics.monthlySales))} 件`
+            ? `${numberFormat.format(metricNumber(p.metrics.monthlySales))} 件`
             : "未提供",
       ],
       ["BSR", (p) => `#${p.metrics?.subcategoryBsr || p.rank} / 大类 ${p.metrics?.majorBsr || "—"}`],
@@ -2812,6 +2854,7 @@
     const headers = [
       "BSR",
       "产品来源",
+      "资料深度",
       "品牌",
       "型号",
       "ASIN",
@@ -2843,7 +2886,7 @@
         .flatMap((kind) =>
           imagesFor(product, working, kind).map(
             (image) =>
-              `${image.role || ""}｜${image.localPath || "本地上传"}｜原文：${image.ocrText || "未识别到文字"}｜卖点：${image.sellingPoint || ""}`,
+              `${image.role || ""}｜${image.remoteUrl ? "Amazon 远程主图" : image.localPath || "本地上传"}｜原文：${image.ocrText || "未识别到文字"}｜卖点：${image.sellingPoint || ""}`,
           ),
         )
         .join(" || ");
@@ -2852,6 +2895,7 @@
       ...rows.map(({ product, working, system }) => [
         product.rank,
         product.manualFocus ? "自有产品" : "BSR 竞品",
+        coverageLabel(product),
         product.brand,
         modelOf(product),
         product.asin,
@@ -2891,7 +2935,7 @@
       .join("\r\n");
     downloadBlob(
       `\uFEFF${csv}`,
-      `Beamer竞品表_${new Date().toISOString().slice(0, 10)}.csv`,
+      `德国站_BSR_Top100_全量产品表_${new Date().toISOString().slice(0, 10)}.csv`,
       "text/csv;charset=utf-8",
     );
     showToast(`已导出当前 ${rows.length} 个产品`, "success");
@@ -2925,7 +2969,7 @@
           </article>
           <article class="backup-card">
             <h3>导出完整备份</h3>
-            <p>包含研究页分析、全部产品资料、产品与全站版本，以及你在工具中替换或新增的图片。原始 404 张素材已随工具文件夹保存。</p>
+            <p>包含研究页分析、全部 101 个产品资料、产品与全站版本，以及你在工具中替换或新增的图片。深挖层的 404 张本地素材随工具文件夹保存，基础档案保留 Amazon 远程主图地址。</p>
             <button class="button button-primary" type="button" data-action="export-backup">下载备份 JSON</button>
           </article>
           <article class="backup-card">
