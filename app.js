@@ -595,7 +595,7 @@
       DATA.meta.listingImages + DATA.meta.aplusImages,
     );
     $("#kpiImageBreakdown").textContent =
-      `${DATA.meta.listingImages} Listing + ${DATA.meta.aplusImages} A+；基础层另有 ${DATA.meta.remoteCatalogImages || 0} 张远程主图`;
+      `${numberFormat.format(DATA.meta.listingImages)} Listing + ${numberFormat.format(DATA.meta.aplusImages)} A+；图片已抓取，在线读取原始图源`;
     $("#kpiOcr").textContent = numberFormat.format(DATA.meta.ocrRecognized);
     renderAuditBrief();
   }
@@ -2969,7 +2969,7 @@
           </article>
           <article class="backup-card">
             <h3>导出完整备份</h3>
-            <p>包含研究页分析、全部 101 个产品资料、产品与全站版本，以及你在工具中替换或新增的图片。深挖层的 404 张本地素材随工具文件夹保存，基础档案保留 Amazon 远程主图地址。</p>
+            <p>包含研究页分析、全部 101 个产品资料、产品与全站版本，以及你在工具中替换或新增的图片。2,864 张采集图片随工具文件夹保存。</p>
             <button class="button button-primary" type="button" data-action="export-backup">下载备份 JSON</button>
           </article>
           <article class="backup-card">
