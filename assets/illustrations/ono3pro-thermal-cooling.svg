@@ -1,0 +1,131 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="1000" viewBox="0 0 1000 1000" role="img" aria-labelledby="title desc">
+  <title id="title">ONO3Pro 温控散热与灰尘清洁单张副图参考</title>
+  <desc id="desc">一张1比1静态副图：一家人在夜间客厅观看投影，投影仪由支架抬高，底部空气进入；底部标注导热材料、测温调风、过热保护和灰尘清洁口。没有步骤箭头、时间轴或多阶段分镜。</desc>
+  <defs>
+    <linearGradient id="night" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f4efe7"/>
+      <stop offset="1" stop-color="#d8d2c8"/>
+    </linearGradient>
+    <linearGradient id="hero" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#142f43"/>
+      <stop offset=".6" stop-color="#254c5d"/>
+      <stop offset="1" stop-color="#b86f48"/>
+    </linearGradient>
+    <linearGradient id="screen" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1d3e56"/>
+      <stop offset=".48" stop-color="#557d85"/>
+      <stop offset="1" stop-color="#d6a267"/>
+    </linearGradient>
+    <linearGradient id="air" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0" stop-color="#68a8c8" stop-opacity=".12"/>
+      <stop offset="1" stop-color="#2d7fa8" stop-opacity=".72"/>
+    </linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="180%">
+      <feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#2c251f" flood-opacity=".2"/>
+    </filter>
+    <filter id="soft" x="-30%" y="-30%" width="160%" height="180%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#0e1a24" flood-opacity=".18"/>
+    </filter>
+    <style>
+      .head{font:800 52px "Microsoft YaHei","PingFang SC",sans-serif;fill:#fff}
+      .sub{font:500 23px "Microsoft YaHei","PingFang SC",sans-serif;fill:#d4e0e8}
+      .label{font:700 24px "Microsoft YaHei","PingFang SC",sans-serif;fill:#182431}
+      .label-small{font:700 20px "Microsoft YaHei","PingFang SC",sans-serif;fill:#182431}
+      .note{font:600 17px "Microsoft YaHei","PingFang SC",sans-serif;fill:#455767}
+      .tiny{font:400 15px "Microsoft YaHei","PingFang SC",sans-serif;fill:#657381}
+      .white{font:700 18px "Microsoft YaHei","PingFang SC",sans-serif;fill:#fff}
+      .blue{font:700 17px "Microsoft YaHei","PingFang SC",sans-serif;fill:#22627d}
+    </style>
+  </defs>
+
+  <rect width="1000" height="1000" fill="url(#night)"/>
+  <rect width="1000" height="190" fill="#142b3b"/>
+  <circle cx="914" cy="65" r="8" fill="#f0c56e"/>
+  <text x="55" y="79" class="head">看得久，也把温度管住</text>
+  <text x="58" y="126" class="sub">支架进风 · 温控调风 · 过热保护 · 灰尘可清洁</text>
+  <rect x="58" y="148" width="252" height="29" rx="14.5" fill="#e7f0f4"/>
+  <text x="184" y="168" text-anchor="middle" class="blue">单张静态副图 · 结果型</text>
+
+  <rect x="47" y="219" width="906" height="586" rx="22" fill="#ebe4da" filter="url(#shadow)"/>
+  <rect x="75" y="242" width="850" height="475" fill="#ddd6cb"/>
+  <path d="M75 242h850v475H75z" fill="#c5beb4" opacity=".24"/>
+  <rect x="75" y="706" width="850" height="11" fill="#b4aa9c"/>
+  <path d="M75 717h850v88H75z" fill="#c9c0b4"/>
+
+  <rect x="178" y="274" width="571" height="345" rx="12" fill="#f8f6f1" stroke="#ada396" stroke-width="4" filter="url(#soft)"/>
+  <rect x="196" y="292" width="535" height="309" fill="url(#screen)"/>
+  <path d="M196 530c86-96 174-105 263-27 86-77 177-68 272 10v88H196Z" fill="#1d4150"/>
+  <path d="M196 476c90-42 175-32 263 42 87-62 176-53 272 18" fill="none" stroke="#e8bf84" stroke-width="7" opacity=".72"/>
+  <circle cx="615" cy="369" r="48" fill="#f1c373" opacity=".9"/>
+  <path d="M219 570c62-52 130-49 191 0 68-37 137-34 203 7" fill="none" stroke="#bad6d8" stroke-width="3" opacity=".66"/>
+  <path d="M196 292h535v309H196z" fill="none" stroke="#8dcdb0" stroke-width="5"/>
+
+  <g filter="url(#soft)">
+    <rect x="286" y="640" width="309" height="105" rx="17" fill="#202a33"/>
+    <path d="M329 640c0-24 16-35 47-35h139c31 0 47 11 47 35" fill="none" stroke="#3a464f" stroke-width="10" stroke-linecap="round"/>
+    <circle cx="420" cy="697" r="37" fill="#496f83" stroke="#9bbec9" stroke-width="5"/>
+    <circle cx="420" cy="697" r="18" fill="#122e3f"/>
+    <circle cx="408" cy="681" r="6" fill="#d8eff6"/>
+    <path d="M479 680h72M479 694h55M479 708h68" stroke="#83909a" stroke-width="2" opacity=".7"/>
+    <rect x="306" y="745" width="270" height="10" rx="5" fill="#8d867b"/>
+    <path d="M324 755h230l-14 21H338Z" fill="#6c655d"/>
+  </g>
+
+  <g opacity=".9">
+    <path d="M322 784c17 17 45 17 62 0s45-17 62 0 45 17 62 0" fill="none" stroke="#2b83aa" stroke-width="5" stroke-linecap="round"/>
+    <path d="M321 806c17 17 45 17 62 0s45-17 62 0 45 17 62 0" fill="none" stroke="#5ba2bf" stroke-width="4" stroke-linecap="round" opacity=".75"/>
+    <path d="M421 763v55m-18-14 18 14 18-14" fill="none" stroke="#246f92" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <path d="m441 675 285-191 170 339-225 26Z" fill="url(#air)" opacity=".16"/>
+  <path d="M512 650c72-37 138-26 195 20" fill="none" stroke="#ffe8ba" stroke-width="3" opacity=".45"/>
+
+  <g transform="translate(641 640)" filter="url(#soft)">
+    <path d="M13 45c0-18 12-27 34-27h101c22 0 34 9 34 27" fill="none" stroke="#535c63" stroke-width="8" stroke-linecap="round"/>
+    <rect width="185" height="70" rx="12" fill="#2b343b"/>
+    <rect x="15" y="15" width="155" height="29" rx="6" fill="#d9eef2"/>
+    <rect x="15" y="48" width="47" height="11" rx="5.5" fill="#8f9ba3"/>
+    <rect x="105" y="48" width="65" height="11" rx="5.5" fill="#727f87"/>
+    <rect x="8" y="70" width="169" height="15" rx="4" fill="#8a7c6e"/>
+    <path d="M15 80h155v18H15Z" fill="#7a6f64"/>
+  </g>
+
+  <g transform="translate(64 756)">
+    <rect width="268" height="45" rx="10" fill="#fff" filter="url(#soft)"/>
+    <path d="M23 24h17m-17 0 6-6m-6 6 6 6" fill="none" stroke="#286f91" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="52" y="30" class="note">支架抬高 · 底部进风</text>
+  </g>
+
+  <g transform="translate(58 826)">
+    <rect width="884" height="102" rx="14" fill="#fff" filter="url(#soft)"/>
+    <g transform="translate(18 14)">
+      <rect width="206" height="74" rx="9" fill="#eef5f7"/>
+      <path d="M22 29h13v20H22zm19-8h13v29H41zm19 13h13v17H60z" fill="none" stroke="#337a98" stroke-width="3"/>
+      <path d="M95 27h78m-78 15h62m-62 15h70" stroke="#4388a4" stroke-width="3" stroke-linecap="round"/>
+      <text x="25" y="67" class="tiny">导热材料</text>
+    </g>
+    <g transform="translate(235 14)">
+      <rect width="206" height="74" rx="9" fill="#eef5f7"/>
+      <path d="M22 54c9-9 18-9 28 0s19 9 28 0 19-9 28 0" fill="none" stroke="#337a98" stroke-width="3"/>
+      <path d="M50 17h40v25H50z" fill="none" stroke="#337a98" stroke-width="3"/>
+      <path d="M62 31h25" stroke="#337a98" stroke-width="3"/>
+      <text x="25" y="67" class="tiny">测温后调风</text>
+    </g>
+    <g transform="translate(452 14)">
+      <rect width="206" height="74" rx="9" fill="#eef5f7"/>
+      <path d="M66 15 91 27v22L66 61 41 49V27Z" fill="none" stroke="#337a98" stroke-width="3"/>
+      <path d="M66 26v23M58 43l8 8 8-8" fill="none" stroke="#337a98" stroke-width="3" stroke-linecap="round"/>
+      <text x="25" y="67" class="tiny">过热保护</text>
+    </g>
+    <g transform="translate(669 14)">
+      <rect width="197" height="74" rx="9" fill="#eef5f7"/>
+      <path d="M48 29h55v28H48zM58 23h35" fill="none" stroke="#337a98" stroke-width="3"/>
+      <path d="M102 36h16v14h-16zM92 32h-8v22h8" fill="none" stroke="#337a98" stroke-width="3"/>
+      <circle cx="120" cy="53" r="5" fill="#337a98"/>
+      <text x="25" y="67" class="tiny">灰尘清洁口</text>
+    </g>
+  </g>
+
+  <text x="58" y="959" class="tiny">构图参考，不代表实拍性能。发布前需核实温度、噪音与持续运行数据。</text>
+  <text x="942" y="959" text-anchor="end" class="tiny">ONO3Pro · B0HFHN24F1</text>
+</svg>

@@ -1,0 +1,114 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="1000" viewBox="0 0 1000 1000" role="img" aria-labelledby="title desc">
+  <title id="title">ONO3Pro 自动校正单张副图参考</title>
+  <desc id="desc">一张1比1静态副图：投影仪放在生活场景中，墙面上的投影已自动对准幕布，产品周围以四个小标注说明自动对焦、梯形校正、障碍识别和自动入幕。不是分镜或视频流程。</desc>
+  <defs>
+    <linearGradient id="room" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f7f4ee"/>
+      <stop offset="1" stop-color="#ded7cc"/>
+    </linearGradient>
+    <linearGradient id="screen" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#254f73"/>
+      <stop offset=".55" stop-color="#507a8e"/>
+      <stop offset="1" stop-color="#d49565"/>
+    </linearGradient>
+    <linearGradient id="beam" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#fff4cf" stop-opacity=".62"/>
+      <stop offset="1" stop-color="#fff4cf" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="shadow" x="-40%" y="-40%" width="180%" height="180%">
+      <feDropShadow dx="0" dy="16" stdDeviation="20" flood-color="#40382f" flood-opacity=".18"/>
+    </filter>
+    <style>
+      .head{font:800 54px "Microsoft YaHei","PingFang SC",sans-serif;fill:#fff}
+      .sub{font:500 24px "Microsoft YaHei","PingFang SC",sans-serif;fill:#e9edf1}
+      .label{font:700 25px "Microsoft YaHei","PingFang SC",sans-serif;fill:#172231}
+      .note{font:500 19px "Microsoft YaHei","PingFang SC",sans-serif;fill:#4d5a68}
+      .tiny{font:400 16px "Microsoft YaHei","PingFang SC",sans-serif;fill:#697585}
+    </style>
+  </defs>
+
+  <rect width="1000" height="1000" fill="url(#room)"/>
+  <rect width="1000" height="198" fill="#15293b"/>
+  <circle cx="900" cy="72" r="9" fill="#f1c36b"/>
+  <text x="58" y="85" class="head">自动校正，一放就正</text>
+  <text x="60" y="132" class="sub">不主动移画面 · 不手动调梯形 · 不反复找焦点</text>
+  <rect x="60" y="153" width="190" height="30" rx="15" fill="#fff2d1"/>
+  <text x="155" y="174" text-anchor="middle" class="note" fill="#7c571e">单张静态副图参考</text>
+
+  <rect x="58" y="246" width="884" height="555" rx="22" fill="#f1eee8"/>
+  <rect x="92" y="270" width="820" height="452" fill="#e9e5de"/>
+  <rect x="92" y="722" width="820" height="38" fill="#b8aa99"/>
+  <path d="M92 760h820v46H92z" fill="#c9c0b3"/>
+
+  <rect x="175" y="292" width="583" height="350" rx="12" fill="#f9f8f4" stroke="#bdb4a6" stroke-width="4" filter="url(#shadow)"/>
+  <rect x="193" y="310" width="547" height="314" fill="url(#screen)"/>
+  <path d="M193 538c95-92 178-98 266-22 92-88 183-73 281 11v97H193Z" fill="#244453"/>
+  <path d="M193 479c97-47 184-35 268 34 92-54 184-41 279 34" fill="none" stroke="#f2c98f" stroke-width="8" opacity=".75"/>
+  <circle cx="614" cy="385" r="54" fill="#f0bd66" opacity=".86"/>
+  <path d="M219 579c72-58 142-57 209 4 62-41 128-38 198 6" fill="none" stroke="#b6d5d6" stroke-width="3" opacity=".65"/>
+  <path d="M193 310h547v314H193z" fill="none" stroke="#8fd1b3" stroke-width="7"/>
+  <circle cx="466" cy="452" r="36" fill="none" stroke="#fff" stroke-width="3" opacity=".8"/>
+  <path d="M448 434h-18v-18m54 0h18v18m0 36v18h-18m-54 0h-18v-18" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+
+  <rect x="762" y="385" width="100" height="130" rx="7" fill="#f7f2e8" stroke="#6c5844" stroke-width="3"/>
+  <path d="M780 469c10-39 25-42 40-5 11-37 24-40 32-2" fill="none" stroke="#bd8b50" stroke-width="3"/>
+  <rect x="785" y="490" width="54" height="7" rx="3.5" fill="#856b53"/>
+
+  <circle cx="202" cy="487" r="34" fill="#51b38a"/>
+  <path d="m187 487 10 10 21-24" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="249" y="460" width="204" height="57" rx="11" fill="#fff" filter="url(#shadow)"/>
+  <text x="267" y="484" class="label">方正 · 入幕完成</text>
+  <text x="267" y="505" class="tiny">家具仍在原位，画面完整可看</text>
+
+  <g transform="translate(170 640)">
+    <rect x="128" y="0" width="340" height="226" rx="20" fill="#c2b7a8"/>
+    <rect x="156" y="30" width="284" height="166" rx="12" fill="#f2ece2"/>
+    <path d="M156 196h284l25 32H131Z" fill="#8e8172"/>
+    <rect x="178" y="112" width="87" height="14" rx="7" fill="#cec4b8"/>
+    <rect x="288" y="104" width="112" height="12" rx="6" fill="#ded5ca"/>
+    <circle cx="209" cy="86" r="22" fill="#d2c5b8"/>
+    <path d="M188 94c10-22 32-22 44 0" fill="none" stroke="#746557" stroke-width="4"/>
+  </g>
+
+  <g transform="translate(546 666)">
+    <path d="M72 50c0-33 20-50 62-50h100c42 0 63 17 63 50" fill="none" stroke="#303943" stroke-width="13" stroke-linecap="round"/>
+    <rect x="0" y="48" width="288" height="94" rx="18" fill="#1d252f"/>
+    <rect x="19" y="65" width="250" height="59" rx="9" fill="#28333e"/>
+    <circle cx="107" cy="95" r="35" fill="#456f83" stroke="#91bbcb" stroke-width="5"/>
+    <circle cx="107" cy="95" r="17" fill="#102c3d"/>
+    <circle cx="94" cy="81" r="6" fill="#d7eff8" opacity=".85"/>
+    <path d="M174 80h56M174 94h43M174 108h57" stroke="#82909b" stroke-width="2" opacity=".6"/>
+    <path d="M0 152h288l-11 13H12Z" fill="#6e645a"/>
+  </g>
+  <path d="m594 707 224-230 159 353-162 27Z" fill="url(#beam)" opacity=".45"/>
+
+  <g transform="translate(450 824)">
+    <rect width="514" height="116" rx="14" fill="#fff" filter="url(#shadow)"/>
+    <g transform="translate(20 17)">
+      <rect width="110" height="82" rx="9" fill="#eef3f5"/>
+      <path d="M20 21h71v42H20zM27 63l17-18 12 10 14-17 18 25" fill="none" stroke="#44708b" stroke-width="3"/>
+      <text x="55" y="78" text-anchor="middle" class="tiny">梯形校正</text>
+    </g>
+    <g transform="translate(141 17)">
+      <rect width="110" height="82" rx="9" fill="#eef3f5"/>
+      <circle cx="55" cy="37" r="21" fill="none" stroke="#44708b" stroke-width="3"/>
+      <path d="M43 37h24M55 25v24" stroke="#44708b" stroke-width="3" stroke-linecap="round"/>
+      <text x="55" y="78" text-anchor="middle" class="tiny">自动对焦</text>
+    </g>
+    <g transform="translate(262 17)">
+      <rect width="110" height="82" rx="9" fill="#eef3f5"/>
+      <path d="M21 25h26v20H21zM62 19h27v27H62zM35 53h40" fill="none" stroke="#44708b" stroke-width="3"/>
+      <circle cx="75" cy="32" r="8" fill="none" stroke="#44708b" stroke-width="3"/>
+      <text x="55" y="78" text-anchor="middle" class="tiny">障碍识别</text>
+    </g>
+    <g transform="translate(383 17)">
+      <rect width="111" height="82" rx="9" fill="#eef3f5"/>
+      <path d="M18 20h74v42H18z" fill="none" stroke="#44708b" stroke-width="3" stroke-dasharray="6 5"/>
+      <path d="m31 24 8 8m35-8-8 8m8 26-8-8m-35 8 8-8" fill="none" stroke="#44708b" stroke-width="3" stroke-linecap="round"/>
+      <text x="56" y="78" text-anchor="middle" class="tiny">自动入幕</text>
+    </g>
+  </g>
+
+  <text x="60" y="967" class="tiny">构图参考，不代表实拍性能。正式图请用同一房间、同一机位实拍替换场景与投影画面。</text>
+  <text x="940" y="967" text-anchor="end" class="tiny">ONO3Pro · B0HFHN24F1</text>
+</svg>

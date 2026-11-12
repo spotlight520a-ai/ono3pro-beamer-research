@@ -232,12 +232,22 @@
         positioning: product.content.positioning || "",
         highlights: [...(product.content.highlights || [])],
         bulletTranslations: [...(product.content.bulletTranslations || [])],
+        spreadsheetBulletTranslations: [
+          ...(product.content.spreadsheetBulletTranslations || []),
+        ],
       },
       listingBullets: clone(product.listingBullets || []).map((item) => ({
         index: item.index,
         label: item.label || "",
         original: item.original || "",
       })),
+      spreadsheetBullets: clone(product.spreadsheetBullets || []).map(
+        (item) => ({
+          index: item.index,
+          label: item.label || "",
+          original: item.original || "",
+        }),
+      ),
       imageMeta: {
         listing: (product.images.listing || []).map((image) => ({
           id: `base-listing-${image.index}`,
@@ -276,10 +286,18 @@
       bulletTranslations: Array.isArray(working.content?.bulletTranslations)
         ? working.content.bulletTranslations
         : base.content.bulletTranslations,
+      spreadsheetBulletTranslations: Array.isArray(
+        working.content?.spreadsheetBulletTranslations,
+      )
+        ? working.content.spreadsheetBulletTranslations
+        : base.content.spreadsheetBulletTranslations,
     };
     working.listingBullets = Array.isArray(working.listingBullets)
       ? working.listingBullets
       : base.listingBullets;
+    working.spreadsheetBullets = Array.isArray(working.spreadsheetBullets)
+      ? working.spreadsheetBullets
+      : base.spreadsheetBullets;
     working.imageMeta = working.imageMeta || {};
 
     for (const kind of ["listing", "aplus"]) {
@@ -962,15 +980,26 @@
 
   function copyTemplate(product, working) {
     const translations = working.content.bulletTranslations;
+    const listingCount = working.listingBullets.length;
+    const supplementalBullets = (working.spreadsheetBullets || [])
+      .slice(listingCount)
+      .map((bullet, index) => ({
+        ...bullet,
+        translation:
+          working.content?.spreadsheetBulletTranslations?.[
+            listingCount + index
+          ] || "",
+      }))
+      .filter((bullet) => bullet.translation);
     return `
       <section class="detail-section">
         <div class="section-heading">
           <div>
-            <h3>Original Listing 五点 × 中文译文</h3>
-            <p>左侧保留德语原文，右侧为中文理解。任何修改在点击“保存新版本”后进入历史记录。</p>
+            <h3>Amazon Listing 五点：完整原文 × 全文译文</h3>
+            <p>这里不是摘要翻译：每条商品描述中的数字、条件、场景和补充说明都逐段译出。修改后可保存为新版本。</p>
           </div>
           <div class="section-heading-actions">
-            <span class="status-chip">${working.listingBullets.length} 条原文 / ${translations.length} 条译文</span>
+            <span class="status-chip">${working.listingBullets.length} 条正文 / ${translations.length} 条全文译文</span>
           </div>
         </div>
         <div class="bullet-editor">
@@ -994,17 +1023,23 @@
             .join("")}
         </div>
         ${
-          product.spreadsheetBullets?.length
+          supplementalBullets.length
             ? `
-              <details class="spreadsheet-details">
-                <summary>查看 BSR 表格中的原始卖点字段（${product.spreadsheetBullets.length} 条，只读）</summary>
+              <details class="spreadsheet-details" open>
+                <summary>原表另有 ${supplementalBullets.length} 条原始卖点字段（已补全文译文）</summary>
                 <div class="spreadsheet-bullet-list">
-                  ${product.spreadsheetBullets
+                  ${supplementalBullets
                     .map(
                       (bullet, index) => `
                         <article class="spreadsheet-bullet">
-                          <span>${String(index + 1).padStart(2, "0")}</span>
-                          <div>${escapeHTML(bullet.original)}</div>
+                          <span>${String(listingCount + index + 1).padStart(2, "0")}</span>
+                          <div>
+                            <b>DE · 原始卖点</b>
+                            <textarea class="spreadsheet-bullet-input" data-edit-spreadsheet-label="${listingCount + index}" aria-label="原表第 ${listingCount + index + 1} 条德语小标题">${escapeHTML(bullet.label || "原始卖点")}</textarea>
+                            <textarea class="spreadsheet-bullet-textarea" data-edit-spreadsheet-original="${listingCount + index}" aria-label="原表第 ${listingCount + index + 1} 条德语原文">${escapeHTML(bullet.original)}</textarea>
+                            <b>ZH · 全文译文</b>
+                            <textarea class="spreadsheet-bullet-textarea" data-edit-spreadsheet-translation="${listingCount + index}" aria-label="原表第 ${listingCount + index + 1} 条中文全文译文">${escapeHTML(bullet.translation)}</textarea>
+                          </div>
                         </article>
                       `,
                     )
@@ -1307,6 +1342,24 @@
     if (target.dataset.editTranslation !== undefined) {
       const index = Number(target.dataset.editTranslation);
       detail.working.content.bulletTranslations[index] = target.value;
+      changed = true;
+    }
+
+    if (target.dataset.editSpreadsheetTranslation !== undefined) {
+      const index = Number(target.dataset.editSpreadsheetTranslation);
+      detail.working.content.spreadsheetBulletTranslations[index] = target.value;
+      changed = true;
+    }
+
+    if (target.dataset.editSpreadsheetOriginal !== undefined) {
+      const index = Number(target.dataset.editSpreadsheetOriginal);
+      detail.working.spreadsheetBullets[index].original = target.value;
+      changed = true;
+    }
+
+    if (target.dataset.editSpreadsheetLabel !== undefined) {
+      const index = Number(target.dataset.editSpreadsheetLabel);
+      detail.working.spreadsheetBullets[index].label = target.value;
       changed = true;
     }
 
@@ -1641,8 +1694,17 @@
       )
     )
       fields.push("五点译文");
+    if (
+      !deepEqual(
+        before.content?.spreadsheetBulletTranslations,
+        after.content?.spreadsheetBulletTranslations,
+      )
+    )
+      fields.push("原表补充译文");
     if (!deepEqual(before.listingBullets, after.listingBullets))
       fields.push("Listing 原文");
+    if (!deepEqual(before.spreadsheetBullets, after.spreadsheetBullets))
+      fields.push("原表补充原文");
     if (!deepEqual(before.imageMeta, after.imageMeta)) fields.push("图片信息");
     if (!deepEqual(before.customImages, after.customImages))
       fields.push("图片增删");
@@ -1934,6 +1996,38 @@
           </div>
         </div>
 
+        <section class="market-differentiation">
+          <div class="market-differentiation-heading">
+            <div>
+              <span class="section-kicker">DIFFERENTIATION REALITY</span>
+              <h3>${escapeHTML(market.differentiation.headline)}</h3>
+            </div>
+            <p>${escapeHTML(market.differentiation.read)}</p>
+          </div>
+          <div class="market-differentiation-grid">
+            ${market.differentiation.rows
+              .map(
+                (row) => `
+                  <article>
+                    <span>${escapeHTML(row.label)}</span>
+                    <h4>${escapeHTML(row.title)}</h4>
+                    <p>${escapeHTML(row.body)}</p>
+                  </article>
+                `,
+              )
+              .join("")}
+          </div>
+          <p class="market-differentiation-story">${escapeHTML(market.differentiation.narrative)}</p>
+          <div class="market-differentiation-boundaries">
+            <strong>发布前不要这样写</strong>
+            <ul>
+              ${market.differentiation.notClaims
+                .map((item) => `<li>${escapeHTML(item)}</li>`)
+                .join("")}
+            </ul>
+          </div>
+        </section>
+
         <div class="market-positioning">
           <div class="market-positioning-main">
             <span>建议定位</span>
@@ -2185,18 +2279,33 @@
         <div class="audit-examples">
           <div class="audit-examples-heading">
             <div>
-              <span class="section-kicker">EDITABLE VISUAL DIRECTIONS</span>
-              <h3>卖点示例图</h3>
+              <span class="section-kicker">STATIC LISTING IMAGE DIRECTIONS</span>
+              <h3>1:1 静态副图参考</h3>
             </div>
             <p>
-              每张都是可修改的 SVG 构图模板。先确认叙事，再把示意画面替换成固定机位实拍、真实系统截图或已核实的证据。
+              每张图只讲一个购买结论。产品和真实生活场景占主体，功能标注只做辅助；四格流程属于视频分镜，继续放回视频，不混入副图。
             </p>
           </div>
+          <div class="audit-example-rules" aria-label="静态副图三个原则">
+            <div>
+              <strong>先给结果</strong>
+              <span>让用户先看到“现在就能看什么”，再读功能。</span>
+            </div>
+            <div>
+              <strong>一张图一个结论</strong>
+              <span>同一张图最多用一个主标题和一个证据组。</span>
+            </div>
+            <div>
+              <strong>不做时间轴</strong>
+              <span>多阶段动作交给视频；静态图只保留完成状态或前后对比。</span>
+            </div>
+          </div>
           <div class="audit-example-grid">
-            ${AUDIT.imageExamples
+            ${[...AUDIT.imageExamples]
+              .sort((left, right) => left.order - right.order)
               .map(
                 (example) => `
-                  <figure class="audit-example ${example.wide ? "is-wide" : ""}">
+                  <figure class="audit-example">
                     <a class="audit-example-visual" href="./${escapeAttr(example.file)}" target="_blank" rel="noopener noreferrer" aria-label="打开${escapeAttr(example.title)}可编辑 SVG">
                       <img src="./${escapeAttr(example.file)}" alt="${escapeAttr(example.alt)}" loading="lazy" />
                     </a>
@@ -2215,6 +2324,38 @@
                 `,
               )
               .join("")}
+          </div>
+          <div class="audit-reference-block">
+            <div class="audit-examples-heading">
+              <div>
+                <span class="section-kicker">LIVE LISTING REFERENCES</span>
+                <h3>竞品纯副图参考</h3>
+              </div>
+              <p>
+                以下都是 Amazon.de 当前 Listing 中的单张副图。重点看“一张图如何完成一个结论”，不要把竞品原图重新上传为 ONO3Pro 素材。
+              </p>
+            </div>
+            <div class="audit-reference-grid">
+              ${AUDIT.competitorImageReferences
+                .map(
+                  (reference) => `
+                    <figure class="audit-reference-card">
+                      <a class="audit-reference-visual" href="./${escapeAttr(reference.file)}" target="_blank" rel="noopener noreferrer" aria-label="打开 ${escapeAttr(reference.product)} ${escapeAttr(reference.image)} 原图">
+                        <img src="./${escapeAttr(reference.file)}" alt="${escapeAttr(reference.product)} ${escapeAttr(reference.title)}" loading="lazy" />
+                      </a>
+                      <figcaption>
+                        <span>${escapeHTML(reference.product)} · ${escapeHTML(reference.image)} · ${escapeHTML(reference.asin)}</span>
+                        <h4>${escapeHTML(reference.title)}</h4>
+                        <p>${escapeHTML(reference.read)}</p>
+                      </figcaption>
+                    </figure>
+                  `,
+                )
+                .join("")}
+            </div>
+            <p class="audit-reference-note">
+              这些是内部竞品研究参考，只借结构，不借素材。正式设计 ONO3Pro 时，画面、产品、文案与证据都必须重新拍摄或制作。
+            </p>
           </div>
         </div>
       </section>
@@ -2345,6 +2486,8 @@
       "定位",
       "核心卖点",
       "五点译文",
+      "原表补充原文",
+      "原表补充译文",
       "图片原文与卖点汇总",
       "产品链接",
     ];
@@ -2385,6 +2528,13 @@
         working.content.positioning,
         working.content.highlights.join("；"),
         working.content.bulletTranslations.join("；"),
+        (working.spreadsheetBullets || [])
+          .slice(working.listingBullets.length)
+          .map((bullet) => bullet.original)
+          .join("；"),
+        (working.content.spreadsheetBulletTranslations || [])
+          .slice(working.listingBullets.length)
+          .join("；"),
         imageSummary(product, working),
         product.sourceUrl,
       ]),

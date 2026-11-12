@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="1000" viewBox="0 0 1000 1000" role="img" aria-labelledby="title desc">
+  <title id="title">ONO3Pro 自动校正前后单张副图参考</title>
+  <desc id="desc">一张1比1静态前后对比副图：左侧为摆放后歪斜且有遮挡画面，右侧为校正完成方正且完整的画幕，不是四阶段分镜。</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1b2938"/>
+      <stop offset="1" stop-color="#0f1923"/>
+    </linearGradient>
+    <linearGradient id="darkScene" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2d4a60"/>
+      <stop offset="1" stop-color="#142b3a"/>
+    </linearGradient>
+    <linearGradient id="goodScene" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#34556d"/>
+      <stop offset=".55" stop-color="#b0704d"/>
+      <stop offset="1" stop-color="#e4b063"/>
+    </linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="180%">
+      <feDropShadow dx="0" dy="15" stdDeviation="20" flood-color="#000" flood-opacity=".3"/>
+    </filter>
+    <style>
+      .head{font:800 52px "Microsoft YaHei","PingFang SC",sans-serif;fill:#fff}
+      .sub{font:500 22px "Microsoft YaHei","PingFang SC",sans-serif;fill:#c7d2dd}
+      .label{font:700 25px "Microsoft YaHei","PingFang SC",sans-serif;fill:#172231}
+      .label-light{font:700 25px "Microsoft YaHei","PingFang SC",sans-serif;fill:#fff}
+      .note{font:500 18px "Microsoft YaHei","PingFang SC",sans-serif;fill:#b8c6d2}
+      .badge{font:600 15px "Microsoft YaHei","PingFang SC",sans-serif;fill:#e5edf4}
+      .note-dark{font:500 18px "Microsoft YaHei","PingFang SC",sans-serif;fill:#526171}
+      .note-green{font:500 18px "Microsoft YaHei","PingFang SC",sans-serif;fill:#23694a}
+      .tiny{font:400 15px "Microsoft YaHei","PingFang SC",sans-serif;fill:#94a5b3}
+    </style>
+  </defs>
+  <rect width="1000" height="1000" fill="url(#bg)"/>
+  <text x="55" y="84" class="head">不用手调，画面自己摆正</text>
+  <text x="57" y="130" class="sub">同一张副图里只比较“摆放后”和“自动处理后”，一眼看懂校正结果</text>
+  <rect x="758" y="51" width="187" height="31" rx="15" fill="#243b52"/>
+  <text x="851" y="73" text-anchor="middle" class="badge">前后对比单图参考</text>
+
+  <g filter="url(#shadow)">
+    <rect x="42" y="181" width="440" height="626" rx="20" fill="#edf1f4"/>
+    <rect x="518" y="181" width="440" height="626" rx="20" fill="#f8f5ef"/>
+  </g>
+  <path d="M480 164v666" stroke="#597287" stroke-width="2" stroke-dasharray="7 8"/>
+  <circle cx="480" cy="512" r="29" fill="#f7f9fa" stroke="#8fa5b6" stroke-width="2"/>
+  <path d="m470 512 7 7 15-17" fill="none" stroke="#2d7f59" stroke-width="4" stroke-linecap="round"/>
+
+  <text x="72" y="225" class="label">随手摆放</text>
+  <text x="72" y="251" class="note-dark">画面歪斜，摆件挡住一角</text>
+  <rect x="72" y="278" width="380" height="306" rx="8" fill="#cfd8df"/>
+  <path d="M97 300 421 317 403 549 89 527Z" fill="url(#darkScene)"/>
+  <path d="M89 527 403 549 394 563 102 542Z" fill="#6b7b88" opacity=".6"/>
+  <rect x="316" y="300" width="91" height="125" rx="8" fill="#efe8da" stroke="#6e5a44" stroke-width="3"/>
+  <path d="M343 403c9-40 21-41 34-5 9-32 22-36 29-2" fill="none" stroke="#ad7f48" stroke-width="3"/>
+  <rect x="338" y="415" width="46" height="6" rx="3" fill="#80684d"/>
+  <path d="M102 602h347l29 34H72Z" fill="#a99b8a"/>
+  <g transform="translate(125 655)">
+    <path d="M41 28c0-19 12-28 36-28h82c24 0 36 9 36 28" fill="none" stroke="#4d5962" stroke-width="8" stroke-linecap="round"/>
+    <rect x="0" y="28" width="196" height="66" rx="13" fill="#29323a"/>
+    <circle cx="77" cy="57" r="23" fill="#69899a"/>
+    <circle cx="77" cy="57" r="10" fill="#1e3643"/>
+    <path d="M121 50h43m-43 10h35" stroke="#82909b" stroke-width="2"/>
+  </g>
+  <rect x="72" y="744" width="348" height="42" rx="9" fill="#e2e8ed"/>
+  <text x="246" y="772" text-anchor="middle" class="note-dark">需要手动调整</text>
+
+  <text x="548" y="225" class="label" fill="#172231">自动处理后</text>
+  <text x="548" y="251" class="note-dark">方正入幕，完整画面直接可看</text>
+  <rect x="548" y="278" width="380" height="306" rx="8" fill="#ece7de"/>
+  <rect x="560" y="289" width="356" height="281" rx="4" fill="#fff" stroke="#bdb4a6" stroke-width="3"/>
+  <rect x="571" y="300" width="334" height="259" fill="url(#goodScene)"/>
+  <path d="M571 506c52-66 109-66 168-7 52-61 105-57 166 2v58H571Z" fill="#1d3c4b"/>
+  <circle cx="830" cy="363" r="37" fill="#ffd48a"/>
+  <path d="M571 438c58-29 114-22 167 18 53-31 108-26 167 17" fill="none" stroke="#ffe0ae" stroke-width="4" opacity=".65"/>
+  <path d="M571 300h334v259H571z" fill="none" stroke="#4fa87b" stroke-width="5"/>
+  <circle cx="558" cy="300" r="17" fill="#55ad7c"/>
+  <path d="m550 300 5 5 10-11" fill="none" stroke="#fff" stroke-width="2.5"/>
+  <path d="M548 602h347l29 34H518Z" fill="#c6b8a4"/>
+  <g transform="translate(612 655)">
+    <path d="M41 28c0-19 12-28 36-28h82c24 0 36 9 36 28" fill="none" stroke="#4d5962" stroke-width="8" stroke-linecap="round"/>
+    <rect x="0" y="28" width="196" height="66" rx="13" fill="#29323a"/>
+    <circle cx="77" cy="57" r="23" fill="#69899a"/>
+    <circle cx="77" cy="57" r="10" fill="#1e3643"/>
+    <path d="M121 50h43m-43 10h35" stroke="#82909b" stroke-width="2"/>
+  </g>
+  <rect x="548" y="744" width="348" height="42" rx="9" fill="#dcefe5"/>
+  <text x="722" y="772" text-anchor="middle" class="note-green">不用再调</text>
+
+  <g transform="translate(56 848)">
+    <rect width="888" height="80" rx="12" fill="#162737" stroke="#2d4458"/>
+    <text x="26" y="31" class="note">这仍是一张静态副图：没有步骤箭头，也没有时间轴</text>
+    <text x="26" y="59" class="tiny">正式制作时用固定机位的两张真实照片，经同一画框并排展示；不要把四阶段过程压缩成一张图。</text>
+  </g>
+  <text x="56" y="963" class="tiny">构图参考，不代表实拍性能。“3 秒”等耗时主张需另行测试并标注准确口径。</text>
+</svg>

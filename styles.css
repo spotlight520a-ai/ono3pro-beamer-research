@@ -1813,13 +1813,13 @@ svg {
 .spreadsheet-bullet {
   display: grid;
   grid-template-columns: 28px minmax(0, 1fr);
-  padding: 9px 10px;
-  gap: 8px;
+  padding: 12px;
+  gap: 10px;
   color: var(--muted);
   border: 1px solid var(--line);
   border-radius: 7px;
   background: var(--surface-soft);
-  font-size: 9px;
+  font-size: 11px;
   line-height: 1.65;
 }
 
@@ -1827,6 +1827,56 @@ svg {
   color: var(--primary);
   font-family: var(--font-mono);
   font-weight: 700;
+}
+
+.spreadsheet-bullet b {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--ink-soft);
+  font-size: 11px;
+}
+
+.spreadsheet-bullet p {
+  margin: 0 0 7px;
+}
+
+.spreadsheet-bullet p:last-child {
+  margin-bottom: 0;
+}
+
+.spreadsheet-bullet-input,
+.spreadsheet-bullet-textarea {
+  display: block;
+  width: 100%;
+  padding: 7px 9px;
+  color: var(--ink-soft);
+  border: 1px solid var(--line-strong);
+  border-radius: 5px;
+  outline: 0;
+  background: #fff;
+  font: 11px/1.7 var(--font-sans);
+  resize: vertical;
+}
+
+.spreadsheet-bullet-input {
+  min-height: 34px;
+  margin-bottom: 6px;
+  font-weight: 650;
+}
+
+.spreadsheet-bullet-textarea {
+  min-height: 92px;
+  margin-bottom: 10px;
+}
+
+.spreadsheet-bullet-textarea:last-child {
+  margin-bottom: 0;
+}
+
+.spreadsheet-bullet-input:focus,
+.spreadsheet-bullet-textarea:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgb(36 87 214 / 10%);
 }
 
 .spec-table {
@@ -2712,6 +2762,36 @@ svg {
   line-height: 1.65;
 }
 
+.audit-example-rules {
+  display: grid;
+  margin-bottom: 12px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--line);
+}
+
+.audit-example-rules div {
+  display: grid;
+  padding: 12px 14px;
+  gap: 3px;
+  background: var(--surface);
+}
+
+.audit-example-rules strong {
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.audit-example-rules span {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.55;
+}
+
 .audit-example-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -2812,6 +2892,90 @@ svg {
 
 .audit-example-foot a:hover {
   text-decoration: underline;
+}
+
+.audit-reference-block {
+  margin-top: 28px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+}
+
+.audit-reference-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.audit-reference-card {
+  display: flex;
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  flex-direction: column;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.audit-reference-visual {
+  display: grid;
+  aspect-ratio: 4 / 5;
+  min-height: 0;
+  overflow: hidden;
+  place-items: center;
+  background: #e9eef2;
+}
+
+.audit-reference-visual img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transition: transform 180ms ease;
+}
+
+.audit-reference-visual:hover img {
+  transform: scale(1.012);
+}
+
+.audit-reference-visual:focus-visible {
+  outline: 3px solid #8fb4ea;
+  outline-offset: -3px;
+}
+
+.audit-reference-card figcaption {
+  display: grid;
+  padding: 13px 14px 15px;
+  gap: 5px;
+}
+
+.audit-reference-card figcaption > span {
+  color: var(--primary);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 650;
+  line-height: 1.45;
+}
+
+.audit-reference-card h4 {
+  margin: 0;
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.audit-reference-card p {
+  margin: 1px 0 0;
+  color: var(--ink-soft);
+  font-size: 11px;
+  line-height: 1.65;
+}
+
+.audit-reference-note {
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.6;
 }
 
 .audit-copy-list {
@@ -2929,6 +3093,109 @@ svg {
   color: var(--ink-soft);
   font-size: 12px;
   line-height: 1.7;
+}
+
+.market-differentiation {
+  margin-top: 14px;
+  padding: 18px;
+  border: 1px solid #d9e2f2;
+  border-radius: 11px;
+  background: var(--surface);
+}
+
+.market-differentiation-heading {
+  display: grid;
+  grid-template-columns: minmax(260px, 0.8fr) minmax(0, 1.2fr);
+  align-items: end;
+  gap: 28px;
+}
+
+.market-differentiation-heading h3 {
+  margin: 3px 0 0;
+  color: var(--ink);
+  font-size: 18px;
+  line-height: 1.4;
+}
+
+.market-differentiation-heading p {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 11px;
+  line-height: 1.7;
+}
+
+.market-differentiation-grid {
+  display: grid;
+  margin-top: 14px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--line);
+}
+
+.market-differentiation-grid article {
+  padding: 14px;
+  background: var(--surface-soft);
+}
+
+.market-differentiation-grid span {
+  color: var(--primary);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.market-differentiation-grid h4 {
+  margin: 4px 0 5px;
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.market-differentiation-grid p {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 11px;
+  line-height: 1.65;
+}
+
+.market-differentiation-story {
+  margin: 12px 0 0;
+  padding: 12px 14px;
+  color: #1f3557;
+  border-radius: 7px;
+  background: #edf3ff;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.65;
+}
+
+.market-differentiation-boundaries {
+  display: grid;
+  margin-top: 10px;
+  grid-template-columns: 150px minmax(0, 1fr);
+  padding: 11px 13px;
+  gap: 12px;
+  border: 1px solid #f0dcb7;
+  border-radius: 7px;
+  background: #fffbeb;
+}
+
+.market-differentiation-boundaries strong {
+  color: #7a4d08;
+  font-size: 11px;
+}
+
+.market-differentiation-boundaries ul {
+  display: grid;
+  margin: 0;
+  padding-left: 18px;
+  gap: 3px;
+  color: #704f1d;
+  font-size: 11px;
+  line-height: 1.6;
 }
 
 .market-stat-grid {
@@ -3607,6 +3874,12 @@ svg {
   }
 
   .image-grid.listing {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 980px) {
+  .audit-reference-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
@@ -4482,7 +4755,15 @@ svg {
     gap: 8px;
   }
 
+  .audit-example-rules {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
   .audit-example-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .audit-reference-grid {
     grid-template-columns: minmax(0, 1fr);
   }
 
@@ -4519,10 +4800,28 @@ svg {
   }
 
   .market-lead,
+  .market-differentiation-heading,
   .market-positioning,
   .market-price-callout,
   .market-two-column {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .market-differentiation {
+    padding: 15px;
+  }
+
+  .market-differentiation-heading {
+    gap: 8px;
+  }
+
+  .market-differentiation-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .market-differentiation-boundaries {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 6px;
   }
 
   .market-lead {
