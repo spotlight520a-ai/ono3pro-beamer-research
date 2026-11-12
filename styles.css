@@ -5380,3 +5380,441 @@ p.audit-editable {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
+/* Upgrade selling-point map */
+.sellpoints-intro,
+.sellpoints-section-heading,
+.sellpoints-category-heading,
+.sellpoints-closing {
+  align-items: start;
+  gap: 18px;
+}
+
+.sellpoints-intro {
+  display: grid;
+  grid-template-columns: minmax(0, 1.65fr) minmax(240px, 0.7fr);
+  margin-bottom: 14px;
+  padding: 18px;
+  border: 1px solid #dbe4f1;
+  border-radius: 11px;
+  background:
+    linear-gradient(135deg, rgb(255 255 255 / 96%), rgb(246 249 255 / 96%)),
+    var(--surface);
+}
+
+.sellpoints-intro h3 {
+  max-width: 820px;
+  margin: 2px 0 7px;
+  font-size: 21px;
+  letter-spacing: -0.02em;
+}
+
+.sellpoints-intro > div > p:not(.section-kicker) {
+  max-width: 900px;
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 12px;
+  line-height: 1.72;
+}
+
+.sellpoints-source {
+  margin: 0;
+  padding-left: 14px;
+  color: var(--muted);
+  border-left: 2px solid #d7e2f5;
+  font-size: 10px;
+  line-height: 1.65;
+}
+
+.sellpoints-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  overflow: hidden;
+  margin-bottom: 20px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+}
+
+.sellpoints-metrics > div {
+  min-width: 0;
+  padding: 11px 13px;
+  border-right: 1px solid var(--line);
+}
+
+.sellpoints-metrics > div:last-child {
+  border-right: 0;
+}
+
+.sellpoints-metrics strong,
+.sellpoints-metrics span,
+.sellpoints-metrics small {
+  display: block;
+}
+
+.sellpoints-metrics strong {
+  color: var(--primary-dark);
+  font-family: var(--font-mono);
+  font-size: 20px;
+  letter-spacing: -0.04em;
+}
+
+.sellpoints-metrics span {
+  margin-top: 1px;
+  color: var(--ink);
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.sellpoints-metrics small {
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.sellpoints-section-heading {
+  display: flex;
+  justify-content: space-between;
+  margin: 20px 0 10px;
+}
+
+.sellpoints-section-heading h3 {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.4;
+}
+
+.sellpoints-section-heading > p {
+  max-width: 440px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.65;
+  text-align: right;
+}
+
+.sellpoints-priorities {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.sellpoints-priority {
+  position: relative;
+  min-width: 0;
+  padding: 15px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+}
+
+.sellpoints-priority.is-primary {
+  border-color: #c9d7f2;
+  box-shadow: inset 0 3px 0 var(--primary);
+}
+
+.sellpoints-priority > span {
+  display: inline-flex;
+  color: var(--primary);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.sellpoints-priority h4 {
+  margin: 5px 0 6px;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.sellpoints-priority p {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 11px;
+  line-height: 1.65;
+}
+
+.sellpoints-priority small {
+  display: block;
+  margin-top: 10px;
+  padding-top: 9px;
+  color: var(--muted);
+  border-top: 1px solid #eef1f4;
+  font-size: 10px;
+  line-height: 1.6;
+}
+
+.sellpoints-priority small b {
+  display: block;
+  margin-bottom: 2px;
+  color: var(--ink);
+  font-size: 10px;
+}
+
+.sellpoints-transition-table {
+  min-width: 940px;
+}
+
+.sellpoints-transition-table th:nth-child(1),
+.sellpoints-transition-table td:nth-child(1) {
+  width: 13%;
+}
+
+.sellpoints-transition-table th:nth-child(2),
+.sellpoints-transition-table td:nth-child(2),
+.sellpoints-transition-table th:nth-child(3),
+.sellpoints-transition-table td:nth-child(3) {
+  width: 25%;
+}
+
+.sellpoints-transition-table th:nth-child(4),
+.sellpoints-transition-table td:nth-child(4) {
+  width: 25%;
+}
+
+.sellpoints-transition-table th:nth-child(5),
+.sellpoints-transition-table td:nth-child(5) {
+  width: 12%;
+}
+
+.sellpoints-status,
+.sellpoints-level {
+  display: inline-flex;
+  min-height: 22px;
+  align-items: center;
+  padding: 3px 7px;
+  border-radius: 999px;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1.35;
+  white-space: nowrap;
+}
+
+.sellpoints-status.is-upgrade,
+.sellpoints-level.is-primary {
+  color: var(--primary-dark);
+  background: var(--primary-soft);
+}
+
+.sellpoints-status.is-check,
+.sellpoints-level.is-secondary {
+  color: var(--gold);
+  background: var(--gold-soft);
+}
+
+.sellpoints-category {
+  min-width: 0;
+  margin-top: 12px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background: var(--surface-soft);
+}
+
+.sellpoints-category-heading {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 9px;
+}
+
+.sellpoints-category-heading > div > span {
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.sellpoints-category-heading p {
+  margin: 3px 0 0;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.6;
+}
+
+.sellpoints-category-heading > strong {
+  flex: 0 0 auto;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 650;
+}
+
+.sellpoints-category .audit-table-wrap {
+  background: var(--surface);
+}
+
+.sellpoints-table {
+  min-width: 1260px;
+}
+
+.sellpoints-table th:nth-child(1),
+.sellpoints-table td:nth-child(1) {
+  width: 10%;
+}
+
+.sellpoints-table th:nth-child(2),
+.sellpoints-table td:nth-child(2) {
+  width: 15%;
+}
+
+.sellpoints-table th:nth-child(3),
+.sellpoints-table td:nth-child(3),
+.sellpoints-table th:nth-child(5),
+.sellpoints-table td:nth-child(5) {
+  width: 20%;
+}
+
+.sellpoints-table th:nth-child(4),
+.sellpoints-table td:nth-child(4) {
+  width: 18%;
+}
+
+.sellpoints-table th:nth-child(6),
+.sellpoints-table td:nth-child(6) {
+  width: 17%;
+}
+
+.sellpoints-table td:first-child small {
+  display: block;
+  margin-top: 5px;
+  color: var(--muted);
+  font-size: 9px;
+  line-height: 1.45;
+}
+
+.sellpoints-table tbody tr:hover td {
+  background: #fbfcff;
+}
+
+.sellpoints-closing {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  margin-top: 18px;
+}
+
+.sellpoints-sequence,
+.sellpoints-checks {
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+}
+
+.sellpoints-sequence h3,
+.sellpoints-checks h3 {
+  margin: 2px 0 10px;
+  font-size: 15px;
+}
+
+.sellpoints-sequence ol,
+.sellpoints-checks ul {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--ink-soft);
+  font-size: 10px;
+  line-height: 1.65;
+}
+
+.sellpoints-sequence li,
+.sellpoints-checks li {
+  margin-top: 5px;
+  padding-left: 2px;
+}
+
+.sellpoints-checks {
+  border-color: #efdfb7;
+  background: #fffdf8;
+}
+
+@media (max-width: 900px) {
+  .sellpoints-intro,
+  .sellpoints-closing {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sellpoints-source {
+    padding-top: 10px;
+    padding-left: 0;
+    border-top: 1px solid #e5ebf4;
+    border-left: 0;
+  }
+
+  .sellpoints-priorities {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 720px) {
+  .sellpoints-intro {
+    padding: 13px;
+  }
+
+  .sellpoints-intro h3 {
+    font-size: 17px;
+  }
+
+  .sellpoints-intro > div > p:not(.section-kicker) {
+    font-size: 11px;
+    line-height: 1.65;
+  }
+
+  .sellpoints-source {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+  }
+
+  .sellpoints-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .sellpoints-metrics > div {
+    border-right: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .sellpoints-metrics > div:nth-child(2n) {
+    border-right: 0;
+  }
+
+  .sellpoints-metrics > div:nth-last-child(-n + 2) {
+    border-bottom: 0;
+  }
+
+  .sellpoints-section-heading {
+    display: grid;
+    gap: 5px;
+    margin-top: 17px;
+  }
+
+  .sellpoints-section-heading > p {
+    max-width: none;
+    text-align: left;
+  }
+
+  .sellpoints-priority,
+  .sellpoints-category,
+  .sellpoints-sequence,
+  .sellpoints-checks {
+    padding: 13px;
+  }
+
+  .sellpoints-priority p,
+  .sellpoints-priority small {
+    font-size: 10px;
+  }
+
+  .sellpoints-category-heading {
+    gap: 8px;
+  }
+
+  .sellpoints-transition-table {
+    min-width: 880px;
+  }
+
+  .sellpoints-table {
+    min-width: 1200px;
+  }
+}

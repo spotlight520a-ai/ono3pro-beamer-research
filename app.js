@@ -2138,6 +2138,8 @@
       fields.push("竞品图片参考");
     if (!deepEqual(before.marketResearch, after.marketResearch))
       fields.push("市场定位");
+    if (!deepEqual(before.upgradeSellpoints, after.upgradeSellpoints))
+      fields.push("升级卖点地图");
     if (!deepEqual(before.promotions, after.promotions))
       fields.push("价格促销");
     if (!deepEqual(before.listing, after.listing)) fields.push("Listing 诊断");
@@ -2300,6 +2302,177 @@
           </tbody>
         </table>
       </div>
+    `;
+  }
+
+  function auditSellpointsPanel() {
+    const sellpoints = auditDraft.upgradeSellpoints;
+    return `
+      <section class="audit-panel" data-audit-panel="sellpoints" role="tabpanel" hidden>
+        <div class="sellpoints-intro">
+          <div>
+            <p class="section-kicker">${auditEditable(sellpoints.kicker, "upgradeSellpoints.kicker")}</p>
+            <h3>${auditEditable(sellpoints.title, "upgradeSellpoints.title")}</h3>
+            <p>${auditEditable(sellpoints.summary, "upgradeSellpoints.summary", { multiline: true })}</p>
+          </div>
+          <p class="sellpoints-source">${auditEditable(sellpoints.sourceNote, "upgradeSellpoints.sourceNote", { multiline: true })}</p>
+        </div>
+
+        <div class="sellpoints-metrics">
+          ${sellpoints.metrics
+            .map(
+              (metric, index) => `
+                <div>
+                  <strong>${auditEditable(metric.value, `upgradeSellpoints.metrics.${index}.value`)}</strong>
+                  <span>${auditEditable(metric.label, `upgradeSellpoints.metrics.${index}.label`)}</span>
+                  <small>${auditEditable(metric.note, `upgradeSellpoints.metrics.${index}.note`, { multiline: true })}</small>
+                </div>
+              `,
+            )
+            .join("")}
+        </div>
+
+        <div class="sellpoints-section-heading">
+          <div>
+            <span class="section-kicker">DAS KAUFARGUMENT</span>
+            <h3>先占住三个购买理由</h3>
+          </div>
+          <p>主攻点必须同时有用户问题、具体承诺和页面证据；其余功能作为支撑，不抢占前三张图。</p>
+        </div>
+        <div class="sellpoints-priorities">
+          ${sellpoints.priorities
+            .map(
+              (priority, index) => `
+                <article class="sellpoints-priority ${index === 0 ? "is-primary" : ""}">
+                  <span>${auditEditable(priority.index, `upgradeSellpoints.priorities.${index}.index`)}</span>
+                  <h4>${auditEditable(priority.title, `upgradeSellpoints.priorities.${index}.title`)}</h4>
+                  <p>${auditEditable(priority.claim, `upgradeSellpoints.priorities.${index}.claim`, { multiline: true })}</p>
+                  <small><b>怎么证明</b>${auditEditable(priority.proof, `upgradeSellpoints.priorities.${index}.proof`, { multiline: true })}</small>
+                </article>
+              `,
+            )
+            .join("")}
+        </div>
+
+        <div class="sellpoints-section-heading">
+          <div>
+            <span class="section-kicker">WAS IST NEU</span>
+            <h3>旧版到新版，变化要讲成用户结果</h3>
+          </div>
+          <p>先核对事实口径，再把“新增了什么”翻译成“少等什么、少调什么、多看什么”。</p>
+        </div>
+        <div class="audit-table-wrap">
+          <table class="audit-table sellpoints-transition-table">
+            <thead>
+              <tr>
+                <th>领域</th>
+                <th>旧版表达</th>
+                <th>新版表达</th>
+                <th>用户影响</th>
+                <th>状态</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${sellpoints.transitions
+                .map(
+                  (item, index) => `
+                    <tr>
+                      <td><strong>${auditEditable(item.area, `upgradeSellpoints.transitions.${index}.area`)}</strong></td>
+                      <td>${auditEditable(item.before, `upgradeSellpoints.transitions.${index}.before`, { multiline: true })}</td>
+                      <td>${auditEditable(item.after, `upgradeSellpoints.transitions.${index}.after`, { multiline: true })}</td>
+                      <td>${auditEditable(item.impact, `upgradeSellpoints.transitions.${index}.impact`, { multiline: true })}</td>
+                      <td><span class="sellpoints-status ${/待|核实/.test(item.status) ? "is-check" : "is-upgrade"}">${auditEditable(item.status, `upgradeSellpoints.transitions.${index}.status`)}</span></td>
+                    </tr>
+                  `,
+                )
+                .join("")}
+            </tbody>
+          </table>
+        </div>
+
+        <div class="sellpoints-section-heading">
+          <div>
+            <span class="section-kicker">28 SELLING POINTS</span>
+            <h3>新版卖点分类与竞品对照</h3>
+          </div>
+          <p>每条都写清事实、用户好处、图片怎么证明，以及竞品是否已经普遍这样表达。</p>
+        </div>
+        <div class="sellpoints-categories">
+          ${sellpoints.categories
+            .map(
+              (category, categoryIndex) => `
+                <section class="sellpoints-category">
+                  <div class="sellpoints-category-heading">
+                    <div>
+                      <span>${String(categoryIndex + 1).padStart(2, "0")} · ${auditEditable(category.title, `upgradeSellpoints.categories.${categoryIndex}.title`)}</span>
+                      <p>${auditEditable(category.note, `upgradeSellpoints.categories.${categoryIndex}.note`, { multiline: true })}</p>
+                    </div>
+                    <strong>${category.rows.length} 条</strong>
+                  </div>
+                  <div class="audit-table-wrap">
+                    <table class="audit-table sellpoints-table">
+                      <thead>
+                        <tr>
+                          <th>级别 / 来源</th>
+                          <th>卖点</th>
+                          <th>具体说明</th>
+                          <th>用户好处</th>
+                          <th>图片怎么体现</th>
+                          <th>竞品对比</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        ${category.rows
+                          .map(
+                            (row, rowIndex) => `
+                              <tr>
+                                <td>
+                                  <span class="sellpoints-level ${row.level === "主攻" ? "is-primary" : "is-secondary"}">${auditEditable(row.level, `upgradeSellpoints.categories.${categoryIndex}.rows.${rowIndex}.level`)}</span>
+                                  <small>${auditEditable(row.source, `upgradeSellpoints.categories.${categoryIndex}.rows.${rowIndex}.source`)}</small>
+                                </td>
+                                <td><strong>${auditEditable(row.title, `upgradeSellpoints.categories.${categoryIndex}.rows.${rowIndex}.title`)}</strong></td>
+                                <td>${auditEditable(row.detail, `upgradeSellpoints.categories.${categoryIndex}.rows.${rowIndex}.detail`, { multiline: true })}</td>
+                                <td>${auditEditable(row.benefit, `upgradeSellpoints.categories.${categoryIndex}.rows.${rowIndex}.benefit`, { multiline: true })}</td>
+                                <td>${auditEditable(row.image, `upgradeSellpoints.categories.${categoryIndex}.rows.${rowIndex}.image`, { multiline: true })}</td>
+                                <td>${auditEditable(row.competitor, `upgradeSellpoints.categories.${categoryIndex}.rows.${rowIndex}.competitor`, { multiline: true })}</td>
+                              </tr>
+                            `,
+                          )
+                          .join("")}
+                      </tbody>
+                    </table>
+                  </div>
+                </section>
+              `,
+            )
+            .join("")}
+        </div>
+
+        <div class="sellpoints-closing">
+          <section class="sellpoints-sequence">
+            <span class="section-kicker">BILDAFBAU</span>
+            <h3>建议副图顺序</h3>
+            <ol>
+              ${sellpoints.narrative
+                .map(
+                  (item, index) => `<li>${auditEditable(item, `upgradeSellpoints.narrative.${index}`, { multiline: true })}</li>`,
+                )
+                .join("")}
+            </ol>
+          </section>
+          <section class="sellpoints-checks">
+            <span class="section-kicker">VOR VERÖFFENTLICHUNG</span>
+            <h3>发布前必须核实</h3>
+            <ul>
+              ${sellpoints.releaseChecks
+                .map(
+                  (item, index) => `<li>${auditEditable(item, `upgradeSellpoints.releaseChecks.${index}`, { multiline: true })}</li>`,
+                )
+                .join("")}
+            </ul>
+          </section>
+        </div>
+      </section>
     `;
   }
 
@@ -2568,6 +2741,7 @@
 
       <div class="audit-tabs" role="tablist" aria-label="ONO3Pro 改版建议">
         <button class="active" type="button" role="tab" aria-selected="true" data-action="audit-tab" data-audit-tab="overview">结论与顺序</button>
+        <button type="button" role="tab" aria-selected="false" data-action="audit-tab" data-audit-tab="sellpoints">升级卖点 ${auditDraft.upgradeSellpoints.metrics[0]?.value || "28"}</button>
         <button type="button" role="tab" aria-selected="false" data-action="audit-tab" data-audit-tab="market">市场定位</button>
         <button type="button" role="tab" aria-selected="false" data-action="audit-tab" data-audit-tab="promotions">当前促销</button>
         <button type="button" role="tab" aria-selected="false" data-action="audit-tab" data-audit-tab="listing">Listing ${auditDraft.listing.length}</button>
@@ -2738,6 +2912,7 @@
       </section>
 
       ${auditMarketPanel()}
+      ${auditSellpointsPanel()}
       ${auditPromotionTable()}
 
       <section class="audit-panel" data-audit-panel="listing" role="tabpanel" hidden>
@@ -2804,6 +2979,7 @@
     const modalBody = $("#modalBody");
     const validTabs = new Set([
       "overview",
+      "sellpoints",
       "market",
       "promotions",
       "listing",
@@ -3579,6 +3755,9 @@
     );
     $("#openMarketButton")?.addEventListener("click", () =>
       openAuditModal("market"),
+    );
+    $("#openSellpointsButton")?.addEventListener("click", () =>
+      openAuditModal("sellpoints"),
     );
 
     const params = new URLSearchParams(
