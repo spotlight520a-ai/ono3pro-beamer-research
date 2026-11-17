@@ -3,6 +3,7 @@
 
   const DATA = window.BSR_DATA;
   const AUDIT = window.BSR_AUDIT;
+  const BRIGHTNESS = window.BSR_ANSI_BRIGHTNESS;
   const STORAGE_KEY = "beamer-scout-state-v1";
   const DRAFT_KEY = "beamer-scout-draft-v1";
   const AUDIT_DRAFT_KEY = "beamer-scout-audit-draft-v1";
@@ -10,6 +11,16 @@
   const MAX_COMPARE = 4;
   const MAX_VERSIONS = 160;
   const MAX_SITE_VERSIONS = 120;
+  const brightnessByAsin = new Map(
+    (BRIGHTNESS?.products || []).map((row) => [
+      String(row.asin).toUpperCase(),
+      row,
+    ]),
+  );
+  const brightnessUi = {
+    mode: "all",
+    query: "",
+  };
   const DEFAULT_HOME_BRIEF = {
     title: "图量已经够用，卖点还差一个购买理由",
     summary:
@@ -246,10 +257,20 @@
       .trim();
   }
 
+  function brightnessFor(product) {
+    return brightnessByAsin.get(String(product?.asin).toUpperCase()) || null;
+  }
+
   function specOf(product, label, working = null) {
     const override = working?.specOverrides?.[label];
     if (typeof override === "string" && override.trim()) {
       return cleanSpecValue(override);
+    }
+    if (label === "亮度") {
+      const brightness = brightnessFor(product);
+      if (brightness) {
+        return cleanSpecValue(brightness.primaryLabel || "—");
+      }
     }
     return cleanSpecValue(
       product.keySpecs.find((item) => item.label === label)?.value || "—",
@@ -2305,6 +2326,197 @@
     `;
   }
 
+  function brightnessKind(row) {
+    if (row?.ansiValue != null) return "ansi";
+    if (row?.lumenValue != null) return "lumen";
+    return "missing";
+  }
+
+  function brightnessValueLabel(row) {
+    if (row?.ansiValue != null) {
+      return `${numberFormat.format(row.ansiValue)} ANSI`;
+    }
+    if (row?.lumenValue != null) {
+      return `${numberFormat.format(row.lumenValue)} lm`;
+    }
+    return "—";
+  }
+
+  function brightnessExtractionLabel(row) {
+    if (brightnessKind(row) === "ansi") return row.ansiSource || "未注明";
+    if (brightnessKind(row) === "lumen") return row.lumenSource || "未注明";
+    return "未写出";
+  }
+
+  function brightnessRowsForUi() {
+    const query = brightnessUi.query.trim().toLocaleLowerCase("de");
+    return (BRIGHTNESS?.products || []).filter((row) => {
+      if (brightnessUi.mode !== "all" && brightnessKind(row) !== brightnessUi.mode) {
+        return false;
+      }
+      if (!query) return true;
+      return [
+        row.rank,
+        row.brand,
+        row.model,
+        row.asin,
+        brightnessValueLabel(row),
+        brightnessExtractionLabel(row),
+        row.evidence,
+      ]
+        .join(" ")
+        .toLocaleLowerCase("de")
+        .includes(query);
+    });
+  }
+
+  function brightnessLedgerTemplate() {
+    const rows = BRIGHTNESS?.products || [];
+    const meta = BRIGHTNESS?.meta || {};
+    const visibleRows = brightnessRowsForUi();
+    const modes = [
+      ["all", "全部", rows.length],
+      ["ansi", "明确 ANSI", meta.ansiCount || 0],
+      ["lumen", "仅写流明", meta.lumenOnlyCount || 0],
+      ["missing", "未写亮度", meta.missingCount || 0],
+    ];
+    return `
+      <div class="brightness-summary" aria-label="亮度提取汇总">
+        <div>
+          <span>全量产品</span>
+          <strong>${numberFormat.format(rows.length)}</strong>
+          <small>ONO3Pro + 100 个 BSR 竞品</small>
+        </div>
+        <div>
+          <span>明确 ANSI</span>
+          <strong>${numberFormat.format(meta.ansiCount || 0)}</strong>
+          <small>竞品 ${numberFormat.format((meta.ansiCount || 0) - 1)} / 100</small>
+        </div>
+        <div>
+          <span>仅写普通流明</span>
+          <strong>${numberFormat.format(meta.lumenOnlyCount || 0)}</strong>
+          <small>保留原口径，不换算</small>
+        </div>
+        <div>
+          <span>未写亮度</span>
+          <strong>${numberFormat.format(meta.missingCount || 0)}</strong>
+          <small>标题、五点、详情均未写</small>
+        </div>
+      </div>
+
+      <div class="brightness-toolbar">
+        <div class="brightness-tabs" role="group" aria-label="按亮度口径筛选">
+          ${modes
+            .map(
+              ([mode, label, count]) => `
+                <button
+                  type="button"
+                  data-action="brightness-filter"
+                  data-brightness-mode="${mode}"
+                  aria-pressed="${brightnessUi.mode === mode}"
+                  class="${brightnessUi.mode === mode ? "is-active" : ""}"
+                >
+                  ${escapeHTML(label)}
+                  <span>${numberFormat.format(count)}</span>
+                </button>
+              `,
+            )
+            .join("")}
+        </div>
+        <label class="brightness-search">
+          <span>搜索型号、品牌、ASIN</span>
+          <input
+            type="search"
+            value="${escapeAttr(brightnessUi.query)}"
+            placeholder="例如 Magcubic 或 B0H"
+            data-brightness-search
+          />
+        </label>
+      </div>
+
+      <div class="brightness-rule">
+        提取顺序：标题 → 五点 → 产品详情。存在明确 ANSI 时不采用普通流明；
+        普通流明只作原始口径保留，不换算、不冒充 ANSI。页面观察于
+        ${escapeHTML(meta.observedAt || "2026-11-17")}。
+      </div>
+
+      <div class="brightness-table-wrap">
+        <table class="audit-table brightness-table">
+          <thead>
+            <tr>
+              <th>BSR / 产品</th>
+              <th>页面亮度</th>
+              <th>提取来源</th>
+              <th>页面原文依据</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${
+              visibleRows.length
+                ? visibleRows
+                    .map((row) => {
+                      const kind = brightnessKind(row);
+                      const source = brightnessExtractionLabel(row);
+                      const evidence =
+                        row.evidence ||
+                        "当前标题、五点与产品详情均未写出 ANSI 或流明值。";
+                      return `
+                        <tr class="brightness-row is-${kind}" data-label="亮度记录">
+                          <td data-label="BSR / 产品">
+                            <div class="brightness-product">
+                              <span>${row.own ? "自有" : `BSR #${escapeHTML(row.rank)}`}</span>
+                              <strong>${escapeHTML(row.brand)} ${escapeHTML(row.model || "")}</strong>
+                              <small>${escapeHTML(row.asin)}</small>
+                            </div>
+                          </td>
+                          <td data-label="页面亮度">
+                            <div class="brightness-value is-${kind}">
+                              <strong>${escapeHTML(brightnessValueLabel(row))}</strong>
+                              <span>${kind === "ansi" ? "明确 ANSI" : kind === "lumen" ? "页面只写流明" : "未写出"}</span>
+                            </div>
+                          </td>
+                          <td data-label="提取来源">
+                            <span class="brightness-source is-${kind}">${escapeHTML(source)}</span>
+                          </td>
+                          <td data-label="页面原文依据">
+                            <div class="brightness-evidence">
+                              <strong>${escapeHTML(row.ansiRaw || row.lumenRaw || "—")}</strong>
+                              <span title="${escapeAttr(evidence)}">${escapeHTML(evidence)}</span>
+                              <a href="${escapeAttr(row.sourceUrl)}" target="_blank" rel="noreferrer">打开产品页</a>
+                            </div>
+                          </td>
+                        </tr>
+                      `;
+                    })
+                    .join("")
+                : `
+                  <tr>
+                    <td colspan="4" class="brightness-empty">
+                      当前筛选下没有产品。
+                    </td>
+                  </tr>
+                `
+            }
+          </tbody>
+        </table>
+      </div>
+      <p class="brightness-result">显示 ${numberFormat.format(visibleRows.length)} / ${numberFormat.format(rows.length)} 个产品</p>
+    `;
+  }
+
+  function renderBrightnessLedger({ focusSearch = false } = {}) {
+    const container = $("#brightnessLedger");
+    if (!container) return;
+    container.innerHTML = brightnessLedgerTemplate();
+    if (focusSearch) {
+      const input = $("[data-brightness-search]", container);
+      if (input) {
+        input.focus();
+        input.setSelectionRange(input.value.length, input.value.length);
+      }
+    }
+  }
+
   function auditSellpointsPanel() {
     const sellpoints = auditDraft.upgradeSellpoints;
     return `
@@ -2388,6 +2600,17 @@
                 .join("")}
             </tbody>
           </table>
+        </div>
+
+        <div class="sellpoints-section-heading brightness-section-heading">
+          <div>
+            <span class="section-kicker">ANSI & LUMEN</span>
+            <h3>全量亮度口径</h3>
+          </div>
+          <p>100 个竞品与 ONO3Pro 逐个核对；每行保留提取来源与原文，不用推算值填空。</p>
+        </div>
+        <div id="brightnessLedger" class="brightness-ledger">
+          ${brightnessLedgerTemplate()}
         </div>
 
         <div class="sellpoints-section-heading">
@@ -3007,6 +3230,8 @@
     }
     auditUi.tab = initialTab;
     auditUi.editMode = false;
+    brightnessUi.mode = "all";
+    brightnessUi.query = "";
     openModal({
       kicker: auditDraft.kicker,
       title: "ONO3Pro 市场与内容改版研究",
@@ -3039,6 +3264,8 @@
       "页面优惠",
       "估算折后价(EUR)",
       "亮度",
+      "亮度来源",
+      "亮度原文依据",
       "原生分辨率",
       "智能系统",
       "评分",
@@ -3068,7 +3295,9 @@
         .join(" || ");
     const csvRows = [
       headers,
-      ...rows.map(({ product, working, system }) => [
+      ...rows.map(({ product, working, system }) => {
+        const brightness = brightnessFor(product);
+        return [
         product.rank,
         product.manualFocus ? "自有产品" : "BSR 竞品",
         coverageLabel(product),
@@ -3080,6 +3309,8 @@
         promotionSignal(product),
         promoPriceFor(product) || "",
         specOf(product, "亮度", working),
+        brightness?.ansiSource || brightness?.lumenSource || "",
+        brightness?.evidence || "",
         specOf(product, "原生分辨率", working),
         system,
         product.live?.rating || product.metrics?.rating || "",
@@ -3104,7 +3335,8 @@
           .join("；"),
         imageSummary(product, working),
         product.sourceUrl,
-      ]),
+        ];
+      }),
     ];
     const csv = csvRows
       .map((row) => row.map(csvCell).join(","))
@@ -3485,6 +3717,12 @@
   }
 
   function handleSiteAuditInput(event) {
+    const brightnessSearch = event.target.closest?.("[data-brightness-search]");
+    if (brightnessSearch) {
+      brightnessUi.query = brightnessSearch.value;
+      renderBrightnessLedger({ focusSearch: true });
+      return;
+    }
     if (!auditUi.editMode) return;
     const target = event.target.closest?.("[data-audit-path]");
     if (!target || !$("#modalBody").contains(target)) return;
@@ -3557,6 +3795,11 @@
     }
     if (action === "audit-tab") {
       activateAuditTab(button.dataset.auditTab);
+      return;
+    }
+    if (action === "brightness-filter") {
+      brightnessUi.mode = button.dataset.brightnessMode || "all";
+      renderBrightnessLedger();
       return;
     }
     if (action === "toggle-audit-edit") {

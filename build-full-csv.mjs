@@ -6,6 +6,15 @@ const root = path.dirname(fileURLToPath(import.meta.url));
 const data = JSON.parse(
   fs.readFileSync(path.join(root, "data", "app-data.json"), "utf8"),
 );
+const brightnessData = JSON.parse(
+  fs.readFileSync(path.join(root, "data", "ansi-brightness.json"), "utf8"),
+);
+const brightnessByAsin = new Map(
+  brightnessData.products.map((row) => [
+    String(row.asin).toUpperCase(),
+    row,
+  ]),
+);
 
 function coverageLabel(product) {
   if (product.manualFocus || product.coverage === "own") return "自有深挖";
@@ -23,7 +32,19 @@ function modelOf(product) {
 }
 
 function specOf(product, label) {
+  if (label === "亮度") {
+    const brightness = brightnessByAsin.get(
+      String(product.asin).toUpperCase(),
+    );
+    if (brightness) {
+      return brightness.primaryLabel || "—";
+    }
+  }
   return product.keySpecs?.find((item) => item.label === label)?.value || "";
+}
+
+function brightnessOf(product) {
+  return brightnessByAsin.get(String(product.asin).toUpperCase()) || null;
 }
 
 function csvCell(value) {
@@ -52,6 +73,8 @@ const headers = [
   "配送方式",
   "上架时间",
   "亮度（页面口径）",
+  "亮度来源",
+  "亮度原文依据",
   "原生分辨率",
   "显示技术",
   "连接",
@@ -76,6 +99,7 @@ const headers = [
 const rows = data.products.map((product) => {
   const listing = product.images?.listing || [];
   const aplus = product.images?.aplus || [];
+  const brightness = brightnessOf(product);
   return [
     product.rank,
     product.manualFocus ? "自有产品" : "BSR 竞品",
@@ -96,6 +120,8 @@ const rows = data.products.map((product) => {
     product.metrics?.fulfillment || product.live?.fulfillment || "",
     product.metrics?.launchDate || product.live?.launchDate || "",
     specOf(product, "亮度"),
+    brightness?.ansiSource || brightness?.lumenSource || "",
+    brightness?.evidence || "",
     specOf(product, "原生分辨率"),
     specOf(product, "显示技术"),
     specOf(product, "连接"),
