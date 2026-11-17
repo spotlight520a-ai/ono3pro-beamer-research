@@ -146,6 +146,7 @@
   };
   const ui = {
     query: "",
+    scope: "",
     brand: "",
     price: "",
     system: "",
@@ -303,16 +304,29 @@
   function bsrForAsin(asin, previousRank = null) {
     const key = String(asin || "").toUpperCase();
     const row = rankByAsin.get(key);
-    const previous = Number(row?.previousRank ?? previousRank);
+    const previous = row
+      ? row.previousRank === null || row.previousRank === undefined
+        ? null
+        : Number(row.previousRank)
+      : Number(previousRank);
     const recordedCurrent = Number(row?.currentRank);
     const current = Number.isFinite(recordedCurrent)
       ? recordedCurrent
       : Number(previousRank);
     return {
       currentRank: Number.isFinite(current) ? current : null,
-      previousRank: Number.isFinite(previous) ? previous : null,
+      previousRank:
+        previous !== null && Number.isFinite(previous) ? previous : null,
       currentMajorBsr: row?.currentMajorBsr || "",
-      inTop100: Number.isFinite(current) && current <= 100,
+      inTop100:
+        typeof row?.inTop100 === "boolean"
+          ? row.inTop100
+          : Number.isFinite(current) && current <= 100,
+      rankSource:
+        row?.rankSource ||
+        (Number.isFinite(current) && current <= 100
+          ? "bestseller-list"
+          : "detail-page"),
       recorded: Boolean(row),
     };
   }
@@ -322,6 +336,7 @@
   }
 
   function rankDeltaLabel(bsr, prefix = "较 11/11 ") {
+    if (!Number.isFinite(bsr?.previousRank)) return "当前榜单补录";
     if (
       !Number.isFinite(bsr?.currentRank) ||
       !Number.isFinite(bsr?.previousRank)
@@ -336,6 +351,9 @@
 
   function rankStatusLabel(bsr) {
     if (!Number.isFinite(bsr?.currentRank)) return "当前名次未采集";
+    if (bsr.rankSource === "detail-page" && !bsr.inTop100) {
+      return "详情页口径 · 榜单未收录";
+    }
     return bsr.inTop100 ? "当前 Top 100" : "当前 Top 100 外";
   }
 
@@ -788,6 +806,8 @@
       product.brand,
       modelOf(product),
       product.sourceTitle,
+      bsrFor(product).currentRank,
+      bsrFor(product).previousRank,
       working.content.titleZh,
       working.content.positioning,
       ...working.content.highlights,
@@ -807,6 +827,22 @@
         return { product, working, system: systemOf(product) };
       })
       .filter(({ product, working, system }) => {
+        const bsr = bsrFor(product);
+        if (
+          ui.scope === "current-top100" &&
+          !(bsr.inTop100 && bsr.rankSource === "bestseller-list")
+        )
+          return false;
+        if (ui.scope === "outside" && bsr.inTop100) return false;
+        if (
+          ui.scope === "detail-conflict" &&
+          !(
+            !bsr.inTop100 &&
+            bsr.rankSource === "detail-page" &&
+            Number(bsr.currentRank) <= 100
+          )
+        )
+          return false;
         if (ui.brand && product.brand !== ui.brand) return false;
         if (ui.system && system !== ui.system) return false;
         if (ui.coverage === "deep" && product.coverage === "base") return false;
@@ -891,7 +927,7 @@
     $("#kpiMedianPrice").textContent = priceFormat.format(median);
     const priceMeta = activePriceMeta();
     $("#kpiMedianNote").textContent =
-      `${prices.length} / 100 个 BSR 竞品有当前可购买价 · ${String(priceMeta.observedAtLabel || priceMeta.observedAt || "时间未提供").slice(0, 22)}`;
+      `${prices.length} / ${RANKS?.meta?.counts?.competitors || 118} 个竞品有当前可购买价 · ${String(priceMeta.observedAtLabel || priceMeta.observedAt || "时间未提供").slice(0, 22)}`;
     $("#kpiImages").textContent = numberFormat.format(
       DATA.meta.listingImages + DATA.meta.aplusImages,
     );
@@ -906,7 +942,8 @@
     if (bsrSummary && rankMeta?.counts) {
       const counts = rankMeta.counts;
       bsrSummary.textContent =
-        `旧榜 100 个竞品：${counts.stillTop100} 个仍在 Top 100，${counts.outTop100} 个跌出；` +
+        `当前榜单 #1–#100 已完整补齐，新增 ${counts.currentTop100New} 个新进产品；` +
+        `原 100 个竞品中 ${counts.stillTop100} 个仍在榜单、${counts.outTop100} 个已跌出，` +
         `${counts.unchanged} 个持平、${counts.improved} 个上升、${counts.worsened} 个下降。` +
         (rankMeta.ono
           ? ` ONO3Pro #${rankMeta.ono.previousRank} → #${rankMeta.ono.currentRank}。`
@@ -1081,11 +1118,13 @@
 
   function resetFilters() {
     ui.query = "";
+    ui.scope = "";
     ui.brand = "";
     ui.price = "";
     ui.system = "";
     ui.sort = "rank";
     $("#searchInput").value = "";
+    $("#scopeFilter").value = "";
     $("#brandFilter").value = "";
     $("#priceFilter").value = "";
     $("#systemFilter").value = "";
@@ -1101,6 +1140,10 @@
       renderCatalog();
     }, 120);
     $("#searchInput").addEventListener("input", onSearch);
+    $("#scopeFilter").addEventListener("change", (event) => {
+      ui.scope = event.target.value;
+      renderCatalog();
+    });
     $("#brandFilter").addEventListener("change", (event) => {
       ui.brand = event.target.value;
       renderCatalog();
@@ -2709,7 +2752,7 @@
         <div>
           <span>全量产品</span>
           <strong>${numberFormat.format(rows.length)}</strong>
-          <small>ONO3Pro + 100 个 BSR 竞品</small>
+          <small>ONO3Pro + 118 个竞品档案</small>
         </div>
         <div>
           <span>明确 ANSI</span>
@@ -3268,7 +3311,7 @@
         <div class="audit-panel-heading">
           <div>
             <h3>全量售价与优惠</h3>
-            <p>101 个产品逐个核对 Amazon 页面的当前售价、原价和购买区全部优惠；百分比结账优惠、金额券、多件优惠与赠品均保留原文、活动编号和条件链接。</p>
+            <p>119 个产品核对当前售价、原价和页面优惠；18 个当前榜单补录产品采用 2026-11-17 13:26 的商品详情快照。</p>
           </div>
         </div>
         <div class="promotion-note">
@@ -3859,7 +3902,7 @@
           </article>
           <article class="backup-card">
             <h3>导出完整备份</h3>
-            <p>包含研究页分析、全部 101 个产品资料、产品与全站版本，以及你在工具中替换或新增的图片。2,864 张采集图片随工具文件夹保存。</p>
+            <p>包含研究页分析、全部 119 个产品资料、产品与全站版本，以及你在工具中替换或新增的图片。3,010 张采集图片随工具文件夹保存。</p>
             <button class="button button-primary" type="button" data-action="export-backup">下载备份 JSON</button>
           </article>
           <article class="backup-card">
@@ -3923,13 +3966,13 @@
     const isRankRelease = releaseVersion === rankReleaseVersion;
     const version = pushSiteVersion({
       title: isRankRelease
-        ? `${releaseVersion} · 全量 BSR 复核`
+        ? `${releaseVersion} · BSR Top 100 完整补齐`
         : `${releaseVersion} · 全量售价与优惠复核`,
       reason: isRankRelease
-        ? "逐一读取 101 个现有产品的 Amazon.de Video-Beamer 当前 BSR，并与 2026-11-11 原榜名次交叉核验；原榜名次和历史版本继续保留。"
-        : "逐项复核 101 个 Amazon 产品的购买区优惠，补入百分比结账优惠、活动编号与条件链接，并按每项优惠单独试算折后最低价。",
+        ? "按 Amazon.de Video-Beamer Best Sellers 的实际槽位补齐当前 #1–#100，新增 18 个新进产品的标题、售价、评分、规格、图片和亮度，同时保留原 100 个跟踪产品与 2026-11-11 名次。"
+        : "逐项复核 119 个 Amazon 产品的购买区优惠，补入百分比结账优惠、活动编号与条件链接，并按每项优惠单独试算折后最低价。",
       fields: isRankRelease
-        ? ["当前 BSR", "原榜 BSR", "名次变化", "Top 100 进出状态"]
+        ? ["完整 Top 100", "18 个新进产品", "当前 BSR", "原榜 BSR", "名次变化"]
         : [
             "全量售价与优惠",
             "百分比结账优惠",

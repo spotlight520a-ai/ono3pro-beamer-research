@@ -18,8 +18,17 @@ const brightnessByAsin = new Map(
 const currentPrices = JSON.parse(
   fs.readFileSync(path.join(root, "data", "current-prices.json"), "utf8"),
 );
+const currentRanks = JSON.parse(
+  fs.readFileSync(path.join(root, "data", "bsr-rank-audit.json"), "utf8"),
+);
 const priceByAsin = new Map(
   currentPrices.products.map((row) => [String(row.asin).toUpperCase(), row]),
+);
+const rankByAsin = new Map(
+  Object.entries(currentRanks.products).map(([asin, row]) => [
+    String(asin).toUpperCase(),
+    row,
+  ]),
 );
 
 function coverageLabel(product) {
@@ -198,6 +207,8 @@ function assertCsvTable(label, tableHeaders, tableRows) {
 
 const headers = [
   "BSR",
+  "原榜BSR",
+  "BSR口径",
   "产品来源",
   "资料深度",
   "品牌",
@@ -244,8 +255,13 @@ const rows = data.products.map((product) => {
   const aplus = product.images?.aplus || [];
   const brightness = brightnessOf(product);
   const price = priceOf(product);
+  const rank = rankByAsin.get(String(product.asin).toUpperCase());
   return [
-    product.rank,
+    rank?.currentRank ?? product.rank,
+    rank?.previousRank ?? product.rank,
+    rank?.rankSource === "detail-page"
+      ? "详情页口径（当前榜单未收录）"
+      : "当前 Top 100 榜单槽位",
     product.manualFocus ? "自有产品" : "BSR 竞品",
     coverageLabel(product),
     product.brand,
@@ -310,8 +326,8 @@ const rows = data.products.map((product) => {
 });
 
 assertCsvTable("Full CSV", headers, rows);
-if (rows.length !== 101) {
-  throw new Error(`Full CSV expected 101 products, got ${rows.length}`);
+if (rows.length !== 119) {
+  throw new Error(`Full CSV expected 119 products, got ${rows.length}`);
 }
 
 const csv = [headers, ...rows]

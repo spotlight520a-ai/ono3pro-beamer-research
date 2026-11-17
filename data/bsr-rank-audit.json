@@ -1,0 +1,992 @@
+{
+  "meta": {
+    "releaseVersion": "v2026.11.17.7",
+    "observedAt": "2026-11-17T05:25:08.000Z",
+    "observedAtLabel": "2026-11-17 13:25（中国时间）",
+    "previousSourceDate": "2026-11-11",
+    "market": "Amazon.de",
+    "category": "Video-Beamer",
+    "nodeId": "3466351",
+    "source": "Amazon.de Video-Beamer Best Sellers 第 1–50、51–100 名完整榜单 + 18 个新进产品商品详情",
+    "listUrl": "https://www.amazon.de/gp/bestsellers/ce-de/3466351/ref=pd_zg_hrsr_ce-de",
+    "method": "读取 Best Sellers 的完整排名清单补齐 #1–#100；原跟踪产品继续保留 2026-11-11 名次，新进产品下载商品详情补齐标题、售价、评分、规格和图片。",
+    "rankRule": "Top 100 名次以 Amazon.de Video-Beamer Best Sellers 列表中 #1–#100 的实际槽位为准；商品详情页 BSR 可能因父子变体或观察时间不同而与榜单槽位不一致，未在榜单中的旧产品保留详情页名次并单独标注。",
+    "counts": {
+      "competitors": 118,
+      "originalTrackedCompetitors": 100,
+      "currentTop100FromOriginal": 82,
+      "currentTop100New": 18,
+      "originalOutsideCurrentTop100": 18,
+      "stillTop100": 82,
+      "outTop100": 18,
+      "improved": 35,
+      "unchanged": 4,
+      "worsened": 43,
+      "fullListCount": 100,
+      "listCoveragePercent": 100,
+      "detailOnlyConflicts": 4,
+      "visibleNewAsins": 18
+    },
+    "ono": {
+      "asin": "B0HFHN24F1",
+      "currentRank": 129,
+      "previousRank": 206,
+      "delta": 77,
+      "inTop100": false
+    }
+  },
+  "products": {
+    "B0GXJVWSX1": {
+      "asin": "B0GXJVWSX1",
+      "currentRank": 1,
+      "previousRank": 1,
+      "currentMajorBsr": "175",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0H94QNW49": {
+      "asin": "B0H94QNW49",
+      "currentRank": 2,
+      "previousRank": 2,
+      "currentMajorBsr": "738",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B09SL7XNRX": {
+      "asin": "B09SL7XNRX",
+      "currentRank": 3,
+      "previousRank": null,
+      "currentMajorBsr": "1.667",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0GVN266X6": {
+      "asin": "B0GVN266X6",
+      "currentRank": 4,
+      "previousRank": 4,
+      "currentMajorBsr": "1.823",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0D3T44YZ2": {
+      "asin": "B0D3T44YZ2",
+      "currentRank": 5,
+      "previousRank": 12,
+      "currentMajorBsr": "2.019",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0DPHMRS9V": {
+      "asin": "B0DPHMRS9V",
+      "currentRank": 6,
+      "previousRank": 6,
+      "currentMajorBsr": "2.437",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0HKF4PD38": {
+      "asin": "B0HKF4PD38",
+      "currentRank": 7,
+      "previousRank": 9,
+      "currentMajorBsr": "2.824",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0G2C87D47": {
+      "asin": "B0G2C87D47",
+      "currentRank": 8,
+      "previousRank": 7,
+      "currentMajorBsr": "2.993",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0FWHKYDZ5": {
+      "asin": "B0FWHKYDZ5",
+      "currentRank": 9,
+      "previousRank": 5,
+      "currentMajorBsr": "3.000",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0HKF7B9TS": {
+      "asin": "B0HKF7B9TS",
+      "currentRank": 10,
+      "previousRank": 54,
+      "currentMajorBsr": "3.053",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0HHRP7SFV": {
+      "asin": "B0HHRP7SFV",
+      "currentRank": 11,
+      "previousRank": 8,
+      "currentMajorBsr": "3.286",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0HLK3CDZP": {
+      "asin": "B0HLK3CDZP",
+      "currentRank": 12,
+      "previousRank": 19,
+      "currentMajorBsr": "3.856",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0H4TKY7WG": {
+      "asin": "B0H4TKY7WG",
+      "currentRank": 13,
+      "previousRank": 22,
+      "currentMajorBsr": "3.885",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0FDVFCG62": {
+      "asin": "B0FDVFCG62",
+      "currentRank": 14,
+      "previousRank": 13,
+      "currentMajorBsr": "4.014",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B09HT8LL87": {
+      "asin": "B09HT8LL87",
+      "currentRank": 15,
+      "previousRank": 10,
+      "currentMajorBsr": "4.211",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0H5W9ZPD9": {
+      "asin": "B0H5W9ZPD9",
+      "currentRank": 16,
+      "previousRank": 21,
+      "currentMajorBsr": "4.282",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0H5WRCX9X": {
+      "asin": "B0H5WRCX9X",
+      "currentRank": 17,
+      "previousRank": 11,
+      "currentMajorBsr": "4.473",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0FGJC449H": {
+      "asin": "B0FGJC449H",
+      "currentRank": 18,
+      "previousRank": 15,
+      "currentMajorBsr": "4.564",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0H2L3D8QZ": {
+      "asin": "B0H2L3D8QZ",
+      "currentRank": 19,
+      "previousRank": 20,
+      "currentMajorBsr": "5.033",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0HFWC8BMC": {
+      "asin": "B0HFWC8BMC",
+      "currentRank": 20,
+      "previousRank": 87,
+      "currentMajorBsr": "5.087",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0GQ98XY1P": {
+      "asin": "B0GQ98XY1P",
+      "currentRank": 21,
+      "previousRank": 16,
+      "currentMajorBsr": "5.260",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0HLD4WKKB": {
+      "asin": "B0HLD4WKKB",
+      "currentRank": 22,
+      "previousRank": 14,
+      "currentMajorBsr": "5.348",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0DR2L1L3G": {
+      "asin": "B0DR2L1L3G",
+      "currentRank": 23,
+      "previousRank": 45,
+      "currentMajorBsr": "5.461",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0GT88QY4D": {
+      "asin": "B0GT88QY4D",
+      "currentRank": 24,
+      "previousRank": 71,
+      "currentMajorBsr": "5.724",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0DXBR7J1N": {
+      "asin": "B0DXBR7J1N",
+      "currentRank": 25,
+      "previousRank": 32,
+      "currentMajorBsr": "5.905",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0CKHL1VMM": {
+      "asin": "B0CKHL1VMM",
+      "currentRank": 26,
+      "previousRank": 47,
+      "currentMajorBsr": "6.062",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0GCD71NYM": {
+      "asin": "B0GCD71NYM",
+      "currentRank": 27,
+      "previousRank": 23,
+      "currentMajorBsr": "6.110",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0FS18DZVX": {
+      "asin": "B0FS18DZVX",
+      "currentRank": 28,
+      "previousRank": 44,
+      "currentMajorBsr": "6.117",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0H38BMT32": {
+      "asin": "B0H38BMT32",
+      "currentRank": 29,
+      "previousRank": null,
+      "currentMajorBsr": "6.470",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0HDPBD6V7": {
+      "asin": "B0HDPBD6V7",
+      "currentRank": 30,
+      "previousRank": 48,
+      "currentMajorBsr": "6.500",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0GV3QMJRP": {
+      "asin": "B0GV3QMJRP",
+      "currentRank": 31,
+      "previousRank": 40,
+      "currentMajorBsr": "6.562",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0H2MLLQZ5": {
+      "asin": "B0H2MLLQZ5",
+      "currentRank": 32,
+      "previousRank": 29,
+      "currentMajorBsr": "6.580",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0HF7931DZ": {
+      "asin": "B0HF7931DZ",
+      "currentRank": 33,
+      "previousRank": 18,
+      "currentMajorBsr": "6.673",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0F5B8M3FS": {
+      "asin": "B0F5B8M3FS",
+      "currentRank": 34,
+      "previousRank": 39,
+      "currentMajorBsr": "6.780",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0FPFLL4WN": {
+      "asin": "B0FPFLL4WN",
+      "currentRank": 35,
+      "previousRank": 53,
+      "currentMajorBsr": "6.901",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0G43FF84L": {
+      "asin": "B0G43FF84L",
+      "currentRank": 36,
+      "previousRank": 28,
+      "currentMajorBsr": "6.979",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0GTSP7893": {
+      "asin": "B0GTSP7893",
+      "currentRank": 37,
+      "previousRank": 52,
+      "currentMajorBsr": "7.102",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0GXZFVQ46": {
+      "asin": "B0GXZFVQ46",
+      "currentRank": 38,
+      "previousRank": 82,
+      "currentMajorBsr": "7.256",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0F9WWH64C": {
+      "asin": "B0F9WWH64C",
+      "currentRank": 39,
+      "previousRank": 26,
+      "currentMajorBsr": "7.461",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0GXJXVM3N": {
+      "asin": "B0GXJXVM3N",
+      "currentRank": 40,
+      "previousRank": 42,
+      "currentMajorBsr": "7.578",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0HGY9XKYG": {
+      "asin": "B0HGY9XKYG",
+      "currentRank": 41,
+      "previousRank": 35,
+      "currentMajorBsr": "7.614",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0G91DDGWR": {
+      "asin": "B0G91DDGWR",
+      "currentRank": 42,
+      "previousRank": 41,
+      "currentMajorBsr": "7.806",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0GXDF9V5V": {
+      "asin": "B0GXDF9V5V",
+      "currentRank": 43,
+      "previousRank": 75,
+      "currentMajorBsr": "7.953",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0FGN91MKT": {
+      "asin": "B0FGN91MKT",
+      "currentRank": 44,
+      "previousRank": 17,
+      "currentMajorBsr": "8.133",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0GLXQ9336": {
+      "asin": "B0GLXQ9336",
+      "currentRank": 45,
+      "previousRank": 30,
+      "currentMajorBsr": "8.213",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0GWLJ5C1V": {
+      "asin": "B0GWLJ5C1V",
+      "currentRank": 46,
+      "previousRank": 78,
+      "currentMajorBsr": "8.261",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0HFMZ5N2F": {
+      "asin": "B0HFMZ5N2F",
+      "currentRank": 47,
+      "previousRank": 85,
+      "currentMajorBsr": "8.278",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0H1RP4W7M": {
+      "asin": "B0H1RP4W7M",
+      "currentRank": 48,
+      "previousRank": 24,
+      "currentMajorBsr": "8.290",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0HPXNKFF8": {
+      "asin": "B0HPXNKFF8",
+      "currentRank": 49,
+      "previousRank": 62,
+      "currentMajorBsr": "8.297",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0FGD18XRL": {
+      "asin": "B0FGD18XRL",
+      "currentRank": 50,
+      "previousRank": 64,
+      "currentMajorBsr": "8.390",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0DTPDH54F": {
+      "asin": "B0DTPDH54F",
+      "currentRank": 51,
+      "previousRank": 65,
+      "currentMajorBsr": "8.682",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B07XTX5YBD": {
+      "asin": "B07XTX5YBD",
+      "currentRank": 52,
+      "previousRank": 38,
+      "currentMajorBsr": "8.736",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0GLR3LC89": {
+      "asin": "B0GLR3LC89",
+      "currentRank": 53,
+      "previousRank": null,
+      "currentMajorBsr": "8.796",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0FJS4MB6H": {
+      "asin": "B0FJS4MB6H",
+      "currentRank": 54,
+      "previousRank": 33,
+      "currentMajorBsr": "9.189",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B08NDQ8BC6": {
+      "asin": "B08NDQ8BC6",
+      "currentRank": 55,
+      "previousRank": 60,
+      "currentMajorBsr": "9.459",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0CKMRCZ1Q": {
+      "asin": "B0CKMRCZ1Q",
+      "currentRank": 56,
+      "previousRank": 37,
+      "currentMajorBsr": "3.668",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0H9541WLG": {
+      "asin": "B0H9541WLG",
+      "currentRank": 57,
+      "previousRank": 25,
+      "currentMajorBsr": "9.711",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0H8813LDN": {
+      "asin": "B0H8813LDN",
+      "currentRank": 58,
+      "previousRank": 51,
+      "currentMajorBsr": "9.979",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0HN1D7K58": {
+      "asin": "B0HN1D7K58",
+      "currentRank": 59,
+      "previousRank": 76,
+      "currentMajorBsr": "10.395",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0F8BN226N": {
+      "asin": "B0F8BN226N",
+      "currentRank": 60,
+      "previousRank": null,
+      "currentMajorBsr": "10.667",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0HJ8BRSTN": {
+      "asin": "B0HJ8BRSTN",
+      "currentRank": 61,
+      "previousRank": null,
+      "currentMajorBsr": "10.699",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0FFG5W6MW": {
+      "asin": "B0FFG5W6MW",
+      "currentRank": 62,
+      "previousRank": null,
+      "currentMajorBsr": "10.701",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0H4YSN8S4": {
+      "asin": "B0H4YSN8S4",
+      "currentRank": 63,
+      "previousRank": 43,
+      "currentMajorBsr": "10.905",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0GY8ZHLTP": {
+      "asin": "B0GY8ZHLTP",
+      "currentRank": 64,
+      "previousRank": 72,
+      "currentMajorBsr": "11.106",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B08L9BNPZ8": {
+      "asin": "B08L9BNPZ8",
+      "currentRank": 65,
+      "previousRank": 81,
+      "currentMajorBsr": "11.293",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0F9L5B5WB": {
+      "asin": "B0F9L5B5WB",
+      "currentRank": 66,
+      "previousRank": 63,
+      "currentMajorBsr": "11.411",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0F2GDYXBF": {
+      "asin": "B0F2GDYXBF",
+      "currentRank": 67,
+      "previousRank": 55,
+      "currentMajorBsr": "11.468",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0HD5JNHYG": {
+      "asin": "B0HD5JNHYG",
+      "currentRank": 68,
+      "previousRank": 67,
+      "currentMajorBsr": "11.531",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0GYRLWWXK": {
+      "asin": "B0GYRLWWXK",
+      "currentRank": 69,
+      "previousRank": 79,
+      "currentMajorBsr": "11.584",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0HMWDDRHV": {
+      "asin": "B0HMWDDRHV",
+      "currentRank": 70,
+      "previousRank": 61,
+      "currentMajorBsr": "11.675",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0HC67NJTQ": {
+      "asin": "B0HC67NJTQ",
+      "currentRank": 71,
+      "previousRank": 36,
+      "currentMajorBsr": "12.117",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0HJ81X52R": {
+      "asin": "B0HJ81X52R",
+      "currentRank": 72,
+      "previousRank": 50,
+      "currentMajorBsr": "12.205",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0GL2B6872": {
+      "asin": "B0GL2B6872",
+      "currentRank": 73,
+      "previousRank": null,
+      "currentMajorBsr": "12.730",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0HMLCBF6T": {
+      "asin": "B0HMLCBF6T",
+      "currentRank": 74,
+      "previousRank": 80,
+      "currentMajorBsr": "13.017",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0FJ225YRM": {
+      "asin": "B0FJ225YRM",
+      "currentRank": 75,
+      "previousRank": 46,
+      "currentMajorBsr": "13.075",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0H7R1FLCP": {
+      "asin": "B0H7R1FLCP",
+      "currentRank": 76,
+      "previousRank": 31,
+      "currentMajorBsr": "13.554",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0GXG75PYK": {
+      "asin": "B0GXG75PYK",
+      "currentRank": 77,
+      "previousRank": 70,
+      "currentMajorBsr": "14.006",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0DSHMQ76C": {
+      "asin": "B0DSHMQ76C",
+      "currentRank": 78,
+      "previousRank": 56,
+      "currentMajorBsr": "14.070",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0H9X7JP4T": {
+      "asin": "B0H9X7JP4T",
+      "currentRank": 79,
+      "previousRank": 59,
+      "currentMajorBsr": "14.229",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0FMXY4ZKG": {
+      "asin": "B0FMXY4ZKG",
+      "currentRank": 80,
+      "previousRank": null,
+      "currentMajorBsr": "14.287",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B019W744BW": {
+      "asin": "B019W744BW",
+      "currentRank": 81,
+      "previousRank": 49,
+      "currentMajorBsr": "14.414",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0GGQXGGFJ": {
+      "asin": "B0GGQXGGFJ",
+      "currentRank": 82,
+      "previousRank": null,
+      "currentMajorBsr": "14.627",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0F8HTLF87": {
+      "asin": "B0F8HTLF87",
+      "currentRank": 83,
+      "previousRank": null,
+      "currentMajorBsr": "14.744",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0DL9HH3VR": {
+      "asin": "B0DL9HH3VR",
+      "currentRank": 84,
+      "previousRank": 83,
+      "currentMajorBsr": "14.987",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0BWS6TZNL": {
+      "asin": "B0BWS6TZNL",
+      "currentRank": 85,
+      "previousRank": 90,
+      "currentMajorBsr": "15.005",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0DGVBNRYD": {
+      "asin": "B0DGVBNRYD",
+      "currentRank": 86,
+      "previousRank": 84,
+      "currentMajorBsr": "15.123",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0HH8LV1VJ": {
+      "asin": "B0HH8LV1VJ",
+      "currentRank": 87,
+      "previousRank": 34,
+      "currentMajorBsr": "15.805",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0H6QDSFSX": {
+      "asin": "B0H6QDSFSX",
+      "currentRank": 88,
+      "previousRank": 99,
+      "currentMajorBsr": "15.896",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0F6CLV55Q": {
+      "asin": "B0F6CLV55Q",
+      "currentRank": 89,
+      "previousRank": 77,
+      "currentMajorBsr": "16.105",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0HJ1JFPQK": {
+      "asin": "B0HJ1JFPQK",
+      "currentRank": 90,
+      "previousRank": null,
+      "currentMajorBsr": "16.126",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0HDP6MRNY": {
+      "asin": "B0HDP6MRNY",
+      "currentRank": 91,
+      "previousRank": null,
+      "currentMajorBsr": "16.363",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0FB3RN3D8": {
+      "asin": "B0FB3RN3D8",
+      "currentRank": 92,
+      "previousRank": null,
+      "currentMajorBsr": "16.741",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0HM7GY7P9": {
+      "asin": "B0HM7GY7P9",
+      "currentRank": 93,
+      "previousRank": null,
+      "currentMajorBsr": "16.860",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0H2GPZMXX": {
+      "asin": "B0H2GPZMXX",
+      "currentRank": 94,
+      "previousRank": null,
+      "currentMajorBsr": "17.707",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0DZXPGYK2": {
+      "asin": "B0DZXPGYK2",
+      "currentRank": 95,
+      "previousRank": null,
+      "currentMajorBsr": "18.038",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0FCF969PQ": {
+      "asin": "B0FCF969PQ",
+      "currentRank": 96,
+      "previousRank": null,
+      "currentMajorBsr": "18.088",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0F2TBYZRK": {
+      "asin": "B0F2TBYZRK",
+      "currentRank": 97,
+      "previousRank": 100,
+      "currentMajorBsr": "18.095",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0FWPHSQV9": {
+      "asin": "B0FWPHSQV9",
+      "currentRank": 98,
+      "previousRank": null,
+      "currentMajorBsr": "18.777",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B0F37QW5NF": {
+      "asin": "B0F37QW5NF",
+      "currentRank": 99,
+      "previousRank": 57,
+      "currentMajorBsr": "19.444",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B09YCWNCFB": {
+      "asin": "B09YCWNCFB",
+      "currentRank": 100,
+      "previousRank": 69,
+      "currentMajorBsr": "19.475",
+      "inTop100": true,
+      "rankSource": "bestseller-list"
+    },
+    "B09DCKJBCH": {
+      "currentRank": 3,
+      "previousRank": 3,
+      "currentMajorBsr": "1.666",
+      "inTop100": false,
+      "asin": "B09DCKJBCH",
+      "rankSource": "detail-page"
+    },
+    "B0CG1YNQJB": {
+      "currentRank": 116,
+      "previousRank": 97,
+      "currentMajorBsr": "22.942",
+      "inTop100": false,
+      "asin": "B0CG1YNQJB",
+      "rankSource": "detail-page"
+    },
+    "B0DCN1FN61": {
+      "currentRank": 110,
+      "previousRank": 66,
+      "currentMajorBsr": "21.334",
+      "inTop100": false,
+      "asin": "B0DCN1FN61",
+      "rankSource": "detail-page"
+    },
+    "B0DS61J8JD": {
+      "currentRank": 120,
+      "previousRank": 89,
+      "currentMajorBsr": "23.297",
+      "inTop100": false,
+      "asin": "B0DS61J8JD",
+      "rankSource": "detail-page"
+    },
+    "B0FBWRZPY5": {
+      "currentRank": 96,
+      "previousRank": 88,
+      "currentMajorBsr": "18.088",
+      "inTop100": false,
+      "asin": "B0FBWRZPY5",
+      "rankSource": "detail-page"
+    },
+    "B0FPQMZKKZ": {
+      "currentRank": 181,
+      "previousRank": 74,
+      "currentMajorBsr": "37.886",
+      "inTop100": false,
+      "asin": "B0FPQMZKKZ",
+      "rankSource": "detail-page"
+    },
+    "B0G5XQ2G2C": {
+      "currentRank": 28,
+      "previousRank": 91,
+      "currentMajorBsr": "6.117",
+      "inTop100": false,
+      "asin": "B0G5XQ2G2C",
+      "rankSource": "detail-page"
+    },
+    "B0H4FF1BNX": {
+      "currentRank": 135,
+      "previousRank": 94,
+      "currentMajorBsr": "26.200",
+      "inTop100": false,
+      "asin": "B0H4FF1BNX",
+      "rankSource": "detail-page"
+    },
+    "B0H4KYK9NT": {
+      "currentRank": 133,
+      "previousRank": 96,
+      "currentMajorBsr": "25.511",
+      "inTop100": false,
+      "asin": "B0H4KYK9NT",
+      "rankSource": "detail-page"
+    },
+    "B0H6FM9THQ": {
+      "currentRank": 112,
+      "previousRank": 58,
+      "currentMajorBsr": "21.554",
+      "inTop100": false,
+      "asin": "B0H6FM9THQ",
+      "rankSource": "detail-page"
+    },
+    "B0HC3L266T": {
+      "currentRank": 114,
+      "previousRank": 95,
+      "currentMajorBsr": "22.109",
+      "inTop100": false,
+      "asin": "B0HC3L266T",
+      "rankSource": "detail-page"
+    },
+    "B0HD5SWVP5": {
+      "currentRank": 109,
+      "previousRank": 93,
+      "currentMajorBsr": "21.313",
+      "inTop100": false,
+      "asin": "B0HD5SWVP5",
+      "rankSource": "detail-page"
+    },
+    "B0HGLZM3R6": {
+      "currentRank": 136,
+      "previousRank": 68,
+      "currentMajorBsr": "26.259",
+      "inTop100": false,
+      "asin": "B0HGLZM3R6",
+      "rankSource": "detail-page"
+    },
+    "B0HH96P5VS": {
+      "currentRank": 142,
+      "previousRank": 73,
+      "currentMajorBsr": "26.840",
+      "inTop100": false,
+      "asin": "B0HH96P5VS",
+      "rankSource": "detail-page"
+    },
+    "B0HJ24W4NZ": {
+      "currentRank": 73,
+      "previousRank": 98,
+      "currentMajorBsr": "12.730",
+      "inTop100": false,
+      "asin": "B0HJ24W4NZ",
+      "rankSource": "detail-page"
+    },
+    "B0HKHGGT7B": {
+      "currentRank": 197,
+      "previousRank": 86,
+      "currentMajorBsr": "42.506",
+      "inTop100": false,
+      "asin": "B0HKHGGT7B",
+      "rankSource": "detail-page"
+    },
+    "B0HMHP67LX": {
+      "currentRank": 130,
+      "previousRank": 27,
+      "currentMajorBsr": "25.200",
+      "inTop100": false,
+      "asin": "B0HMHP67LX",
+      "rankSource": "detail-page"
+    },
+    "B0HP24B9TM": {
+      "currentRank": 102,
+      "previousRank": 92,
+      "currentMajorBsr": "20.701",
+      "inTop100": false,
+      "asin": "B0HP24B9TM",
+      "rankSource": "detail-page"
+    },
+    "B0HFHN24F1": {
+      "currentRank": 129,
+      "previousRank": 206,
+      "currentMajorBsr": "25.151",
+      "inTop100": false,
+      "asin": "B0HFHN24F1",
+      "rankSource": "detail-page"
+    }
+  }
+}

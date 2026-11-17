@@ -656,9 +656,9 @@ svg {
 .filter-panel {
   display: grid;
   grid-template-columns:
-    minmax(260px, 1.55fr)
-    repeat(4, minmax(112px, 0.58fr))
-    minmax(128px, 0.64fr)
+    minmax(180px, 1.3fr)
+    repeat(5, minmax(112px, 0.62fr))
+    minmax(138px, 0.72fr)
     auto;
   gap: 9px;
   padding: 9px 20px;
@@ -673,6 +673,7 @@ svg {
   align-items: center;
   gap: 8px;
   padding: 0 11px;
+  overflow: hidden;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--surface);
@@ -725,17 +726,20 @@ svg {
 
 .select-field > span {
   flex: 0 0 auto;
+  display: none;
   color: var(--muted-light);
   font-size: 11px;
 }
 
 .select-field select {
-  width: 100%;
+  width: auto;
+  flex: 1 1 auto;
   min-width: 0;
   padding: 0 18px 0 0;
   border: 0;
   outline: 0;
   background: transparent;
+  text-overflow: ellipsis;
   font-size: 11px;
   font-weight: 600;
 }
@@ -770,7 +774,7 @@ svg {
 
 .caliber-note {
   display: grid;
-  grid-template-columns: auto minmax(220px, 0.8fr) minmax(0, 1.4fr);
+  grid-template-columns: auto minmax(0, 1fr);
   align-items: baseline;
   padding: 9px 22px 10px;
   gap: 10px;
@@ -779,6 +783,11 @@ svg {
   background: rgb(237 242 251 / 48%);
   font-size: 11px;
   line-height: 1.55;
+}
+
+.caliber-note > span {
+  grid-column: 1 / -1;
+  min-width: 0;
 }
 
 .caliber-note strong {
@@ -816,7 +825,7 @@ svg {
 
 .product-table {
   width: 100%;
-  min-width: 1220px;
+  min-width: 1340px;
   border-collapse: separate;
   border-spacing: 0;
   table-layout: fixed;
@@ -842,7 +851,7 @@ svg {
 }
 
 .product-table th:nth-child(2) {
-  width: 280px;
+  width: 250px;
 }
 
 .product-table th:nth-child(3) {
@@ -850,11 +859,11 @@ svg {
 }
 
 .product-table th:nth-child(4) {
-  width: 165px;
+  width: 135px;
 }
 
 .product-table th:nth-child(5) {
-  width: 180px;
+  width: 165px;
 }
 
 .product-table th:nth-child(6) {
@@ -4355,11 +4364,13 @@ p.audit-editable {
   }
 
   .filter-panel {
-    grid-template-columns: minmax(230px, 1.4fr) repeat(3, minmax(108px, 0.62fr)) auto;
+    grid-template-columns: minmax(180px, 1.4fr) repeat(3, minmax(94px, 0.6fr)) auto;
   }
 
   .filter-panel .select-system,
-  .filter-panel .select-sort {
+  .filter-panel .select-sort,
+  .filter-panel .select-coverage,
+  .filter-panel .select-price {
     display: none;
   }
 
@@ -4395,7 +4406,8 @@ p.audit-editable {
   }
 
   .filter-panel .select-field:nth-of-type(2),
-  .filter-panel .select-system {
+  .filter-panel .select-system,
+  .filter-panel .select-scope {
     display: flex;
   }
 
@@ -4556,12 +4568,17 @@ p.audit-editable {
     min-width: 0;
   }
 
+  .filter-panel .reset-button {
+    grid-column: 1 / -1;
+  }
+
   .search-field {
     grid-column: 1 / -1;
   }
 
   .filter-panel .select-field:nth-of-type(2),
-  .filter-panel .select-field:nth-of-type(3) {
+  .filter-panel .select-field:nth-of-type(3),
+  .filter-panel .select-scope {
     display: flex;
   }
 
