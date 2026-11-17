@@ -3447,7 +3447,7 @@
     if (!auditDraft) return;
     const previousVersion = latestSiteVersion();
     const fields = siteFieldsSince(previousVersion?.snapshot || {});
-    if (!fields.length && !options.force) {
+    if (previousVersion && !fields.length && !options.force) {
       if (auditDirty) {
         auditDirty = false;
         localStorage.removeItem(AUDIT_DRAFT_KEY);
@@ -3462,9 +3462,11 @@
       "更新研究页与产品资料";
     state.auditWorking = clone(auditDraft);
     const version = pushSiteVersion({
-      title: options.title || "保存当前全站版本",
+      title:
+        options.title ||
+        (previousVersion ? "保存当前全站版本" : "初始版本快照"),
       reason,
-      fields: fields.length ? fields : ["恢复内容"],
+      fields: fields.length ? fields : [previousVersion ? "恢复内容" : "初始版本"],
       sourceVersion: options.sourceVersion || null,
       snapshot: {
         audit: auditDraft,
