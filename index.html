@@ -15,8 +15,8 @@
       rel="icon"
       href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232457d6'/%3E%3Cpath d='M7 11.2 16 6l9 5.2v9.6L16 26l-9-5.2z' fill='none' stroke='white' stroke-width='2'/%3E%3Ccircle cx='16' cy='16' r='3' fill='white'/%3E%3C/svg%3E"
     />
-    <link rel="preload" as="style" href="./styles.css?v=2026.11.17.5" />
-    <link rel="stylesheet" href="./styles.css?v=2026.11.17.5" />
+    <link rel="preload" as="style" href="./styles.css?v=2026.11.17.6" />
+    <link rel="stylesheet" href="./styles.css?v=2026.11.17.6" />
   </head>
   <body>
     <div class="page-glow page-glow-a" aria-hidden="true"></div>
@@ -99,13 +99,13 @@
           <h1 id="pageTitle">BSR Top 100 投影仪 <em>全量产品图谱</em></h1>
           <p class="hero-description">
             1 个 ONO3Pro 自有产品、100 个 BSR 产品分两层整理：€200–400
-            深挖图文与译文，价格段外完成可核验的基础档案；101 个产品均已核对当前售价，并逐项抓取金额券、折扣券、结账优惠、多件优惠与赠品。
+            深挖图文与译文，价格段外完成可核验的基础档案；101 个产品均已核对当前售价、购买区优惠与 2026-11-17 当前 BSR。
           </p>
         </div>
         <div class="hero-note">
           <span class="hero-note-label">数据口径</span>
           <strong>2026.11.17</strong>
-          <p>101 个产品售价与购买区优惠已全量核对；49 个有页面优惠，其中 38 个有百分比或金额结账优惠。</p>
+          <p>售价与购买区优惠已全量核对；现有 100 个竞品中，86 个仍在当前 Top 100，14 个跌出；5 个持平、37 个上升、58 个下降。</p>
           <div class="hero-note-foot">
             <span class="mini-pulse"></span>
             <span>2,864 张图片已抓取 · 在线读取原始图源</span>
@@ -295,7 +295,7 @@
           <label class="select-field select-sort">
             <span>排序</span>
             <select id="sortFilter">
-              <option value="rank">自有基准 + BSR 排名</option>
+              <option value="rank">自有基准 + 当前 BSR 排名</option>
               <option value="price-asc">当前价从低到高</option>
               <option value="price-desc">当前价从高到低</option>
               <option value="rating-desc">评分从高到低</option>
@@ -319,6 +319,11 @@
           <strong>页面口径备注</strong>
           <span><b>亮度：</b>照录 Amazon Listing（标题 → 五点 → 详情）；ANSI 与普通流明不换算。</span>
           <span><b>价格：</b>当前价为 Amazon 页面快照；折后最低价按可单独使用的单件优惠取低，不叠加，多件、满额与赠品不折成单件价。</span>
+          <span><b>BSR：</b>当前名次取 2026-11-17 商品详情页 <i>Amazon Bestseller-Rang</i>，并用 Amazon.de <i>Video-Beamer</i> 榜单卡片交叉核验；榜单会随时间和配送地区变化，缺号位不推算。</span>
+          <div class="bsr-audit-line">
+            <span id="bsrAuditSummary">正在读取 BSR 复核统计…</span>
+            <small id="bsrSnapshotHint"></small>
+          </div>
         </div>
 
         <div class="table-wrap">
@@ -332,7 +337,7 @@
                 <th>核心规格</th>
                 <th>系统</th>
                 <th class="numeric">市场表现</th>
-                <th class="numeric">BSR</th>
+                <th class="numeric">当前 BSR / 原榜</th>
                 <th>素材</th>
                 <th aria-label="操作"></th>
               </tr>
@@ -482,11 +487,12 @@
       文案的权利归各自权利人，不代表获得商业再发布授权。
     </footer>
 
-    <script src="./data/app-data.js?v=2026.11.17.5"></script>
-    <script src="./data/ansi-brightness.js?v=2026.11.17.5"></script>
-    <script src="./data/current-prices.js?v=2026.11.17.5"></script>
-    <script src="./data/audit-analysis.js?v=2026.11.17.5"></script>
-    <script src="./data/upgrade-sellpoints.js?v=2026.11.17.5"></script>
-    <script src="./app.js?v=2026.11.17.5"></script>
+    <script src="./data/app-data.js?v=2026.11.17.6"></script>
+    <script src="./data/ansi-brightness.js?v=2026.11.17.6"></script>
+    <script src="./data/current-prices.js?v=2026.11.17.6"></script>
+    <script src="./data/bsr-rank-audit.js?v=2026.11.17.6"></script>
+    <script src="./data/audit-analysis.js?v=2026.11.17.6"></script>
+    <script src="./data/upgrade-sellpoints.js?v=2026.11.17.6"></script>
+    <script src="./app.js?v=2026.11.17.6"></script>
   </body>
 </html>

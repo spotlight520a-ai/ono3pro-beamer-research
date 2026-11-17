@@ -5,6 +5,7 @@
   const AUDIT = window.BSR_AUDIT;
   const BRIGHTNESS = window.BSR_ANSI_BRIGHTNESS;
   const PRICES = window.BSR_CURRENT_PRICES;
+  const RANKS = window.BSR_CURRENT_RANKS;
   const STORAGE_KEY = "beamer-scout-state-v1";
   const DRAFT_KEY = "beamer-scout-draft-v1";
   const AUDIT_DRAFT_KEY = "beamer-scout-audit-draft-v1";
@@ -21,6 +22,12 @@
   const priceByAsin = new Map(
     (PRICES?.products || []).map((row) => [
       String(row.asin).toUpperCase(),
+      row,
+    ]),
+  );
+  const rankByAsin = new Map(
+    Object.entries(RANKS?.products || {}).map(([asin, row]) => [
+      String(asin).toUpperCase(),
       row,
     ]),
   );
@@ -291,6 +298,50 @@
     const price = priceFor(product)?.currentPrice;
     if (price === null || price === undefined || price === "") return null;
     return Number.isFinite(Number(price)) ? Number(price) : null;
+  }
+
+  function bsrForAsin(asin, previousRank = null) {
+    const key = String(asin || "").toUpperCase();
+    const row = rankByAsin.get(key);
+    const previous = Number(row?.previousRank ?? previousRank);
+    const recordedCurrent = Number(row?.currentRank);
+    const current = Number.isFinite(recordedCurrent)
+      ? recordedCurrent
+      : Number(previousRank);
+    return {
+      currentRank: Number.isFinite(current) ? current : null,
+      previousRank: Number.isFinite(previous) ? previous : null,
+      currentMajorBsr: row?.currentMajorBsr || "",
+      inTop100: Number.isFinite(current) && current <= 100,
+      recorded: Boolean(row),
+    };
+  }
+
+  function bsrFor(product) {
+    return bsrForAsin(product?.asin, product?.rank);
+  }
+
+  function rankDeltaLabel(bsr, prefix = "较 11/11 ") {
+    if (
+      !Number.isFinite(bsr?.currentRank) ||
+      !Number.isFinite(bsr?.previousRank)
+    ) {
+      return "名次变化待核验";
+    }
+    const delta = bsr.previousRank - bsr.currentRank;
+    if (delta > 0) return `${prefix}↑${delta}`;
+    if (delta < 0) return `${prefix}↓${Math.abs(delta)}`;
+    return `${prefix}持平`;
+  }
+
+  function rankStatusLabel(bsr) {
+    if (!Number.isFinite(bsr?.currentRank)) return "当前名次未采集";
+    return bsr.inTop100 ? "当前 Top 100" : "当前 Top 100 外";
+  }
+
+  function bsrSnapshotHintText() {
+    const meta = RANKS?.meta || {};
+    return `${meta.observedAtLabel || meta.observedAt || "时间未提供"} · 原榜 ${meta.previousSourceDate || DATA.meta?.sourceDate || "—"} · ${meta.rankRule || "仅代表采集时状态"}`;
   }
 
   function originalPriceFor(product) {
@@ -783,7 +834,8 @@
       rank: (a, b) =>
         Number(Boolean(b.product.manualFocus)) -
           Number(Boolean(a.product.manualFocus)) ||
-        a.product.rank - b.product.rank,
+        (bsrFor(a.product).currentRank ?? Number.MAX_SAFE_INTEGER) -
+          (bsrFor(b.product).currentRank ?? Number.MAX_SAFE_INTEGER),
       "price-asc": (a, b) =>
         compareCurrentPrice(a.product, b.product, 1),
       "price-desc": (a, b) =>
@@ -848,6 +900,19 @@
     $("#kpiOcr").textContent = numberFormat.format(DATA.meta.ocrRecognized);
     const priceHint = $("#priceSnapshotHint");
     if (priceHint) priceHint.textContent = priceSnapshotHint();
+    const bsrSummary = $("#bsrAuditSummary");
+    const bsrHint = $("#bsrSnapshotHint");
+    const rankMeta = RANKS?.meta;
+    if (bsrSummary && rankMeta?.counts) {
+      const counts = rankMeta.counts;
+      bsrSummary.textContent =
+        `旧榜 100 个竞品：${counts.stillTop100} 个仍在 Top 100，${counts.outTop100} 个跌出；` +
+        `${counts.unchanged} 个持平、${counts.improved} 个上升、${counts.worsened} 个下降。` +
+        (rankMeta.ono
+          ? ` ONO3Pro #${rankMeta.ono.previousRank} → #${rankMeta.ono.currentRank}。`
+          : "");
+    }
+    if (bsrHint) bsrHint.textContent = bsrSnapshotHintText();
     renderAuditBrief();
   }
 
@@ -878,6 +943,7 @@
     const price = priceFor(product);
     const currentPrice = currentPriceFor(product);
     const promoPrice = promoPriceFor(product);
+    const bsr = bsrFor(product);
     const thumb = primaryImage(product, working);
     const imageURL = thumb ? imageSource(thumb) : "";
     const saved = Boolean(state.working[product.asin]);
@@ -947,8 +1013,9 @@
           <span>${product.metrics?.monthlySales ? `近 30 天 ${escapeHTML(numberFormat.format(metricNumber(product.metrics.monthlySales)))} 件` : "近 30 天销量未提供"}</span>
         </td>
         <td class="bsr-cell">
-          <strong>#${escapeHTML(product.metrics?.subcategoryBsr || product.rank)}</strong>
-          <span>大类 ${escapeHTML(product.metrics?.majorBsr || "—")}</span>
+          <strong>#${escapeHTML(bsr.currentRank ?? "—")}</strong>
+          <span>${escapeHTML(rankStatusLabel(bsr))} · ${escapeHTML(rankDeltaLabel(bsr))}</span>
+          <small>11/11 原榜 #${escapeHTML(bsr.previousRank ?? "—")} · 大类 ${escapeHTML(bsr.currentMajorBsr || "—")}</small>
         </td>
         <td>
           <span class="asset-count">
@@ -969,6 +1036,7 @@
     const { product, working, system } = entry;
     const currentPrice = currentPriceFor(product);
     const promoPrice = promoPriceFor(product);
+    const bsr = bsrFor(product);
     const thumb = primaryImage(product, working);
     const imageURL = thumb ? imageSource(thumb) : "";
     const selected = ui.selected.has(product.asin);
@@ -978,7 +1046,7 @@
         <span class="mobile-thumb">${imageURL ? `<img src="${escapeAttr(imageURL)}" alt="" loading="lazy" />` : ""}</span>
         <div class="mobile-copy">
           <strong>${escapeHTML(working.content.titleZh)}${product.manualFocus ? '<span class="own-product-mark">自有产品</span>' : `<span class="coverage-mark ${product.coverage === "base" ? "is-base" : "is-deep"}">${coverageLabel(product)}</span>`}</strong>
-          <span class="mobile-sub">${escapeHTML(product.brand)} · ${escapeHTML(system)} · #${escapeHTML(product.metrics?.subcategoryBsr || product.rank)}</span>
+          <span class="mobile-sub">${escapeHTML(product.brand)} · ${escapeHTML(system)} · 当前 #${escapeHTML(bsr.currentRank ?? "—")} · 11/11 #${escapeHTML(bsr.previousRank ?? "—")}</span>
           <div class="mobile-numbers">
             <span>当前 <strong>${currentPrice === null ? "不可售" : priceFormat.format(currentPrice)}</strong></span>
             <span>券后 <strong>${promoPrice ? priceFormat.format(promoPrice) : "—"}</strong></span>
@@ -1215,12 +1283,13 @@
   function renderDetailHeader(product, working) {
     const image = primaryImage(product, working);
     const imageURL = image ? imageSource(image) : "";
+    const bsr = bsrFor(product);
     $("#detailHeadingMedia").innerHTML = `
       <span class="heading-thumb">${imageURL ? `<img src="${escapeAttr(imageURL)}" alt="" />` : ""}</span>
     `;
-    $("#detailRank").textContent = product.manualFocus
-      ? `自有产品 · BSR #${product.rank}`
-      : `BSR #${product.rank}`;
+    $("#detailRank").textContent = `${
+      product.manualFocus ? "自有产品 · " : ""
+    }当前 BSR #${bsr.currentRank ?? "—"} · ${rankDeltaLabel(bsr)}`;
     $("#detailAsin").textContent = product.asin;
     const status = working.status.favorite
       ? "★ 已收藏"
@@ -1252,6 +1321,7 @@
     const price = priceFor(product);
     const currentPrice = currentPriceFor(product);
     const promoPrice = promoPriceFor(product);
+    const bsr = bsrFor(product);
     const themes = (product.aplusThemes || [])
       .map(
         (theme) =>
@@ -1329,7 +1399,7 @@
               <div class="metric-item"><span>页面优惠 ${price.allPromotions?.length ? `· ${price.allPromotions.length} 项` : ""}</span><strong style="font-family:var(--font-sans);font-size:11px">${escapeHTML(price.allPromotions?.map((offer) => offer.raw).join("；") || promotionSignal(product))}</strong><small>${promoPrice ? `折后最低价 ${priceFormat.format(promoPrice)}` : escapeHTML(promotionNoteFor(product))}</small></div>
               <div class="metric-item"><span>用户评分</span><strong>★ ${escapeHTML(rating)}</strong><small>${escapeHTML(numberFormat.format(metricNumber(reviews)))} 条评价</small></div>
               <div class="metric-item"><span>近 30 天销量</span><strong>${product.metrics?.monthlySales ? escapeHTML(numberFormat.format(metricNumber(product.metrics.monthlySales))) : "—"}</strong><small>件</small></div>
-              <div class="metric-item"><span>BSR</span><strong>#${escapeHTML(product.metrics?.subcategoryBsr || product.rank)}</strong><small>大类 ${escapeHTML(product.metrics?.majorBsr || "—")}</small></div>
+              <div class="metric-item"><span>当前 BSR · ${escapeHTML(RANKS?.meta?.observedAtLabel || "2026-11-17")}</span><strong>#${escapeHTML(bsr.currentRank ?? "—")}</strong><small>${escapeHTML(rankStatusLabel(bsr))} · 11/11 原榜 #${escapeHTML(bsr.previousRank ?? "—")} · ${escapeHTML(rankDeltaLabel(bsr))} · 大类 ${escapeHTML(bsr.currentMajorBsr || "—")}</small></div>
               <div class="metric-item"><span>系统</span><strong style="font-family:var(--font-sans);font-size:11px">${escapeHTML(system)}</strong></div>
               <div class="metric-item"><span>素材</span><strong>${imageCount} / ${aplusCount}</strong><small>Listing / A+</small></div>
             </div>
@@ -2279,7 +2349,13 @@
             ? `${numberFormat.format(metricNumber(p.metrics.monthlySales))} 件`
             : "未提供",
       ],
-      ["BSR", (p) => `#${p.metrics?.subcategoryBsr || p.rank} / 大类 ${p.metrics?.majorBsr || "—"}`],
+      [
+        "当前 BSR",
+        (p) => {
+          const bsr = bsrFor(p);
+          return `#${bsr.currentRank ?? "—"}（11/11 原榜 #${bsr.previousRank ?? "—"}，${rankDeltaLabel(bsr, "")}） / 大类 ${bsr.currentMajorBsr || "—"}`;
+        },
+      ],
       ["重量", (p, w) => specOf(p, "重量", w)],
       ["尺寸", (p, w) => specOf(p, "机身尺寸", w)],
       ["核心卖点", (p, w) => w.content.highlights.slice(0, 3).join("；")],
@@ -2705,6 +2781,7 @@
                     .map((row) => {
                       const kind = brightnessKind(row);
                       const source = brightnessExtractionLabel(row);
+                      const bsr = bsrForAsin(row.asin, row.rank);
                       const evidence =
                         row.evidence ||
                         "当前标题、五点与产品详情均未写出 ANSI 或流明值。";
@@ -2712,7 +2789,7 @@
                         <tr class="brightness-row is-${kind}" data-label="亮度记录">
                           <td data-label="BSR / 产品">
                             <div class="brightness-product">
-                              <span>${row.own ? "自有" : `BSR #${escapeHTML(row.rank)}`}</span>
+                              <span>${row.own ? `自有 · 当前 BSR #${escapeHTML(bsr.currentRank ?? "—")}` : `当前 BSR #${escapeHTML(bsr.currentRank ?? "—")} · 原榜 #${escapeHTML(bsr.previousRank ?? "—")}`}</span>
                               <strong>${escapeHTML(row.brand)} ${escapeHTML(row.model || "")}</strong>
                               <small>${escapeHTML(row.asin)}</small>
                             </div>
@@ -3175,7 +3252,8 @@
         (a, b) =>
           Number(Boolean(b.product.manualFocus)) -
             Number(Boolean(a.product.manualFocus)) ||
-          a.product.rank - b.product.rank,
+          (bsrFor(a.product).currentRank ?? Number.MAX_SAFE_INTEGER) -
+            (bsrFor(b.product).currentRank ?? Number.MAX_SAFE_INTEGER),
       );
     const statusLabel = (price) =>
       price.status === "third_party"
@@ -3608,7 +3686,10 @@
   function exportVisibleTable() {
     const rows = filteredProducts();
     const headers = [
-      "BSR",
+      `当前BSR（${RANKS?.meta?.observedAtLabel || "2026-11-17"}）`,
+      `原榜BSR（${RANKS?.meta?.previousSourceDate || "2026-11-11"}）`,
+      "名次变化",
+      "当前大类BSR",
       "产品来源",
       "资料深度",
       "品牌",
@@ -3643,8 +3724,6 @@
       "评分",
       "评价数",
       "月销量",
-      "大类BSR",
-      "子类BSR",
       "Listing图",
       "A+图",
       "中文标题",
@@ -3681,8 +3760,12 @@
       ...rows.map(({ product, working, system }) => {
         const brightness = brightnessFor(product);
         const price = priceFor(product);
+        const bsr = bsrFor(product);
         return [
-        product.rank,
+        bsr.currentRank ?? "",
+        bsr.previousRank ?? "",
+        rankDeltaLabel(bsr, ""),
+        bsr.currentMajorBsr || "",
         product.manualFocus ? "自有产品" : "BSR 竞品",
         coverageLabel(product),
         product.brand,
@@ -3717,8 +3800,6 @@
         product.live?.rating || product.metrics?.rating || "",
         product.live?.reviewsCount || product.metrics?.reviews || "",
         product.metrics?.monthlySales || "",
-        product.metrics?.majorBsr || "",
-        product.metrics?.subcategoryBsr || product.rank,
         imagesFor(product, working, "listing").filter((image) => !image.hidden)
           .length,
         imagesFor(product, working, "aplus").filter((image) => !image.hidden)
@@ -3830,7 +3911,8 @@
   }
 
   function ensureReleaseVersion() {
-    const releaseVersion = PRICES?.meta?.releaseVersion;
+    const rankReleaseVersion = RANKS?.meta?.releaseVersion;
+    const releaseVersion = rankReleaseVersion || PRICES?.meta?.releaseVersion;
     if (!releaseVersion || !auditDraft) return;
     const alreadyRecorded = state.siteVersions.some(
       (version) =>
@@ -3838,21 +3920,28 @@
         version.snapshot?.releaseVersion === releaseVersion,
     );
     if (alreadyRecorded) return;
+    const isRankRelease = releaseVersion === rankReleaseVersion;
     const version = pushSiteVersion({
-      title: `${releaseVersion} · 全量售价与优惠复核`,
-      reason:
-        "逐项复核 101 个 Amazon 产品的购买区优惠，补入百分比结账优惠、活动编号与条件链接，并按每项优惠单独试算折后最低价。",
-      fields: [
-        "全量售价与优惠",
-        "百分比结账优惠",
-        "活动编号与条件链接",
-        "折后最低价口径",
-      ],
+      title: isRankRelease
+        ? `${releaseVersion} · 全量 BSR 复核`
+        : `${releaseVersion} · 全量售价与优惠复核`,
+      reason: isRankRelease
+        ? "逐一读取 101 个现有产品的 Amazon.de Video-Beamer 当前 BSR，并与 2026-11-11 原榜名次交叉核验；原榜名次和历史版本继续保留。"
+        : "逐项复核 101 个 Amazon 产品的购买区优惠，补入百分比结账优惠、活动编号与条件链接，并按每项优惠单独试算折后最低价。",
+      fields: isRankRelease
+        ? ["当前 BSR", "原榜 BSR", "名次变化", "Top 100 进出状态"]
+        : [
+            "全量售价与优惠",
+            "百分比结账优惠",
+            "活动编号与条件链接",
+            "折后最低价口径",
+          ],
       snapshot: {
         audit: auditDraft,
         working: state.working,
         productVersionCount: state.versions.length,
         prices: compactPriceSnapshot(),
+        ranks: isRankRelease ? clone(RANKS) : null,
         releaseVersion,
       },
     });
@@ -3960,6 +4049,11 @@
                         ${
                           version.snapshot?.prices?.products
                             ? `<small class="site-version-scope">含 ${version.snapshot.prices.products.length} 个产品的售价与优惠快照 · ${escapeHTML(version.snapshot.prices.meta?.observedAtLabel || version.snapshot.prices.meta?.observedAt || "采集时间未记录")}</small>`
+                            : ""
+                        }
+                        ${
+                          version.snapshot?.ranks?.products
+                            ? `<small class="site-version-scope">含 ${Object.keys(version.snapshot.ranks.products).length} 个产品的当前 BSR 快照 · ${escapeHTML(version.snapshot.ranks.meta?.observedAtLabel || version.snapshot.ranks.meta?.observedAt || "采集时间未记录")}</small>`
                             : ""
                         }
                         <div class="version-meta">

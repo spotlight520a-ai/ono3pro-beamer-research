@@ -791,6 +791,25 @@ svg {
   font-weight: 700;
 }
 
+.bsr-audit-line {
+  display: flex;
+  grid-column: 1 / -1;
+  align-items: baseline;
+  padding-top: 8px;
+  gap: 6px 14px;
+  border-top: 1px solid rgb(36 76 146 / 12%);
+}
+
+.bsr-audit-line span {
+  color: var(--ink-soft);
+  font-weight: 650;
+}
+
+.bsr-audit-line small {
+  color: var(--muted);
+  font-size: 11px;
+}
+
 .table-wrap {
   overflow-x: auto;
 }
@@ -1180,6 +1199,14 @@ svg {
   margin-top: 2px;
   color: var(--muted);
   font-size: 11px;
+}
+
+.bsr-cell small {
+  display: block;
+  margin-top: 3px;
+  color: var(--muted-light);
+  font-size: 10px;
+  white-space: nowrap;
 }
 
 .asset-count {
@@ -4562,6 +4589,16 @@ p.audit-editable {
     grid-template-columns: minmax(0, 1fr);
     padding: 9px 13px 10px;
     gap: 3px;
+  }
+
+  .bsr-audit-line {
+    display: block;
+    padding-top: 7px;
+  }
+
+  .bsr-audit-line small {
+    display: block;
+    margin-top: 2px;
   }
 
   .table-wrap {
