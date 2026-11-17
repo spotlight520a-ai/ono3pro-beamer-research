@@ -768,6 +768,29 @@ svg {
   color: var(--muted-light);
 }
 
+.caliber-note {
+  display: grid;
+  grid-template-columns: auto minmax(220px, 0.8fr) minmax(0, 1.4fr);
+  align-items: baseline;
+  padding: 9px 22px 10px;
+  gap: 10px;
+  color: var(--muted);
+  border-bottom: 1px solid var(--line);
+  background: rgb(237 242 251 / 48%);
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+.caliber-note strong {
+  color: var(--primary);
+  white-space: nowrap;
+}
+
+.caliber-note b {
+  color: var(--ink-soft);
+  font-weight: 700;
+}
+
 .table-wrap {
   overflow-x: auto;
 }
@@ -4533,6 +4556,12 @@ p.audit-editable {
 
   .result-hint {
     display: none;
+  }
+
+  .caliber-note {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 9px 13px 10px;
+    gap: 3px;
   }
 
   .table-wrap {

@@ -1360,9 +1360,10 @@
               ${product.manualFocus ? `<strong>自有产品基准：</strong>${escapeHTML(product.sourceNote)}<br /><br />` : ""}
               ${product.coverageNote ? `<strong>资料深度：</strong>${escapeHTML(product.coverageNote)}<br /><br />` : ""}
               ${!product.manualFocus && product.sourceNote ? `<strong>基础档案提示：</strong>${escapeHTML(product.sourceNote)}<br /><br />` : ""}
-              ${escapeHTML(priceSnapshotHint())}。页面指标来自 Amazon.de 页面快照。亮度存在
-              ANSI、ISO 与普通“流明”混用，不能直接等值换算。图片文字由本机 OCR
-              识别，复杂排版可能有误，请以原图为准。<br /><br />
+              <strong>页面口径备注：</strong>${escapeHTML(priceSnapshotHint())}。
+              页面指标来自 Amazon.de 页面快照。亮度照录 Listing 原文，存在 ANSI、ISO
+              与普通“流明”混用，不能直接等值换算。图片文字由本机 OCR 识别，
+              复杂排版可能有误，请以原图为准。<br /><br />
               <a href="${escapeAttr(safeExternalUrl(product.sourceUrl))}" target="_blank" rel="noopener noreferrer">打开 Amazon.de 产品页 ↗</a>
             </div>
           </section>
