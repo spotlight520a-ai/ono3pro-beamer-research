@@ -228,6 +228,8 @@ const headers = [
   "上架时间",
   "亮度（页面口径）",
   "亮度来源",
+  "亮度来源图片",
+  "亮度图片与采用说明",
   "亮度原文依据",
   "原生分辨率",
   "显示技术",
@@ -281,6 +283,12 @@ const rows = data.products.map((product) => {
     product.metrics?.launchDate || product.live?.launchDate || "",
     specOf(product, "亮度"),
     brightness?.ansiSource || brightness?.lumenSource || "",
+    brightness?.imageUrl || "",
+    brightness?.imageEvidence
+      ? `${brightness.imageSourceLabel || ""}｜图片原文：${
+          brightness.imageRaw || ""
+        }${brightness.decisionNote ? `｜${brightness.decisionNote}` : ""}`
+      : "未从图片取得；按标题、五点或产品详情的页面原文保留。",
     brightness?.evidence || "",
     specOf(product, "原生分辨率"),
     specOf(product, "显示技术"),
@@ -346,6 +354,9 @@ const obsoletePriceHeaders = new Set([
   "预计券后价(EUR)",
   "预计优惠后价(EUR)",
   ...priceColumns,
+  "亮度来源",
+  "亮度来源图片",
+  "亮度图片与采用说明",
 ]);
 const baseIndexes = deepHeaders
   .map((header, index) => ({ header, index }))
@@ -359,16 +370,41 @@ const expandedDeepHeaders = [
   ...priceColumns,
   ...baseDeepHeaders.slice(insertIndex),
 ];
+const deepBrightnessIndex = expandedDeepHeaders.indexOf("亮度(页面口径)");
+if (deepBrightnessIndex < 0) {
+  throw new Error("Deep CSV brightness column not found");
+}
+expandedDeepHeaders.splice(
+  deepBrightnessIndex + 1,
+  0,
+  "亮度来源",
+  "亮度来源图片",
+  "亮度图片与采用说明",
+);
 const expandedDeepRows = deepRows.map((row) => {
   const baseRow = baseIndexes.map(({ index }) => row[index] ?? "");
   const asin = baseRow[asinIndex];
   const price = priceByAsin.get(String(asin).toUpperCase());
   if (!price) throw new Error(`No current price for deep CSV ${asin}`);
-  return [
+  const brightness = brightnessByAsin.get(String(asin).toUpperCase());
+  if (!brightness) throw new Error(`No brightness for deep CSV ${asin}`);
+  const expandedRow = [
     ...baseRow.slice(0, insertIndex),
     ...priceValues(price),
     ...baseRow.slice(insertIndex),
   ];
+  expandedRow.splice(
+    deepBrightnessIndex + 1,
+    0,
+    brightness.ansiSource || brightness.lumenSource || "",
+    brightness.imageUrl || "",
+    brightness.imageEvidence
+      ? `${brightness.imageSourceLabel || ""}｜图片原文：${
+          brightness.imageRaw || ""
+        }${brightness.decisionNote ? `｜${brightness.decisionNote}` : ""}`
+      : "未从图片取得；按标题、五点或产品详情的页面原文保留。",
+  );
+  return expandedRow;
 });
 assertCsvTable("Deep CSV", expandedDeepHeaders, expandedDeepRows);
 const deepCsv = [expandedDeepHeaders, ...expandedDeepRows]

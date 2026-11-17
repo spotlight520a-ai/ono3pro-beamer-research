@@ -5995,7 +5995,13 @@ p.audit-editable {
   border-radius: 999px;
   background: #f1f3f6;
   font-size: 10px;
+  text-decoration: none;
   white-space: nowrap;
+}
+
+a.brightness-source:hover,
+a.brightness-source:focus-visible {
+  text-decoration: underline;
 }
 
 .brightness-source.is-ansi {

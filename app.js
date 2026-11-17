@@ -1474,9 +1474,11 @@
               ${product.coverageNote ? `<strong>资料深度：</strong>${escapeHTML(product.coverageNote)}<br /><br />` : ""}
               ${!product.manualFocus && product.sourceNote ? `<strong>基础档案提示：</strong>${escapeHTML(product.sourceNote)}<br /><br />` : ""}
               <strong>页面口径备注：</strong>${escapeHTML(priceSnapshotHint())}。
-              页面指标来自 Amazon.de 页面快照。亮度照录 Listing 原文，存在 ANSI、ISO
-              与普通“流明”混用，不能直接等值换算。图片文字由本机 OCR 识别，
-              复杂排版可能有误，请以原图为准。<br /><br />
+              页面指标来自 Amazon.de 页面快照。亮度按“标题 → 页面五点 →
+              Listing 图 → A+ 图 → 产品详情”提取，图片补值优先于产品详情。
+              ANSI、ISO 流明、普通“流明”与 Lux 保留原口径，不能直接等值换算。图片文字由本机 OCR 识别，
+              复杂排版可能有误，请以原图为准。
+              ${DATA.meta?.imageOcrAuditNote ? ` ${escapeHTML(DATA.meta.imageOcrAuditNote)}` : ""}<br /><br />
               <a href="${escapeAttr(safeExternalUrl(product.sourceUrl))}" target="_blank" rel="noopener noreferrer">打开 Amazon.de 产品页 ↗</a>
             </div>
           </section>
@@ -2704,7 +2706,17 @@
       return `${numberFormat.format(row.ansiValue)} ANSI`;
     }
     if (row?.lumenValue != null) {
-      return `${numberFormat.format(row.lumenValue)} lm`;
+      if (
+        row.lumenUnit === "Lux" ||
+        /Lux/i.test(row.lumenRaw || "")
+      ) {
+        return `${numberFormat.format(row.lumenValue)} Lux`;
+      }
+      return `${numberFormat.format(row.lumenValue)} ${
+        row.lumenUnit === "ISO" || /ISO/i.test(row.lumenRaw || "")
+          ? "ISO lm"
+          : "lm"
+      }`;
     }
     return "—";
   }
@@ -2729,6 +2741,9 @@
         row.asin,
         brightnessValueLabel(row),
         brightnessExtractionLabel(row),
+        row.imageSourceLabel,
+        row.imageRaw,
+        row.decisionNote,
         row.evidence,
       ]
         .join(" ")
@@ -2744,15 +2759,15 @@
     const modes = [
       ["all", "全部", rows.length],
       ["ansi", "明确 ANSI", meta.ansiCount || 0],
-      ["lumen", "仅写流明", meta.lumenOnlyCount || 0],
+      ["lumen", "仅写 ISO / 流明 / Lux", meta.lumenOnlyCount || 0],
       ["missing", "未写亮度", meta.missingCount || 0],
     ];
     return `
       <div class="brightness-summary" aria-label="亮度提取汇总">
         <div>
-          <span>全量产品</span>
-          <strong>${numberFormat.format(rows.length)}</strong>
-          <small>ONO3Pro + 118 个竞品档案</small>
+          <span>图片补值</span>
+          <strong>${numberFormat.format(meta.imageEvidenceCount || 0)}</strong>
+          <small>标题与五点均未写明时采用 · 全库 ${numberFormat.format(rows.length)} 个产品</small>
         </div>
         <div>
           <span>明确 ANSI</span>
@@ -2760,14 +2775,14 @@
           <small>竞品 ${numberFormat.format((meta.ansiCount || 0) - 1)} / 100</small>
         </div>
         <div>
-          <span>仅写普通流明</span>
+          <span>仅写 ISO / 普通流明 / Lux</span>
           <strong>${numberFormat.format(meta.lumenOnlyCount || 0)}</strong>
           <small>保留原口径，不换算</small>
         </div>
         <div>
           <span>未写亮度</span>
           <strong>${numberFormat.format(meta.missingCount || 0)}</strong>
-          <small>标题、五点、详情均未写</small>
+          <small>图片、标题、五点、详情均未写</small>
         </div>
       </div>
 
@@ -2802,8 +2817,10 @@
       </div>
 
       <div class="brightness-rule">
-        提取顺序：标题 → 五点 → 产品详情。存在明确 ANSI 时不采用普通流明；
-        普通流明只作原始口径保留，不换算、不冒充 ANSI。页面观察于
+        提取顺序：标题 → 页面五点 → Listing 图 → A+ 图 → 产品详情。
+        标题或五点已经写明亮度时先行采用；前两处没有时才用图片补值，图片优先于产品详情。
+        对比图只取当前产品一侧，不取旁边竞品数字。ANSI、ISO 流明、普通流明与 Lux
+        保留原口径，不换算、不冒充。页面观察于
         ${escapeHTML(meta.observedAt || "2026-11-17")}。
       </div>
 
@@ -2827,7 +2844,7 @@
                       const bsr = bsrForAsin(row.asin, row.rank);
                       const evidence =
                         row.evidence ||
-                        "当前标题、五点与产品详情均未写出 ANSI 或流明值。";
+                        "当前图片、标题、五点与产品详情均未写出 ANSI 或流明值。";
                       return `
                         <tr class="brightness-row is-${kind}" data-label="亮度记录">
                           <td data-label="BSR / 产品">
@@ -2840,16 +2857,25 @@
                           <td data-label="页面亮度">
                             <div class="brightness-value is-${kind}">
                               <strong>${escapeHTML(brightnessValueLabel(row))}</strong>
-                              <span>${kind === "ansi" ? "明确 ANSI" : kind === "lumen" ? "页面只写流明" : "未写出"}</span>
+                              <span>${kind === "ansi" ? "明确 ANSI" : kind === "lumen" ? "页面只写 ISO、普通流明或 Lux" : "未写出"}</span>
                             </div>
                           </td>
                           <td data-label="提取来源">
-                            <span class="brightness-source is-${kind}">${escapeHTML(source)}</span>
+                            ${
+                              row.imageUrl
+                                ? `<a class="brightness-source is-${kind}" href="${escapeAttr(row.imageUrl)}" target="_blank" rel="noreferrer" title="打开亮度来源原图">${escapeHTML(source)}</a>`
+                                : `<span class="brightness-source is-${kind}">${escapeHTML(source)}</span>`
+                            }
                           </td>
                           <td data-label="页面原文依据">
                             <div class="brightness-evidence">
                               <strong>${escapeHTML(row.ansiRaw || row.lumenRaw || "—")}</strong>
                               <span title="${escapeAttr(evidence)}">${escapeHTML(evidence)}</span>
+                              ${
+                                row.imageUrl
+                                  ? `<a href="${escapeAttr(row.imageUrl)}" target="_blank" rel="noreferrer">打开来源图片</a>`
+                                  : ""
+                              }
                               <a href="${escapeAttr(row.sourceUrl)}" target="_blank" rel="noreferrer">打开产品页</a>
                             </div>
                           </td>
@@ -3955,7 +3981,11 @@
 
   function ensureReleaseVersion() {
     const rankReleaseVersion = RANKS?.meta?.releaseVersion;
-    const releaseVersion = rankReleaseVersion || PRICES?.meta?.releaseVersion;
+    const releaseMeta = window.BEAMER_RELEASE_META || {};
+    const releaseVersion =
+      releaseMeta.version ||
+      rankReleaseVersion ||
+      PRICES?.meta?.releaseVersion;
     if (!releaseVersion || !auditDraft) return;
     const alreadyRecorded = state.siteVersions.some(
       (version) =>
@@ -3963,22 +3993,27 @@
         version.snapshot?.releaseVersion === releaseVersion,
     );
     if (alreadyRecorded) return;
-    const isRankRelease = releaseVersion === rankReleaseVersion;
+    const isExplicitRelease = Boolean(releaseMeta.version);
+    const isRankRelease = !isExplicitRelease && releaseVersion === rankReleaseVersion;
     const version = pushSiteVersion({
-      title: isRankRelease
-        ? `${releaseVersion} · BSR Top 100 完整补齐`
-        : `${releaseVersion} · 全量售价与优惠复核`,
-      reason: isRankRelease
-        ? "按 Amazon.de Video-Beamer Best Sellers 的实际槽位补齐当前 #1–#100，新增 18 个新进产品的标题、售价、评分、规格、图片和亮度，同时保留原 100 个跟踪产品与 2026-11-11 名次。"
-        : "逐项复核 119 个 Amazon 产品的购买区优惠，补入百分比结账优惠、活动编号与条件链接，并按每项优惠单独试算折后最低价。",
-      fields: isRankRelease
+      title:
+        releaseMeta.title ||
+        (isRankRelease
+          ? `${releaseVersion} · BSR Top 100 完整补齐`
+          : `${releaseVersion} · 全量售价与优惠复核`),
+      reason:
+        releaseMeta.reason ||
+        (isRankRelease
+          ? "按 Amazon.de Video-Beamer Best Sellers 的实际槽位补齐当前 #1–#100，新增 18 个新进产品的标题、售价、评分、规格、图片和亮度，同时保留原 100 个跟踪产品与 2026-11-11 名次。"
+          : "逐项复核 119 个 Amazon 产品的购买区优惠，补入百分比结账优惠、活动编号与条件链接，并按每项优惠单独试算折后最低价。"),
+      fields: releaseMeta.fields || (isRankRelease
         ? ["完整 Top 100", "18 个新进产品", "当前 BSR", "原榜 BSR", "名次变化"]
         : [
             "全量售价与优惠",
             "百分比结账优惠",
             "活动编号与条件链接",
             "折后最低价口径",
-          ],
+          ]),
       snapshot: {
         audit: auditDraft,
         working: state.working,
