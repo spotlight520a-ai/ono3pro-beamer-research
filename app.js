@@ -302,6 +302,15 @@
   function promoPriceFor(product) {
     const price = priceFor(product);
     const current = currentPriceFor(product);
+    const bestPromotionPrice = Number(price?.bestPromotionPrice);
+    if (
+      Number.isFinite(bestPromotionPrice) &&
+      bestPromotionPrice > 0 &&
+      current !== null &&
+      bestPromotionPrice < current
+    ) {
+      return bestPromotionPrice;
+    }
     return price?.estimatedCouponPrice &&
       current !== null &&
       price.estimatedCouponPrice < current
@@ -312,6 +321,7 @@
   function promotionSignal(product) {
     const price = priceFor(product);
     if (!price) return "价格快照缺失";
+    if (price.bestPromotionLabel) return price.bestPromotionLabel;
     if (price.kind === "amount" || price.kind === "percent") {
       return price.coupon || price.promotionLabel || price.type;
     }
@@ -341,6 +351,12 @@
 
   function promotionNoteFor(product) {
     const price = priceFor(product);
+    if (price?.bestPromotionPrice) {
+      return (
+        price.combinationRule ||
+        `${price.bestPromotionLabel} 后约 ${priceText(price.bestPromotionPrice)}，以结账页为准`
+      );
+    }
     if (promoPriceFor(product)) {
       const condition = promotionConditionFor(product);
       return condition || "按页面现金券直接估算";
@@ -394,7 +410,7 @@
 
   function priceSnapshotHint() {
     const meta = activePriceMeta();
-    return `售价快照：${meta.observedAtLabel || meta.observedAt || "时间未提供"} · 券后价为页面公开优惠估算，以结账页为准`;
+    return `售价与优惠快照：${meta.observedAtLabel || meta.observedAt || "时间未提供"}${meta.releaseVersion ? ` · ${meta.releaseVersion}` : ""} · 折后最低价为页面单项优惠试算，以结账页为准`;
   }
 
   function compactPriceSnapshot() {
@@ -422,6 +438,19 @@
           couponAmount: price.couponAmount,
           couponPercent: price.couponPercent,
           estimatedCouponPrice: price.estimatedCouponPrice,
+          bestPromotionPrice: price.bestPromotionPrice,
+          bestPromotionLabel: price.bestPromotionLabel,
+          bestPromotionActivityId: price.bestPromotionActivityId,
+          bestPromotionTermsUrl: price.bestPromotionTermsUrl,
+          allPromotions: price.allPromotions,
+          couponOffers: price.couponOffers,
+          checkoutOffers: price.checkoutOffers,
+          multiBuyOffers: price.multiBuyOffers,
+          thresholdOffers: price.thresholdOffers,
+          giftOffers: price.giftOffers,
+          otherOffers: price.otherOffers,
+          promotionSummary: price.promotionSummary,
+          combinationRule: price.combinationRule,
           condition: price.condition,
           availability: price.availability,
           seller: price.seller,
@@ -897,7 +926,7 @@
             promoPrice
               ? `
                 <strong>${priceFormat.format(promoPrice)}</strong>
-                <span>预计券后价</span>
+                <span>折后最低价</span>
                 <small>${escapeHTML(promotionSignal(product))} · ${escapeHTML(promotionNoteFor(product))}</small>
               `
               : `
@@ -1297,7 +1326,7 @@
             </div>
             <div class="metric-grid">
               <div class="metric-item"><span>${priceStatusLabel(product)}</span><strong>${currentPrice === null ? "当前不可售" : priceFormat.format(currentPrice)}</strong><small>${escapeHTML(price.priceNote || "")}</small></div>
-              <div class="metric-item"><span>页面优惠</span><strong style="font-family:var(--font-sans);font-size:11px">${escapeHTML(promotionSignal(product))}</strong><small>${promoPrice ? `预计券后 ${priceFormat.format(promoPrice)}` : escapeHTML(promotionNoteFor(product))}</small></div>
+              <div class="metric-item"><span>页面优惠 ${price.allPromotions?.length ? `· ${price.allPromotions.length} 项` : ""}</span><strong style="font-family:var(--font-sans);font-size:11px">${escapeHTML(price.allPromotions?.map((offer) => offer.raw).join("；") || promotionSignal(product))}</strong><small>${promoPrice ? `折后最低价 ${priceFormat.format(promoPrice)}` : escapeHTML(promotionNoteFor(product))}</small></div>
               <div class="metric-item"><span>用户评分</span><strong>★ ${escapeHTML(rating)}</strong><small>${escapeHTML(numberFormat.format(metricNumber(reviews)))} 条评价</small></div>
               <div class="metric-item"><span>近 30 天销量</span><strong>${product.metrics?.monthlySales ? escapeHTML(numberFormat.format(metricNumber(product.metrics.monthlySales))) : "—"}</strong><small>件</small></div>
               <div class="metric-item"><span>BSR</span><strong>#${escapeHTML(product.metrics?.subcategoryBsr || product.rank)}</strong><small>大类 ${escapeHTML(product.metrics?.majorBsr || "—")}</small></div>
@@ -2227,14 +2256,14 @@
             : priceText(currentPriceFor(p)),
       ],
       ["价格状态", (p) => priceStatusLabel(p)],
-      ["页面优惠", (p) => promotionSignal(p)],
-      ["优惠条件", (p) => promotionConditionFor(p) || "无额外条件"],
+      ["页面优惠", (p) => priceFor(p)?.allPromotions?.map((offer) => offer.raw).join("；") || promotionSignal(p)],
+      ["优惠条件", (p) => priceFor(p)?.combinationRule || promotionConditionFor(p) || "无额外条件"],
       [
-        "预计券后价",
+        "折后最低价",
         (p) =>
           promoPriceFor(p)
             ? priceText(promoPriceFor(p))
-            : "无现金折后价",
+            : "无单件折后价",
       ],
       ["品牌 / 型号", (p) => `${p.brand} · ${modelOf(p)}`],
       ["亮度（页面口径）", (p, w) => specOf(p, "亮度", w)],
@@ -3093,8 +3122,49 @@
     `;
   }
 
+  function promotionOfferList(price) {
+    const offers = price.allPromotions || [];
+    if (!offers.length) {
+      if (price.status === "unavailable") {
+        return '<span class="promotion-empty">当前不可售，页面未显示可购买优惠</span>';
+      }
+      return '<span class="promotion-empty">无额外优惠；当前价已按页面折扣展示</span>';
+    }
+    return `
+      <div class="promotion-offer-list">
+        ${offers
+          .map((offer) => {
+            const estimated =
+              Number.isFinite(Number(offer.estimatedPrice)) &&
+              offer.singleUnitEligible
+                ? `单独试算 ${priceText(offer.estimatedPrice)}`
+                : "不计入单件最低价";
+            return `
+              <div class="promotion-offer-item">
+                <span class="promotion-kind">${escapeHTML(offer.type || "页面优惠")}</span>
+                <strong>${escapeHTML(offer.raw || "页面优惠")}</strong>
+                <small>
+                  ${escapeHTML(estimated)}
+                  ${
+                    offer.activityId && offer.termsUrl
+                      ? ` · <a href="${escapeAttr(safeExternalUrl(offer.termsUrl))}" target="_blank" rel="noopener noreferrer">活动 ${escapeHTML(offer.activityId)} ↗</a>`
+                      : offer.activityId
+                        ? ` · 活动 ${escapeHTML(offer.activityId)}`
+                        : ""
+                  }
+                </small>
+              </div>
+            `;
+          })
+          .join("")}
+      </div>
+    `;
+  }
+
   function auditPromotionTable() {
     const meta = activePriceMeta();
+    const ownPrice = priceFor(baseByAsin.get("B0HFHN24F1"));
+    const verifiedCheckoutOffers = ownPrice?.checkoutOffers || [];
     const rows = DATA.products
       .map((product) => ({
         product,
@@ -3119,19 +3189,38 @@
         <div class="audit-panel-heading">
           <div>
             <h3>全量售价与优惠</h3>
-            <p>101 个产品逐个核对 Amazon 页面的当前售价、原价、优惠券、赠品与条件优惠；买盒不可用时单独标出第三方新品起售价或当前不可售。</p>
+            <p>101 个产品逐个核对 Amazon 页面的当前售价、原价和购买区全部优惠；百分比结账优惠、金额券、多件优惠与赠品均保留原文、活动编号和条件链接。</p>
           </div>
         </div>
         <div class="promotion-note">
           <strong>${escapeHTML(meta.observedAtLabel || meta.observedAt || "时间未提供")}</strong>
           <span>${escapeHTML(meta.rule || "当前价优先取 Amazon 买盒价；优惠券只按页面公开字段估算。")}</span>
         </div>
+        ${
+          verifiedCheckoutOffers.length
+            ? `
+              <div class="checkout-promotion-callout">
+                <div>
+                  <span>ONO3Pro · Amazon.de 页面实测</span>
+                  <strong>Spare 17 % an der Kasse</strong>
+                </div>
+                <p>
+                  ${escapeHTML(ownPrice.bestPromotionLabel)}，折后最低单件价
+                  <b>${priceText(ownPrice.bestPromotionPrice)}</b>；60€ 券后约
+                  ${priceText(ownPrice.estimatedCouponPrice)}。${escapeHTML(ownPrice.combinationRule)}
+                  <a href="${escapeAttr(safeExternalUrl(verifiedCheckoutOffers[0].termsUrl))}" target="_blank" rel="noopener noreferrer">查看活动条件 ↗</a>
+                </p>
+              </div>
+            `
+            : ""
+        }
         <div class="audit-price-stats">
           <div><span>页面买盒价</span><strong>${numberFormat.format(meta.buyboxCount || 0)}</strong></div>
-          <div><span>第三方新品起售</span><strong>${numberFormat.format(meta.thirdPartyCount || 0)}</strong></div>
-          <div><span>当前不可售</span><strong>${numberFormat.format(meta.unavailableCount || 0)}</strong></div>
-          <div><span>金额 / 折扣券</span><strong>${numberFormat.format(meta.directCouponCount || 0)}</strong></div>
-          <div><span>条件优惠 / 赠品</span><strong>${numberFormat.format((meta.conditionalCount || 0) + (meta.giftCount || 0))}</strong></div>
+          <div><span>第三方 / 不可售</span><strong>${numberFormat.format((meta.thirdPartyCount || 0) + (meta.unavailableCount || 0))}</strong></div>
+          <div><span>有页面优惠</span><strong>${numberFormat.format(meta.promotionProductCount || 0)}</strong></div>
+          <div><span>结账优惠</span><strong>${numberFormat.format(meta.checkoutOfferCount || 0)}</strong></div>
+          <div><span>金额 / 折扣券</span><strong>${numberFormat.format((meta.amountCouponProductCount || 0) + (meta.percentCouponProductCount || 0))}</strong></div>
+          <div><span>多件 / 赠品</span><strong>${numberFormat.format((meta.multiBuyProductCount || 0) + (meta.giftProductCount || 0))}</strong></div>
         </div>
         <div class="audit-table-wrap">
           <table class="audit-table promotion-table price-snapshot-table">
@@ -3141,31 +3230,28 @@
                 <th>价格状态</th>
                 <th>页面原价</th>
                 <th>当前售价</th>
-                <th>优惠券 / 活动原文</th>
-                <th>预计券后价</th>
+                <th>页面优惠逐项</th>
+                <th>折后最低价</th>
                 <th>条件与采集时间</th>
               </tr>
             </thead>
             <tbody>
               ${rows
                 .map(({ product, price }) => {
+                  const bestPromotionPrice = Number(price.bestPromotionPrice);
+                  const couponPromotionPrice = Number(
+                    price.estimatedCouponPrice,
+                  );
                   const promoPrice =
-                    price.estimatedCouponPrice &&
+                    Number.isFinite(bestPromotionPrice) &&
                     price.currentPrice !== null &&
-                    price.estimatedCouponPrice < price.currentPrice
-                      ? price.estimatedCouponPrice
-                      : null;
-                  const couponText =
-                    price.coupon ||
-                    (price.kind === "gift" ? "Kostenloser Bonusartikel" : "无页面现金券");
-                  const condition =
-                    price.condition ||
-                    price.couponDescription ||
-                    (price.kind === "gift"
-                      ? "赠品，不折算现金价"
-                      : price.kind === "deal"
-                        ? "Amazon 限时活动价"
-                        : "无额外条件");
+                    bestPromotionPrice < price.currentPrice
+                      ? bestPromotionPrice
+                      : Number.isFinite(couponPromotionPrice) &&
+                          price.currentPrice !== null &&
+                          couponPromotionPrice < price.currentPrice
+                        ? couponPromotionPrice
+                        : null;
                   const timestamp = price.timestamp
                     ? formatDateTime(price.timestamp)
                     : meta.observedAtLabel || "—";
@@ -3178,11 +3264,14 @@
                       <td><span class="price-source-status is-${escapeAttr(price.status)}">${escapeHTML(statusLabel(price))}</span></td>
                       <td class="promotion-number">${price.listPrice !== null ? priceText(price.listPrice) : "—"}</td>
                       <td class="promotion-number is-current">${price.currentPrice !== null ? priceText(price.currentPrice) : "当前不可售"}</td>
-                      <td>${escapeHTML(couponText)}</td>
-                      <td class="promotion-number ${promoPrice ? "is-promo" : ""}">${promoPrice ? priceText(promoPrice) : price.kind === "gift" ? "赠品" : "—"}</td>
+                      <td>${promotionOfferList(price)}</td>
+                      <td class="promotion-number ${promoPrice ? "is-promo" : ""}">
+                        ${promoPrice ? priceText(promoPrice) : price.giftOffers?.length ? "赠品" : "—"}
+                        ${promoPrice ? `<small>${escapeHTML(price.bestPromotionLabel || "页面优惠")}</small>` : ""}
+                      </td>
                       <td>
-                        <span class="audit-status ${/条件|满减|赠品/.test(price.type) ? "is-warning" : ""}">${escapeHTML(price.type)}</span>
-                        <small>${escapeHTML(condition)}</small>
+                        <span class="audit-status ${price.allPromotions?.length ? "is-warning" : ""}">${escapeHTML(price.type || "无页面优惠")}</span>
+                        ${price.combinationRule ? `<small>${escapeHTML(price.combinationRule)}</small>` : ""}
                         <small>${escapeHTML(timestamp)} · ${escapeHTML(price.priceNote || "")}</small>
                       </td>
                     </tr>
@@ -3528,10 +3617,20 @@
       "当前Amazon售价(EUR)",
       "页面原价(EUR)",
       "页面折扣",
+      "页面优惠逐项",
+      "金额优惠券",
+      "折扣优惠券",
+      "结账优惠",
+      "多件优惠",
+      "门槛优惠",
+      "免费赠品",
       "优惠券/活动原文",
       "优惠类型",
       "优惠条件",
-      "预计券后价(EUR)",
+      "折后最低价活动编号",
+      "折后最低价活动链接",
+      "折后最低价(EUR)",
+      "优惠叠加口径",
       "价格采集时间",
       "价格来源字段",
       "价格说明",
@@ -3565,6 +3664,17 @@
           ),
         )
         .join(" || ");
+    const offerSummary = (offers = []) =>
+      offers
+        .map(
+          (offer) =>
+            `${offer.type}｜${offer.raw}｜活动编号 ${offer.activityId || "—"}｜${
+              offer.singleUnitEligible && Number.isFinite(Number(offer.estimatedPrice))
+                ? `单独试算 ${priceText(offer.estimatedPrice)}`
+                : "不计入单件最低价"
+            }｜${offer.termsUrl || ""}`,
+        )
+        .join(" || ");
     const csvRows = [
       headers,
       ...rows.map(({ product, working, system }) => {
@@ -3581,10 +3691,20 @@
         currentPriceFor(product),
         originalPriceFor(product),
         price.discountText || "",
+        offerSummary(price.allPromotions),
+        offerSummary(price.amountCouponOffers),
+        offerSummary(price.percentCouponOffers),
+        offerSummary(price.checkoutOffers),
+        offerSummary(price.multiBuyOffers),
+        offerSummary(price.thresholdOffers),
+        offerSummary(price.giftOffers),
         price.coupon || (price.kind === "gift" ? "Kostenloser Bonusartikel" : ""),
         price.type,
         promotionConditionFor(product),
+        price.bestPromotionActivityId || "",
+        price.bestPromotionTermsUrl || "",
         promoPriceFor(product) || "",
+        price.combinationRule || "",
         price.timestamp || activePriceMeta().observedAt || "",
         price.sourceField || "",
         price.priceNote || "",
@@ -3706,6 +3826,37 @@
     return [...state.siteVersions].sort((a, b) =>
       String(b.at).localeCompare(String(a.at)),
     )[0];
+  }
+
+  function ensureReleaseVersion() {
+    const releaseVersion = PRICES?.meta?.releaseVersion;
+    if (!releaseVersion || !auditDraft) return;
+    const alreadyRecorded = state.siteVersions.some(
+      (version) =>
+        version.releaseVersion === releaseVersion ||
+        version.snapshot?.releaseVersion === releaseVersion,
+    );
+    if (alreadyRecorded) return;
+    const version = pushSiteVersion({
+      title: `${releaseVersion} · 全量售价与优惠复核`,
+      reason:
+        "逐项复核 101 个 Amazon 产品的购买区优惠，补入百分比结账优惠、活动编号与条件链接，并按每项优惠单独试算折后最低价。",
+      fields: [
+        "全量售价与优惠",
+        "百分比结账优惠",
+        "活动编号与条件链接",
+        "折后最低价口径",
+      ],
+      snapshot: {
+        audit: auditDraft,
+        working: state.working,
+        productVersionCount: state.versions.length,
+        prices: compactPriceSnapshot(),
+        releaseVersion,
+      },
+    });
+    version.releaseVersion = releaseVersion;
+    persistState();
   }
 
   function siteFieldsSince(snapshot = {}) {
@@ -4284,6 +4435,7 @@
 
   function init() {
     restoreAuditDraft();
+    ensureReleaseVersion();
     initFilters();
     updateKpis();
     updateStorageStatus();

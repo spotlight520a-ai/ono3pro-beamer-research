@@ -57,6 +57,70 @@ function priceOf(product) {
   return priceByAsin.get(String(product.asin).toUpperCase()) || {};
 }
 
+const priceColumns = [
+  "价格状态",
+  "当前Amazon售价(EUR)",
+  "页面原价(EUR)",
+  "页面折扣",
+  "页面优惠逐项",
+  "金额优惠券",
+  "折扣优惠券",
+  "结账优惠",
+  "多件优惠",
+  "门槛优惠",
+  "免费赠品",
+  "优惠券/活动原文",
+  "优惠类型",
+  "优惠条件",
+  "折后最低价活动编号",
+  "折后最低价活动链接",
+  "折后最低价(EUR)",
+  "优惠叠加口径",
+  "价格采集时间",
+  "价格来源字段",
+  "价格说明",
+];
+
+function offerSummary(offers = []) {
+  return offers
+    .map(
+      (offer) =>
+        `${offer.type}｜${offer.raw}｜活动编号 ${offer.activityId || "—"}｜${
+          offer.singleUnitEligible &&
+          Number.isFinite(Number(offer.estimatedPrice))
+            ? `单独试算 EUR ${Number(offer.estimatedPrice).toFixed(2)}`
+            : "不计入单件最低价"
+        }｜${offer.termsUrl || ""}`,
+    )
+    .join("\n");
+}
+
+function priceValues(price) {
+  return [
+    priceStatusLabel(price),
+    price.currentPrice ?? "",
+    price.listPrice ?? "",
+    price.discountText || "",
+    offerSummary(price.allPromotions),
+    offerSummary(price.amountCouponOffers),
+    offerSummary(price.percentCouponOffers),
+    offerSummary(price.checkoutOffers),
+    offerSummary(price.multiBuyOffers),
+    offerSummary(price.thresholdOffers),
+    offerSummary(price.giftOffers),
+    price.coupon || "",
+    price.type || "",
+    price.condition || price.couponDescription || "",
+    price.bestPromotionActivityId || "",
+    price.bestPromotionTermsUrl || "",
+    price.bestPromotionPrice ?? price.estimatedCouponPrice ?? "",
+    price.combinationRule || "",
+    price.timestamp || currentPrices.meta.observedAt,
+    price.sourceField || "",
+    price.priceNote || "",
+  ];
+}
+
 function priceStatusLabel(price) {
   if (price.status === "third_party") return "第三方新品起售价";
   if (price.status === "unavailable") return "当前不可售";
@@ -109,6 +173,29 @@ function parseCsv(source) {
   return rows;
 }
 
+function assertCsvTable(label, tableHeaders, tableRows) {
+  const duplicateHeaders = tableHeaders.filter(
+    (header, index) => tableHeaders.indexOf(header) !== index,
+  );
+  if (duplicateHeaders.length) {
+    throw new Error(
+      `${label} has duplicate columns: ${[...new Set(duplicateHeaders)].join(", ")}`,
+    );
+  }
+  const invalidRows = tableRows
+    .map((row, index) => ({ index, count: row.length }))
+    .filter(({ count }) => count !== tableHeaders.length);
+  if (invalidRows.length) {
+    const preview = invalidRows
+      .slice(0, 5)
+      .map(({ index, count }) => `row ${index + 2}=${count}`)
+      .join(", ");
+    throw new Error(
+      `${label} column count mismatch: expected ${tableHeaders.length}; ${preview}`,
+    );
+  }
+}
+
 const headers = [
   "BSR",
   "产品来源",
@@ -119,17 +206,7 @@ const headers = [
   "父ASIN",
   "原表价格带",
   "原表价格(EUR)",
-  "价格状态",
-  "当前Amazon售价(EUR)",
-  "页面原价(EUR)",
-  "页面折扣",
-  "优惠券/活动原文",
-  "优惠类型",
-  "优惠条件",
-  "预计券后价(EUR)",
-  "价格采集时间",
-  "价格来源字段",
-  "价格说明",
+  ...priceColumns,
   "评分",
   "评价数",
   "月销量",
@@ -177,17 +254,7 @@ const rows = data.products.map((product) => {
     product.parentAsin,
     product.metrics?.priceBand || "",
     product.sourcePrice,
-    priceStatusLabel(price),
-    price.currentPrice ?? "",
-    price.listPrice ?? "",
-    price.discountText || "",
-    price.coupon || "",
-    price.type || "",
-    price.condition || price.couponDescription || "",
-    price.estimatedCouponPrice ?? "",
-    price.timestamp || currentPrices.meta.observedAt,
-    price.sourceField || "",
-    price.priceNote || "",
+    ...priceValues(price),
     product.live?.rating || product.metrics?.rating || "",
     product.live?.reviewsCount || product.metrics?.reviews || "",
     product.metrics?.monthlySales || "",
@@ -242,6 +309,11 @@ const rows = data.products.map((product) => {
   ];
 });
 
+assertCsvTable("Full CSV", headers, rows);
+if (rows.length !== 101) {
+  throw new Error(`Full CSV expected 101 products, got ${rows.length}`);
+}
+
 const csv = [headers, ...rows]
   .map((row) => row.map(csvCell).join(","))
   .join("\r\n");
@@ -253,46 +325,36 @@ const deepRows = parseCsv(
   fs.readFileSync(deepCsvPath, "utf8").replace(/^\uFEFF/, ""),
 );
 const deepHeaders = deepRows.shift();
-const priceIndex = deepHeaders.indexOf("价格(EUR)");
-if (priceIndex < 0) throw new Error("Deep CSV price column not found");
-const priceColumns = [
-  "当前Amazon售价(EUR)",
-  "价格状态",
-  "页面原价(EUR)",
-  "页面折扣",
-  "优惠券/活动原文",
-  "优惠类型",
-  "优惠条件",
+const obsoletePriceHeaders = new Set([
+  "价格(EUR)",
   "预计券后价(EUR)",
-  "价格采集时间",
-  "价格来源字段",
-  "价格说明",
-];
-const expandedDeepHeaders = [
-  ...deepHeaders.slice(0, priceIndex),
+  "预计优惠后价(EUR)",
   ...priceColumns,
-  ...deepHeaders.slice(priceIndex + 1),
+]);
+const baseIndexes = deepHeaders
+  .map((header, index) => ({ header, index }))
+  .filter(({ header }) => !obsoletePriceHeaders.has(header));
+const baseDeepHeaders = baseIndexes.map(({ header }) => header);
+const asinIndex = baseDeepHeaders.indexOf("ASIN");
+if (asinIndex < 0) throw new Error("Deep CSV ASIN column not found");
+const insertIndex = asinIndex + 1;
+const expandedDeepHeaders = [
+  ...baseDeepHeaders.slice(0, insertIndex),
+  ...priceColumns,
+  ...baseDeepHeaders.slice(insertIndex),
 ];
 const expandedDeepRows = deepRows.map((row) => {
-  const asin = row[deepHeaders.indexOf("ASIN")];
+  const baseRow = baseIndexes.map(({ index }) => row[index] ?? "");
+  const asin = baseRow[asinIndex];
   const price = priceByAsin.get(String(asin).toUpperCase());
   if (!price) throw new Error(`No current price for deep CSV ${asin}`);
   return [
-    ...row.slice(0, priceIndex),
-    price.currentPrice ?? "",
-    priceStatusLabel(price),
-    price.listPrice ?? "",
-    price.discountText || "",
-    price.coupon || "",
-    price.type || "",
-    price.condition || price.couponDescription || "",
-    price.estimatedCouponPrice ?? "",
-    price.timestamp || currentPrices.meta.observedAt,
-    price.sourceField || "",
-    price.priceNote || "",
-    ...row.slice(priceIndex + 1),
+    ...baseRow.slice(0, insertIndex),
+    ...priceValues(price),
+    ...baseRow.slice(insertIndex),
   ];
 });
+assertCsvTable("Deep CSV", expandedDeepHeaders, expandedDeepRows);
 const deepCsv = [expandedDeepHeaders, ...expandedDeepRows]
   .map((row) => row.map(csvCell).join(","))
   .join("\r\n");
