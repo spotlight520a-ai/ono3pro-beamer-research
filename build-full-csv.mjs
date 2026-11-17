@@ -15,6 +15,12 @@ const brightnessByAsin = new Map(
     row,
   ]),
 );
+const currentPrices = JSON.parse(
+  fs.readFileSync(path.join(root, "data", "current-prices.json"), "utf8"),
+);
+const priceByAsin = new Map(
+  currentPrices.products.map((row) => [String(row.asin).toUpperCase(), row]),
+);
 
 function coverageLabel(product) {
   if (product.manualFocus || product.coverage === "own") return "自有深挖";
@@ -47,10 +53,60 @@ function brightnessOf(product) {
   return brightnessByAsin.get(String(product.asin).toUpperCase()) || null;
 }
 
+function priceOf(product) {
+  return priceByAsin.get(String(product.asin).toUpperCase()) || {};
+}
+
+function priceStatusLabel(price) {
+  if (price.status === "third_party") return "第三方新品起售价";
+  if (price.status === "unavailable") return "当前不可售";
+  return "Amazon 当前售价";
+}
+
 function csvCell(value) {
   let text = String(value ?? "");
   if (/^[=+\-@]/.test(text)) text = `'${text}`;
   return `"${text.replaceAll('"', '""')}"`;
+}
+
+function parseCsv(source) {
+  const rows = [];
+  let row = [];
+  let cell = "";
+  let quoted = false;
+  for (let index = 0; index < source.length; index += 1) {
+    const char = source[index];
+    const next = source[index + 1];
+    if (quoted) {
+      if (char === '"' && next === '"') {
+        cell += '"';
+        index += 1;
+      } else if (char === '"') {
+        quoted = false;
+      } else {
+        cell += char;
+      }
+      continue;
+    }
+    if (char === '"') {
+      quoted = true;
+    } else if (char === ",") {
+      row.push(cell);
+      cell = "";
+    } else if (char === "\n") {
+      row.push(cell.replace(/\r$/, ""));
+      rows.push(row);
+      row = [];
+      cell = "";
+    } else {
+      cell += char;
+    }
+  }
+  if (cell || row.length) {
+    row.push(cell.replace(/\r$/, ""));
+    rows.push(row);
+  }
+  return rows;
 }
 
 const headers = [
@@ -63,7 +119,17 @@ const headers = [
   "父ASIN",
   "原表价格带",
   "原表价格(EUR)",
-  "页面优惠",
+  "价格状态",
+  "当前Amazon售价(EUR)",
+  "页面原价(EUR)",
+  "页面折扣",
+  "优惠券/活动原文",
+  "优惠类型",
+  "优惠条件",
+  "预计券后价(EUR)",
+  "价格采集时间",
+  "价格来源字段",
+  "价格说明",
   "评分",
   "评价数",
   "月销量",
@@ -100,6 +166,7 @@ const rows = data.products.map((product) => {
   const listing = product.images?.listing || [];
   const aplus = product.images?.aplus || [];
   const brightness = brightnessOf(product);
+  const price = priceOf(product);
   return [
     product.rank,
     product.manualFocus ? "自有产品" : "BSR 竞品",
@@ -110,7 +177,17 @@ const rows = data.products.map((product) => {
     product.parentAsin,
     product.metrics?.priceBand || "",
     product.sourcePrice,
-    product.live?.coupon || "",
+    priceStatusLabel(price),
+    price.currentPrice ?? "",
+    price.listPrice ?? "",
+    price.discountText || "",
+    price.coupon || "",
+    price.type || "",
+    price.condition || price.couponDescription || "",
+    price.estimatedCouponPrice ?? "",
+    price.timestamp || currentPrices.meta.observedAt,
+    price.sourceField || "",
+    price.priceNote || "",
     product.live?.rating || product.metrics?.rating || "",
     product.live?.reviewsCount || product.metrics?.reviews || "",
     product.metrics?.monthlySales || "",
@@ -170,4 +247,57 @@ const csv = [headers, ...rows]
   .join("\r\n");
 const outputPath = path.join(root, "德国站_BSR_Top100_全量产品表.csv");
 fs.writeFileSync(outputPath, `\uFEFF${csv}`, "utf8");
-console.log(`WROTE=${outputPath} ROWS=${rows.length}`);
+
+const deepCsvPath = path.join(root, "德国站_200-400欧投影仪_产品表.csv");
+const deepRows = parseCsv(
+  fs.readFileSync(deepCsvPath, "utf8").replace(/^\uFEFF/, ""),
+);
+const deepHeaders = deepRows.shift();
+const priceIndex = deepHeaders.indexOf("价格(EUR)");
+if (priceIndex < 0) throw new Error("Deep CSV price column not found");
+const priceColumns = [
+  "当前Amazon售价(EUR)",
+  "价格状态",
+  "页面原价(EUR)",
+  "页面折扣",
+  "优惠券/活动原文",
+  "优惠类型",
+  "优惠条件",
+  "预计券后价(EUR)",
+  "价格采集时间",
+  "价格来源字段",
+  "价格说明",
+];
+const expandedDeepHeaders = [
+  ...deepHeaders.slice(0, priceIndex),
+  ...priceColumns,
+  ...deepHeaders.slice(priceIndex + 1),
+];
+const expandedDeepRows = deepRows.map((row) => {
+  const asin = row[deepHeaders.indexOf("ASIN")];
+  const price = priceByAsin.get(String(asin).toUpperCase());
+  if (!price) throw new Error(`No current price for deep CSV ${asin}`);
+  return [
+    ...row.slice(0, priceIndex),
+    price.currentPrice ?? "",
+    priceStatusLabel(price),
+    price.listPrice ?? "",
+    price.discountText || "",
+    price.coupon || "",
+    price.type || "",
+    price.condition || price.couponDescription || "",
+    price.estimatedCouponPrice ?? "",
+    price.timestamp || currentPrices.meta.observedAt,
+    price.sourceField || "",
+    price.priceNote || "",
+    ...row.slice(priceIndex + 1),
+  ];
+});
+const deepCsv = [expandedDeepHeaders, ...expandedDeepRows]
+  .map((row) => row.map(csvCell).join(","))
+  .join("\r\n");
+fs.writeFileSync(deepCsvPath, `\uFEFF${deepCsv}`, "utf8");
+
+console.log(
+  `WROTE=${outputPath} ROWS=${rows.length}; WROTE=${deepCsvPath} ROWS=${expandedDeepRows.length}`,
+);

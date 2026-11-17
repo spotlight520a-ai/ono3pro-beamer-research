@@ -4,6 +4,7 @@
   const DATA = window.BSR_DATA;
   const AUDIT = window.BSR_AUDIT;
   const BRIGHTNESS = window.BSR_ANSI_BRIGHTNESS;
+  const PRICES = window.BSR_CURRENT_PRICES;
   const STORAGE_KEY = "beamer-scout-state-v1";
   const DRAFT_KEY = "beamer-scout-draft-v1";
   const AUDIT_DRAFT_KEY = "beamer-scout-audit-draft-v1";
@@ -13,6 +14,12 @@
   const MAX_SITE_VERSIONS = 120;
   const brightnessByAsin = new Map(
     (BRIGHTNESS?.products || []).map((row) => [
+      String(row.asin).toUpperCase(),
+      row,
+    ]),
+  );
+  const priceByAsin = new Map(
+    (PRICES?.products || []).map((row) => [
       String(row.asin).toUpperCase(),
       row,
     ]),
@@ -72,6 +79,8 @@
     auditWorking: null,
     siteVersions: [],
     imageAssets: {},
+    priceSnapshot: null,
+    priceLegacy: false,
     updatedAt: null,
   });
 
@@ -97,6 +106,11 @@
           parsed.imageAssets && typeof parsed.imageAssets === "object"
             ? sanitizeImageAssets(parsed.imageAssets)
             : {},
+        priceSnapshot:
+          parsed.priceSnapshot && typeof parsed.priceSnapshot === "object"
+            ? parsed.priceSnapshot
+            : null,
+        priceLegacy: Boolean(parsed.priceLegacy),
         updatedAt: parsed.updatedAt || null,
       };
     } catch (error) {
@@ -231,23 +245,192 @@
     );
   }
 
+  function legacyPriceFor(product) {
+    return {
+      rank: product.rank,
+      asin: product.asin,
+      brand: product.brand,
+      model: modelOf(product),
+      own: Boolean(product.manualFocus),
+      status: "legacy",
+      available: Number.isFinite(Number(product.sourcePrice)),
+      currentPrice: Number.isFinite(Number(product.sourcePrice))
+        ? Number(product.sourcePrice)
+        : null,
+      listPrice: null,
+      discountText: "",
+      kind: "none",
+      type: "历史参考价",
+      promotionLabel: "旧版未采集统一优惠",
+      coupon: product.live?.coupon || "",
+      couponDescription: "",
+      couponAmount: null,
+      couponPercent: null,
+      estimatedCouponPrice: null,
+      condition: "",
+      badges: [],
+      availability: product.live?.availability || "",
+      priceNote: "已恢复到旧版，显示原产品表参考价",
+      sourceUrl: product.sourceUrl,
+      timestamp: DATA.meta?.generatedAt || "",
+    };
+  }
+
+  function priceFor(product) {
+    const asin = String(product?.asin || "").toUpperCase();
+    const snapshotRows = state.priceSnapshot?.products;
+    const snapshotRow = Array.isArray(snapshotRows)
+      ? snapshotRows.find((row) => String(row.asin).toUpperCase() === asin)
+      : null;
+    if (snapshotRow) return snapshotRow;
+    if (state.priceLegacy) return legacyPriceFor(product);
+    return priceByAsin.get(asin) || legacyPriceFor(product);
+  }
+
   function currentPriceFor(product) {
-    return promotionFor(product)?.bdPrice ?? Number(product.sourcePrice);
+    const price = priceFor(product)?.currentPrice;
+    if (price === null || price === undefined || price === "") return null;
+    return Number.isFinite(Number(price)) ? Number(price) : null;
+  }
+
+  function originalPriceFor(product) {
+    const price = priceFor(product)?.listPrice;
+    if (price === null || price === undefined || price === "") return null;
+    return Number.isFinite(Number(price)) ? Number(price) : null;
   }
 
   function promoPriceFor(product) {
-    const promotion = promotionFor(product);
-    return promotion?.promoPrice && promotion.promoPrice < promotion.bdPrice
-      ? promotion.promoPrice
+    const price = priceFor(product);
+    const current = currentPriceFor(product);
+    return price?.estimatedCouponPrice &&
+      current !== null &&
+      price.estimatedCouponPrice < current
+      ? Number(price.estimatedCouponPrice)
       : null;
   }
 
   function promotionSignal(product) {
-    const promotion = promotionFor(product);
-    if (!promotion) return "未采集";
-    if (promoPriceFor(product)) return promotion.coupon;
-    if (promotion.type === "赠品") return "免费赠品";
-    return "无现金优惠";
+    const price = priceFor(product);
+    if (!price) return "价格快照缺失";
+    if (price.kind === "amount" || price.kind === "percent") {
+      return price.coupon || price.promotionLabel || price.type;
+    }
+    if (price.kind === "gift") return "免费赠品";
+    if (price.kind === "conditional") {
+      return price.coupon || price.promotionLabel || "条件优惠";
+    }
+    if (price.kind === "deal") return price.promotionLabel || "限时降价";
+    if (originalPriceFor(product) !== null) {
+      return `页面直降 ${price.discountText || ""}`.trim();
+    }
+    return price.status === "unavailable" ? "当前不可售" : "无页面现金券";
+  }
+
+  function promotionConditionFor(product) {
+    const price = priceFor(product);
+    if (!price) return "";
+    if (price.condition) return price.condition;
+    if (price.kind === "gift" && price.couponDescription) {
+      return price.couponDescription;
+    }
+    if (price.kind === "conditional" && price.couponDescription) {
+      return price.couponDescription;
+    }
+    return "";
+  }
+
+  function promotionNoteFor(product) {
+    const price = priceFor(product);
+    if (promoPriceFor(product)) {
+      const condition = promotionConditionFor(product);
+      return condition || "按页面现金券直接估算";
+    }
+    if (price?.kind === "gift") {
+      return price.condition || "赠品，不折算为单件现金优惠";
+    }
+    if (price?.kind === "conditional") {
+      return price.condition || "需满足页面指定购买条件";
+    }
+    if (price?.kind === "deal") return "Amazon 页面限时活动价";
+    if (originalPriceFor(product) !== null) {
+      return `页面原价 ${priceText(originalPriceFor(product))}`;
+    }
+    if (price?.status === "unavailable") return price.priceNote;
+    if (price?.status === "third_party") return price.priceNote;
+    return "采集时页面没有可用现金券";
+  }
+
+  function priceStatusLabel(product) {
+    const price = priceFor(product);
+    if (price?.status === "third_party") return "第三方新品起售价";
+    if (price?.status === "unavailable") return "无可用买盒价";
+    if (price?.status === "legacy") return "旧版参考价";
+    return "Amazon 当前售价";
+  }
+
+  function priceText(value) {
+    if (value === null || value === undefined || value === "") return "—";
+    return Number.isFinite(Number(value))
+      ? priceFormat.format(Number(value))
+      : "—";
+  }
+
+  function activePriceMeta() {
+    if (state.priceSnapshot?.meta) return state.priceSnapshot.meta;
+    if (state.priceLegacy) {
+      return {
+        observedAt: DATA.meta?.sourceDate || "",
+        observedAtLabel: `${DATA.meta?.sourceDate || "旧版"}（原产品表参考价）`,
+        priceAvailableCount: DATA.products.filter(
+          (product) => Number.isFinite(Number(product.sourcePrice)),
+        ).length,
+        competitorPriceAvailableCount: DATA.products.filter(
+          (product) => !product.manualFocus && Number.isFinite(Number(product.sourcePrice)),
+        ).length,
+      };
+    }
+    return PRICES?.meta || {};
+  }
+
+  function priceSnapshotHint() {
+    const meta = activePriceMeta();
+    return `售价快照：${meta.observedAtLabel || meta.observedAt || "时间未提供"} · 券后价为页面公开优惠估算，以结账页为准`;
+  }
+
+  function compactPriceSnapshot() {
+    return {
+      meta: clone(activePriceMeta()),
+      products: DATA.products.map((product) => {
+        const price = priceFor(product);
+        return {
+          rank: price.rank,
+          asin: price.asin,
+          brand: price.brand,
+          model: price.model,
+          own: Boolean(price.own),
+          sourceUrl: price.sourceUrl,
+          status: price.status,
+          available: Boolean(price.available),
+          currentPrice: price.currentPrice,
+          listPrice: price.listPrice,
+          discountText: price.discountText,
+          kind: price.kind,
+          type: price.type,
+          promotionLabel: price.promotionLabel,
+          coupon: price.coupon,
+          couponDescription: price.couponDescription,
+          couponAmount: price.couponAmount,
+          couponPercent: price.couponPercent,
+          estimatedCouponPrice: price.estimatedCouponPrice,
+          condition: price.condition,
+          availability: price.availability,
+          seller: price.seller,
+          timestamp: price.timestamp,
+          priceNote: price.priceNote,
+          sourceField: price.sourceField,
+        };
+      }),
+    };
   }
 
   function cleanSpecValue(value) {
@@ -556,7 +739,12 @@
           return false;
         if (ui.price) {
           const [min, max] = ui.price.split("-").map(Number);
-          if (currentPriceFor(product) < min || currentPriceFor(product) > max)
+          const currentPrice = currentPriceFor(product);
+          if (
+            currentPrice === null ||
+            currentPrice < min ||
+            currentPrice > max
+          )
             return false;
         }
         return !query || searchableText(product, working).includes(query);
@@ -568,9 +756,9 @@
           Number(Boolean(a.product.manualFocus)) ||
         a.product.rank - b.product.rank,
       "price-asc": (a, b) =>
-        currentPriceFor(a.product) - currentPriceFor(b.product),
+        compareCurrentPrice(a.product, b.product, 1),
       "price-desc": (a, b) =>
-        currentPriceFor(b.product) - currentPriceFor(a.product),
+        compareCurrentPrice(a.product, b.product, -1),
       "rating-desc": (a, b) =>
         Number(b.product.live?.rating || b.product.metrics?.rating || 0) -
         Number(a.product.live?.rating || a.product.metrics?.rating || 0),
@@ -580,6 +768,15 @@
     };
     list.sort(sorters[ui.sort] || sorters.rank);
     return list;
+  }
+
+  function compareCurrentPrice(a, b, direction = 1) {
+    const priceA = currentPriceFor(a);
+    const priceB = currentPriceFor(b);
+    if (priceA === null && priceB === null) return a.rank - b.rank;
+    if (priceA === null) return 1;
+    if (priceB === null) return -1;
+    return (priceA - priceB) * direction;
   }
 
   function initFilters() {
@@ -602,6 +799,7 @@
     const prices = DATA.products
       .filter((product) => !product.manualFocus)
       .map(currentPriceFor)
+      .filter((price) => Number.isFinite(price))
       .sort((a, b) => a - b);
     const median =
       prices.length % 2
@@ -610,14 +808,17 @@
     $("#kpiProducts").textContent = DATA.meta.products;
     $("#kpiBrands").textContent = `${DATA.meta.brands} 个品牌 · 1 个自有基准`;
     $("#kpiMedianPrice").textContent = priceFormat.format(median);
+    const priceMeta = activePriceMeta();
     $("#kpiMedianNote").textContent =
-      `全量 ${prices.length} 个 BSR 竞品当前价 · ${String(auditDraft?.promotions?.asOf || AUDIT?.promotions?.asOf || "时间未提供").slice(0, 16)}`;
+      `${prices.length} / 100 个 BSR 竞品有当前可购买价 · ${String(priceMeta.observedAtLabel || priceMeta.observedAt || "时间未提供").slice(0, 22)}`;
     $("#kpiImages").textContent = numberFormat.format(
       DATA.meta.listingImages + DATA.meta.aplusImages,
     );
     $("#kpiImageBreakdown").textContent =
       `${numberFormat.format(DATA.meta.listingImages)} Listing + ${numberFormat.format(DATA.meta.aplusImages)} A+；图片已抓取，在线读取原始图源`;
     $("#kpiOcr").textContent = numberFormat.format(DATA.meta.ocrRecognized);
+    const priceHint = $("#priceSnapshotHint");
+    if (priceHint) priceHint.textContent = priceSnapshotHint();
     renderAuditBrief();
   }
 
@@ -645,7 +846,7 @@
 
   function productRowTemplate(entry) {
     const { product, working, system } = entry;
-    const promotion = promotionFor(product);
+    const price = priceFor(product);
     const currentPrice = currentPriceFor(product);
     const promoPrice = promoPriceFor(product);
     const thumb = primaryImage(product, working);
@@ -682,21 +883,26 @@
             </span>
           </div>
         </td>
-        <td class="price-cell">
-          <strong>${priceFormat.format(currentPrice)}</strong>
-          <span>${promotion ? "当前 BD 价 / 售价" : "参考资料价"}</span>
+        <td class="price-cell ${currentPrice === null ? "is-unavailable" : ""}">
+          <strong>${currentPrice === null ? "当前不可售" : priceFormat.format(currentPrice)}</strong>
+          <span>${priceStatusLabel(product)}</span>
+          ${
+            originalPriceFor(product) !== null
+              ? `<small>原价 ${priceText(originalPriceFor(product))} · ${escapeHTML(price.discountText || "")}</small>`
+              : ""
+          }
         </td>
         <td class="promotion-cell">
           ${
             promoPrice
               ? `
                 <strong>${priceFormat.format(promoPrice)}</strong>
-                <span>估算折后价</span>
-                <small>${escapeHTML(promotionSignal(product))}</small>
+                <span>预计券后价</span>
+                <small>${escapeHTML(promotionSignal(product))} · ${escapeHTML(promotionNoteFor(product))}</small>
               `
               : `
-                <strong class="is-muted">${escapeHTML(promotionSignal(product))}</strong>
-                <small>${promotion?.type === "赠品" ? "有赠品，无现金折后价" : "当前页未识别现金券"}</small>
+                <strong class="${/无页面现金券|当前不可售/.test(promotionSignal(product)) ? "is-muted" : ""}">${escapeHTML(promotionSignal(product))}</strong>
+                <small>${escapeHTML(promotionNoteFor(product))}</small>
               `
           }
         </td>
@@ -732,7 +938,6 @@
 
   function mobileCardTemplate(entry) {
     const { product, working, system } = entry;
-    const promotion = promotionFor(product);
     const currentPrice = currentPriceFor(product);
     const promoPrice = promoPriceFor(product);
     const thumb = primaryImage(product, working);
@@ -746,8 +951,8 @@
           <strong>${escapeHTML(working.content.titleZh)}${product.manualFocus ? '<span class="own-product-mark">自有产品</span>' : `<span class="coverage-mark ${product.coverage === "base" ? "is-base" : "is-deep"}">${coverageLabel(product)}</span>`}</strong>
           <span class="mobile-sub">${escapeHTML(product.brand)} · ${escapeHTML(system)} · #${escapeHTML(product.metrics?.subcategoryBsr || product.rank)}</span>
           <div class="mobile-numbers">
-            <span>当前 <strong>${priceFormat.format(currentPrice)}</strong></span>
-            <span>折后 <strong>${promoPrice ? priceFormat.format(promoPrice) : "—"}</strong></span>
+            <span>当前 <strong>${currentPrice === null ? "不可售" : priceFormat.format(currentPrice)}</strong></span>
+            <span>券后 <strong>${promoPrice ? priceFormat.format(promoPrice) : "—"}</strong></span>
             <span>★ <strong>${escapeHTML(product.live?.rating || "—")}</strong></span>
           </div>
           <span class="mobile-promotion-signal ${promoPrice ? "" : "is-muted"}">${escapeHTML(promotionSignal(product))}</span>
@@ -1015,6 +1220,9 @@
 
   function overviewTemplate(product, working) {
     const system = systemOf(product);
+    const price = priceFor(product);
+    const currentPrice = currentPriceFor(product);
+    const promoPrice = promoPriceFor(product);
     const themes = (product.aplusThemes || [])
       .map(
         (theme) =>
@@ -1088,7 +1296,8 @@
               <div><h3>市场与 Listing</h3></div>
             </div>
             <div class="metric-grid">
-              <div class="metric-item"><span>价格</span><strong>${priceFormat.format(product.sourcePrice)}</strong></div>
+              <div class="metric-item"><span>${priceStatusLabel(product)}</span><strong>${currentPrice === null ? "当前不可售" : priceFormat.format(currentPrice)}</strong><small>${escapeHTML(price.priceNote || "")}</small></div>
+              <div class="metric-item"><span>页面优惠</span><strong style="font-family:var(--font-sans);font-size:11px">${escapeHTML(promotionSignal(product))}</strong><small>${promoPrice ? `预计券后 ${priceFormat.format(promoPrice)}` : escapeHTML(promotionNoteFor(product))}</small></div>
               <div class="metric-item"><span>用户评分</span><strong>★ ${escapeHTML(rating)}</strong><small>${escapeHTML(numberFormat.format(metricNumber(reviews)))} 条评价</small></div>
               <div class="metric-item"><span>近 30 天销量</span><strong>${product.metrics?.monthlySales ? escapeHTML(numberFormat.format(metricNumber(product.metrics.monthlySales))) : "—"}</strong><small>件</small></div>
               <div class="metric-item"><span>BSR</span><strong>#${escapeHTML(product.metrics?.subcategoryBsr || product.rank)}</strong><small>大类 ${escapeHTML(product.metrics?.majorBsr || "—")}</small></div>
@@ -1122,7 +1331,7 @@
               ${product.manualFocus ? `<strong>自有产品基准：</strong>${escapeHTML(product.sourceNote)}<br /><br />` : ""}
               ${product.coverageNote ? `<strong>资料深度：</strong>${escapeHTML(product.coverageNote)}<br /><br />` : ""}
               ${!product.manualFocus && product.sourceNote ? `<strong>基础档案提示：</strong>${escapeHTML(product.sourceNote)}<br /><br />` : ""}
-              价格为产品表中的含税参考价；页面指标来自 Amazon.de 页面快照。亮度存在
+              ${escapeHTML(priceSnapshotHint())}。页面指标来自 Amazon.de 页面快照。亮度存在
               ANSI、ISO 与普通“流明”混用，不能直接等值换算。图片文字由本机 OCR
               识别，复杂排版可能有误，请以原图为准。<br /><br />
               <a href="${escapeAttr(safeExternalUrl(product.sourceUrl))}" target="_blank" rel="noopener noreferrer">打开 Amazon.de 产品页 ↗</a>
@@ -2007,15 +2216,24 @@
     const fields = [
       [
         "页面原价",
-        (p) => priceFormat.format(promotionFor(p)?.listPrice || p.sourcePrice),
+        (p) =>
+          originalPriceFor(p) !== null ? priceText(originalPriceFor(p)) : "—",
       ],
-      ["当前 BD 价 / 售价", (p) => priceFormat.format(currentPriceFor(p))],
-      ["页面优惠", (p) => promotionSignal(p)],
       [
-        "估算折后价",
+        "当前 Amazon 售价",
+        (p) =>
+          currentPriceFor(p) === null
+            ? "当前不可售"
+            : priceText(currentPriceFor(p)),
+      ],
+      ["价格状态", (p) => priceStatusLabel(p)],
+      ["页面优惠", (p) => promotionSignal(p)],
+      ["优惠条件", (p) => promotionConditionFor(p) || "无额外条件"],
+      [
+        "预计券后价",
         (p) =>
           promoPriceFor(p)
-            ? priceFormat.format(promoPriceFor(p))
+            ? priceText(promoPriceFor(p))
             : "无现金折后价",
       ],
       ["品牌 / 型号", (p) => `${p.brand} · ${modelOf(p)}`],
@@ -2876,49 +3094,96 @@
   }
 
   function auditPromotionTable() {
-    const promotion = auditDraft.promotions;
-    const rows = [...promotion.rows].sort((a, b) => a.bdPrice - b.bdPrice);
+    const meta = activePriceMeta();
+    const rows = DATA.products
+      .map((product) => ({
+        product,
+        price: priceFor(product),
+      }))
+      .sort(
+        (a, b) =>
+          Number(Boolean(b.product.manualFocus)) -
+            Number(Boolean(a.product.manualFocus)) ||
+          a.product.rank - b.product.rank,
+      );
+    const statusLabel = (price) =>
+      price.status === "third_party"
+        ? "第三方新品"
+        : price.status === "unavailable"
+          ? "当前不可售"
+          : price.status === "legacy"
+            ? "旧版参考价"
+            : "Amazon 买盒";
     return `
       <section class="audit-panel" data-audit-panel="promotions" role="tabpanel" hidden>
         <div class="audit-panel-heading">
           <div>
-            <h3>当前售价与促销估算</h3>
-            <p>${auditEditable(promotion.summary, "promotions.summary", { multiline: true })}</p>
+            <h3>全量售价与优惠</h3>
+            <p>101 个产品逐个核对 Amazon 页面的当前售价、原价、优惠券、赠品与条件优惠；买盒不可用时单独标出第三方新品起售价或当前不可售。</p>
           </div>
         </div>
         <div class="promotion-note">
-          <strong>${auditEditable(promotion.asOf, "promotions.asOf")}</strong>
-          <span>${auditEditable(promotion.note, "promotions.note", { multiline: true })}</span>
+          <strong>${escapeHTML(meta.observedAtLabel || meta.observedAt || "时间未提供")}</strong>
+          <span>${escapeHTML(meta.rule || "当前价优先取 Amazon 买盒价；优惠券只按页面公开字段估算。")}</span>
+        </div>
+        <div class="audit-price-stats">
+          <div><span>页面买盒价</span><strong>${numberFormat.format(meta.buyboxCount || 0)}</strong></div>
+          <div><span>第三方新品起售</span><strong>${numberFormat.format(meta.thirdPartyCount || 0)}</strong></div>
+          <div><span>当前不可售</span><strong>${numberFormat.format(meta.unavailableCount || 0)}</strong></div>
+          <div><span>金额 / 折扣券</span><strong>${numberFormat.format(meta.directCouponCount || 0)}</strong></div>
+          <div><span>条件优惠 / 赠品</span><strong>${numberFormat.format((meta.conditionalCount || 0) + (meta.giftCount || 0))}</strong></div>
         </div>
         <div class="audit-table-wrap">
-          <table class="audit-table promotion-table">
+          <table class="audit-table promotion-table price-snapshot-table">
             <thead>
               <tr>
                 <th>产品</th>
+                <th>价格状态</th>
                 <th>页面原价</th>
-                <th>当前 BD 价 / 售价</th>
-                <th>页面优惠</th>
-                <th>估算优惠价</th>
-                <th>类型与条件</th>
+                <th>当前售价</th>
+                <th>优惠券 / 活动原文</th>
+                <th>预计券后价</th>
+                <th>条件与采集时间</th>
               </tr>
             </thead>
             <tbody>
               ${rows
-                .map((row) => {
-                  const sourceIndex = promotion.rows.indexOf(row);
+                .map(({ product, price }) => {
+                  const promoPrice =
+                    price.estimatedCouponPrice &&
+                    price.currentPrice !== null &&
+                    price.estimatedCouponPrice < price.currentPrice
+                      ? price.estimatedCouponPrice
+                      : null;
+                  const couponText =
+                    price.coupon ||
+                    (price.kind === "gift" ? "Kostenloser Bonusartikel" : "无页面现金券");
+                  const condition =
+                    price.condition ||
+                    price.couponDescription ||
+                    (price.kind === "gift"
+                      ? "赠品，不折算现金价"
+                      : price.kind === "deal"
+                        ? "Amazon 限时活动价"
+                        : "无额外条件");
+                  const timestamp = price.timestamp
+                    ? formatDateTime(price.timestamp)
+                    : meta.observedAtLabel || "—";
                   return `
-                    <tr class="${row.own ? "is-own" : ""}">
+                    <tr class="${product.manualFocus ? "is-own" : ""}">
                       <td>
-                        <strong>${auditEditable(row.brand, `promotions.rows.${sourceIndex}.brand`)} ${auditEditable(row.model, `promotions.rows.${sourceIndex}.model`)}</strong>
-                        <a href="https://www.amazon.de/dp/${encodeURIComponent(row.asin)}" target="_blank" rel="noopener noreferrer">${auditEditable(row.asin, `promotions.rows.${sourceIndex}.asin`)}</a>
+                        <strong>${escapeHTML(product.brand)} ${escapeHTML(modelOf(product))}</strong>
+                        <a href="${escapeAttr(safeExternalUrl(price.sourceUrl || product.sourceUrl))}" target="_blank" rel="noopener noreferrer">${escapeHTML(product.asin)}</a>
                       </td>
-                      <td class="promotion-number">${auditNumberInput(row.listPrice, `promotions.rows.${sourceIndex}.listPrice`)}</td>
-                      <td class="promotion-number is-current">${auditNumberInput(row.bdPrice, `promotions.rows.${sourceIndex}.bdPrice`)}</td>
-                      <td>${auditEditable(row.coupon, `promotions.rows.${sourceIndex}.coupon`, { multiline: true })}</td>
-                      <td class="promotion-number ${row.promoPrice && row.promoPrice < row.bdPrice ? "is-promo" : ""}">${auditNumberInput(row.promoPrice ?? "", `promotions.rows.${sourceIndex}.promoPrice`)}</td>
+                      <td><span class="price-source-status is-${escapeAttr(price.status)}">${escapeHTML(statusLabel(price))}</span></td>
+                      <td class="promotion-number">${price.listPrice !== null ? priceText(price.listPrice) : "—"}</td>
+                      <td class="promotion-number is-current">${price.currentPrice !== null ? priceText(price.currentPrice) : "当前不可售"}</td>
+                      <td>${escapeHTML(couponText)}</td>
+                      <td class="promotion-number ${promoPrice ? "is-promo" : ""}">${promoPrice ? priceText(promoPrice) : price.kind === "gift" ? "赠品" : "—"}</td>
                       <td>
-                        <span class="audit-status ${/条件|赠品/.test(row.type) ? "is-warning" : ""}">${auditEditable(row.type, `promotions.rows.${sourceIndex}.type`)}</span>
-                        <small>${auditEditable(row.condition, `promotions.rows.${sourceIndex}.condition`, { multiline: true })}</small>
+                        <span class="audit-status ${/条件|满减|赠品/.test(price.type) ? "is-warning" : ""}">${escapeHTML(price.type)}</span>
+                        <small>${escapeHTML(condition)}</small>
+                        <small>${escapeHTML(timestamp)} · ${escapeHTML(price.priceNote || "")}</small>
                       </td>
                     </tr>
                   `;
@@ -2966,7 +3231,7 @@
         <button class="active" type="button" role="tab" aria-selected="true" data-action="audit-tab" data-audit-tab="overview">结论与顺序</button>
         <button type="button" role="tab" aria-selected="false" data-action="audit-tab" data-audit-tab="sellpoints">升级卖点 ${auditDraft.upgradeSellpoints.metrics[0]?.value || "28"}</button>
         <button type="button" role="tab" aria-selected="false" data-action="audit-tab" data-audit-tab="market">市场定位</button>
-        <button type="button" role="tab" aria-selected="false" data-action="audit-tab" data-audit-tab="promotions">当前促销</button>
+        <button type="button" role="tab" aria-selected="false" data-action="audit-tab" data-audit-tab="promotions">全量售价与优惠</button>
         <button type="button" role="tab" aria-selected="false" data-action="audit-tab" data-audit-tab="listing">Listing ${auditDraft.listing.length}</button>
         <button type="button" role="tab" aria-selected="false" data-action="audit-tab" data-audit-tab="aplus">A+ ${auditDraft.aplus.length}</button>
         <button type="button" role="tab" aria-selected="false" data-action="audit-tab" data-audit-tab="copy">五点改写</button>
@@ -3259,10 +3524,17 @@
       "品牌",
       "型号",
       "ASIN",
+      "价格状态",
+      "当前Amazon售价(EUR)",
       "页面原价(EUR)",
-      "当前BD价/售价(EUR)",
-      "页面优惠",
-      "估算折后价(EUR)",
+      "页面折扣",
+      "优惠券/活动原文",
+      "优惠类型",
+      "优惠条件",
+      "预计券后价(EUR)",
+      "价格采集时间",
+      "价格来源字段",
+      "价格说明",
       "亮度",
       "亮度来源",
       "亮度原文依据",
@@ -3297,6 +3569,7 @@
       headers,
       ...rows.map(({ product, working, system }) => {
         const brightness = brightnessFor(product);
+        const price = priceFor(product);
         return [
         product.rank,
         product.manualFocus ? "自有产品" : "BSR 竞品",
@@ -3304,10 +3577,17 @@
         product.brand,
         modelOf(product),
         product.asin,
-        promotionFor(product)?.listPrice || product.sourcePrice,
+        priceStatusLabel(product),
         currentPriceFor(product),
-        promotionSignal(product),
+        originalPriceFor(product),
+        price.discountText || "",
+        price.coupon || (price.kind === "gift" ? "Kostenloser Bonusartikel" : ""),
+        price.type,
+        promotionConditionFor(product),
         promoPriceFor(product) || "",
+        price.timestamp || activePriceMeta().observedAt || "",
+        price.sourceField || "",
+        price.priceNote || "",
         specOf(product, "亮度", working),
         brightness?.ansiSource || brightness?.lumenSource || "",
         brightness?.evidence || "",
@@ -3440,6 +3720,9 @@
     ) {
       fields.push("产品历史");
     }
+    if (!deepEqual(snapshot.prices || null, compactPriceSnapshot())) {
+      fields.push("全量售价与优惠");
+    }
     return [...new Set(fields)];
   }
 
@@ -3472,6 +3755,7 @@
         audit: auditDraft,
         working: state.working,
         productVersionCount: state.versions.length,
+        prices: compactPriceSnapshot(),
       },
     });
     auditDirty = false;
@@ -3520,6 +3804,11 @@
                           version.snapshot?.working
                             ? `<small class="site-version-scope">含 ${Object.keys(version.snapshot.working).length} 个已保存产品 · ${version.snapshot.productVersionCount || 0} 条产品历史</small>`
                             : '<small class="site-version-scope">旧版快照未记录产品范围</small>'
+                        }
+                        ${
+                          version.snapshot?.prices?.products
+                            ? `<small class="site-version-scope">含 ${version.snapshot.prices.products.length} 个产品的售价与优惠快照 · ${escapeHTML(version.snapshot.prices.meta?.observedAtLabel || version.snapshot.prices.meta?.observedAt || "采集时间未记录")}</small>`
+                            : ""
                         }
                         <div class="version-meta">
                           ${(version.fields || []).map((field) => `<span>${escapeHTML(field)}</span>`).join("")}
@@ -3578,6 +3867,7 @@
           audit: auditDraft,
           working: state.working,
           productVersionCount: state.versions.length,
+          prices: compactPriceSnapshot(),
         },
       });
       persistState();
@@ -3588,6 +3878,10 @@
       version.snapshot.working && typeof version.snapshot.working === "object"
         ? clone(version.snapshot.working)
         : {};
+    state.priceSnapshot = version.snapshot.prices?.products
+      ? clone(version.snapshot.prices)
+      : null;
+    state.priceLegacy = !version.snapshot.prices?.products;
     const restored = pushSiteVersion({
       title: `恢复至全站 v${auditVersionNumber(version)}`,
       reason: `从 ${formatDateTime(version.at)} 的版本恢复；恢复前差异：${
@@ -3599,6 +3893,7 @@
         audit: auditDraft,
         working: state.working,
         productVersionCount: state.versions.length,
+        prices: compactPriceSnapshot(),
       },
     });
     auditDirty = false;
